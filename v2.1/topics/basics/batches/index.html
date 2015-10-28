@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <meta name="description" content="DataStax C++ Driver for Apache Cassandra Documentation">
+    <meta name="author" content="DataStax">
+
+    <title>DataStax C/C++ Driver - Batches</title>
+
+    <link rel="icon" href="../../../../favicon.ico">
+    <link rel="apple-touch-icon" href="../../../../favicon.png">
+    <link href="../../../../css/style.css" rel="stylesheet">
+    <link href="../../../../css/pygments.css" rel="stylesheet">
+    <link href="../../../../css/hotkeys.css" rel="stylesheet">
+
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body ng-app="docs" data-spy="scroll" data-target=".side-nav">
+    <header class="navbar navbar-default navbar-static-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="../../../">DataStax C/C++ Driver</a>
+        </div>
+        <div class="collapse navbar-collapse" ng-controller="search">
+          <ul class="nav navbar-nav">
+            
+            
+            
+            <li class="active">
+              <a href="../../">Topics</a>
+            </li>
+            
+            
+            <li>
+              <a href="../../../api/">API docs</a>
+            </li>
+            
+          </ul>
+          <form class="navbar-form form-search navbar-right dropdown visible-lg-block" ng-class="{open: hasResults}" role="search" ng-submit="submit()">
+            <div class="form-group has-feedback">
+              <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.1')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
+            </div>
+            <ul class="dropdown-menu" role="menu">
+              <li ng-repeat="result in results" ng-class="{'bg-warning': $index == current}"><a ng-href="{{basePath}}{{result.path}}"><span ng-bind-html="summary(result)"></span></a></li>
+            </ul>
+          </form>
+        </div>
+      </div>
+    </header>
+
+    <div class="container" id="content">
+      <div class="row">
+        <div class="col-md-9 content">
+          <nav class="crumbs">
+            <ol class="breadcrumb">
+              
+              <li>
+                <div class="dropdown">
+                  <button id="current-version" class="btn btn-default btn-sm" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    v2.1
+                    <span class="caret"></span>
+                  </button>
+                  <ul class="dropdown-menu" role="menu" aria-labelledby="current-version">
+                  
+                    <li><a href="../../../../topics/basics/batches/">v2.2</a></li>
+                  
+                    <li class="disabled"><a href="./">v2.1</a></li>
+                  
+                    <li><a href="../../../../v2.0/topics/basics/batches/">v2.0</a></li>
+                  
+                    <li><a href="../../../../v1.0/topics/basics/batches/">v1.0</a></li>
+                  
+                  </ul>
+                </div>
+              </li>
+              
+              
+              
+              
+              <li><a href="../../../">Home</a></li>
+              
+              
+              
+              
+              
+              <li><a href="../../">Getting Started</a></li>
+              
+              
+              
+              
+              
+              <li><a href="../">Basics</a></li>
+              
+              
+              
+              
+              
+              <li class="active">Batches</li>
+              
+              
+              
+            </ol>
+          </nav>
+          
+
+<h1 id="batches">Batches<a class="anchor" href="#batches" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h1>
+
+<p>Batches can be used to group multiple mutations (<code>UPDATE</code>, <code>INSERT</code>, <code>DELETE</code>) together into a single statement; simple or perpared. There are three different types of batches supported by Cassandra 2.0 or later.</p>
+
+<ul>
+<li>
+<code>CASS_BATCH_TYPE_LOGGED</code> is used to make sure that multiple mutations across multiple partitions happen atomically, that is, all the included mutations will eventually succeed. However, there is a performance penalty imposed by atomcity guarantee.</li>
+<li>
+<code>CASS_BATCH_TYPE_UNLOGGED</code> is generally used to group mutations for a single partition and do not suffer from the performance penalty imposed by logged batches, but there is no atomicty guarantee for  multi-partition updates.</li>
+<li>
+<code>CASS_BATCH_TYPE_COUNTER</code> is used to group counters updates.</li>
+</ul>
+
+<p><strong>Important</strong>: Be careful when using batches as a <a href="http://www.datastax.com/documentation/cql/3.1/cql/cql_using/useBatch.html">performance optimization</a>.</p>
+<pre class="highlight"><code><span class="cm">/* This logged batch will makes sure that all the mutations eventually succeed */</span>
+<span class="nc">CassBatch</span><span class="o">*</span> <span class="n">batch</span> <span class="o">=</span> <span class="nb">cass_batch_new</span><span class="p">(</span><span class="n">CASS_BATCH_TYPE_LOGGED</span><span class="p">);</span>
+
+<span class="cm">/* Statements can be immediately freed after being added to the batch */</span>
+
+<span class="p">{</span>
+  <span class="nc">CassStatement</span><span class="o">*</span> <span class="n">statement</span>
+    <span class="o">=</span> <span class="nb">cass_statement_new</span><span class="p">(</span><span class="s">"INSERT INTO example1(key, value) VALUES ('a', '1')"</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+  <span class="nb">cass_batch_add_statement</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">statement</span><span class="p">);</span>
+  <span class="nb">cass_statement_free</span><span class="p">(</span><span class="n">statement</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="p">{</span>
+  <span class="nc">CassStatement</span><span class="o">*</span> <span class="n">statement</span>
+    <span class="o">=</span> <span class="nb">cass_statement_new</span><span class="p">(</span><span class="s">"UPDATE example2 set value = '2' WHERE key = 'b'"</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+  <span class="nb">cass_batch_add_statement</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">statement</span><span class="p">);</span>
+  <span class="nb">cass_statement_free</span><span class="p">(</span><span class="n">statement</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="p">{</span>
+  <span class="nc">CassStatement</span><span class="o">*</span> <span class="n">statement</span>
+    <span class="o">=</span> <span class="nb">cass_statement_new</span><span class="p">(</span><span class="s">"DELETE FROM example3 WHERE key = 'c'"</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+  <span class="nb">cass_batch_add_statement</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">statement</span><span class="p">);</span>
+  <span class="nb">cass_statement_free</span><span class="p">(</span><span class="n">statement</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="nc">CassFuture</span><span class="o">*</span> <span class="n">batch_future</span> <span class="o">=</span> <span class="nb">cass_session_execute_batch</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">batch</span><span class="p">);</span>
+
+<span class="cm">/* Batch objects can be freed immediately after being executed */</span>
+<span class="nb">cass_batch_free</span><span class="p">(</span><span class="n">batch</span><span class="p">);</span>
+
+<span class="cm">/* This will block until the query has finished */</span>
+<span class="nc">CassError</span> <span class="n">rc</span> <span class="o">=</span> <span class="nb">cass_future_error_code</span><span class="p">(</span><span class="n">batch_future</span><span class="p">);</span>
+
+<span class="n">printf</span><span class="p">(</span><span class="s">"Batch result: %s</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="nb">cass_error_desc</span><span class="p">(</span><span class="n">rc</span><span class="p">));</span>
+
+<span class="nb">cass_future_free</span><span class="p">(</span><span class="n">batch_future</span><span class="p">);</span>
+</code></pre>
+
+
+        </div>
+        <div class="col-md-3">
+          <div id="navigation" class="panel-group side-nav" data-spy="affix" data-offset-top="60" data-offset-bottom="80" role="tablist" aria-multiselectable="true">
+            <div id="table-of-contents-panel" class="panel panel-default">
+              <div id="table-of-contents-heading" class="panel-heading" role="tab">
+                <h4 class="panel-title">
+                  <a data-toggle="collapse" href="#table-of-contents" aria-expanded="true" aria-controls="table-of-contents">
+                    Contents<i class="pull-right glyphicon glyphicon-chevron-up"></i>
+                  </a>
+                </h4>
+              </div>
+              <div id="table-of-contents" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="table-of-contents-heading">
+                <div class="panel-body">
+                  
+                </div>
+              </div>
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+
+    
+
+    <script src="../../../../js/jquery.js"></script>
+    <script src="../../../../js/bootstrap.js"></script>
+    <script src="../../../../js/angular.js"></script>
+    <script src="../../../../js/mousetrap.js"></script>
+    <script src="../../../../js/hotkeys.js"></script>
+    <script src="../../../../js/ZeroClipboard.js"></script>
+    <script src="../../../../js/lunr.js"></script>
+    <script src="../../../../js/app.js"></script>
+  </body>
+</html>

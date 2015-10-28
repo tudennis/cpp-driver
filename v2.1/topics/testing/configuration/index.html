@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <meta name="description" content="DataStax C++ Driver for Apache Cassandra Documentation">
+    <meta name="author" content="DataStax">
+
+    <title>DataStax C/C++ Driver - Configuration</title>
+
+    <link rel="icon" href="../../../../favicon.ico">
+    <link rel="apple-touch-icon" href="../../../../favicon.png">
+    <link href="../../../../css/style.css" rel="stylesheet">
+    <link href="../../../../css/pygments.css" rel="stylesheet">
+    <link href="../../../../css/hotkeys.css" rel="stylesheet">
+
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body ng-app="docs" data-spy="scroll" data-target=".side-nav">
+    <header class="navbar navbar-default navbar-static-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="../../../">DataStax C/C++ Driver</a>
+        </div>
+        <div class="collapse navbar-collapse" ng-controller="search">
+          <ul class="nav navbar-nav">
+            
+            
+            
+            <li class="active">
+              <a href="../../">Topics</a>
+            </li>
+            
+            
+            <li>
+              <a href="../../../api/">API docs</a>
+            </li>
+            
+          </ul>
+          <form class="navbar-form form-search navbar-right dropdown visible-lg-block" ng-class="{open: hasResults}" role="search" ng-submit="submit()">
+            <div class="form-group has-feedback">
+              <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.1')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
+            </div>
+            <ul class="dropdown-menu" role="menu">
+              <li ng-repeat="result in results" ng-class="{'bg-warning': $index == current}"><a ng-href="{{basePath}}{{result.path}}"><span ng-bind-html="summary(result)"></span></a></li>
+            </ul>
+          </form>
+        </div>
+      </div>
+    </header>
+
+    <div class="container" id="content">
+      <div class="row">
+        <div class="col-md-9 content">
+          <nav class="crumbs">
+            <ol class="breadcrumb">
+              
+              <li>
+                <div class="dropdown">
+                  <button id="current-version" class="btn btn-default btn-sm" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    v2.1
+                    <span class="caret"></span>
+                  </button>
+                  <ul class="dropdown-menu" role="menu" aria-labelledby="current-version">
+                  
+                    <li><a href="../../../../topics/testing/configuration/">v2.2</a></li>
+                  
+                    <li class="disabled"><a href="./">v2.1</a></li>
+                  
+                    <li><a href="../../../../v2.0/topics/testing/configuration/">v2.0</a></li>
+                  
+                    <li><a href="../../../../v1.0/">v1.0</a></li>
+                  
+                  </ul>
+                </div>
+              </li>
+              
+              
+              
+              
+              <li><a href="../../../">Home</a></li>
+              
+              
+              
+              
+              
+              <li><a href="../../">Getting Started</a></li>
+              
+              
+              
+              
+              
+              <li><a href="../">Testing</a></li>
+              
+              
+              
+              
+              
+              <li class="active">Configuration</li>
+              
+              
+              
+            </ol>
+          </nav>
+          
+
+<h1 id="configuration">Configuration<a class="anchor" href="#configuration" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h1>
+
+<p>In order to execute the integration tests, a <code>config.txt</code> file must be
+created in the working directory where the integration tests are run. Below is
+an example of the configuration file for use with the <a href="../ccm/#ccm-cluster-by-way-of-vagrant-and-virtual-box">CCM Cluster</a> VM.</p>
+<pre class="highlight"><code>##
+# CCM Options
+##
+# CCM Cassandra Deployment Version
+#
+# Cassandra version to deploy using CCM
+# (branches and tags can be used from https://github.com/apache/cassandra)
+#
+CASSANDRA_VERSION=2.1.3
+
+##
+# SSH Options
+# Enusre DEPLOYMENT_TYPE=ssh to enable these options
+##
+# SSH Host (Hostname/IP Address)
+#
+# Host/IP to use when establishing ssh connection for remote CCM command
+# execution
+#
+SSH_HOST=192.168.33.11
+#
+# SSH Port (Port)
+#
+# TCP/IP port to use when establishing ssh connection for remote CCM command
+# execution
+#
+SSH_PORT=22
+#
+# SSH Username (Username)
+#
+# Username for authenticating SSH connection
+#
+SSH_USERNAME=vagrant
+#
+# SSH Password (Password)
+#
+# Password for authenticating SSH connection
+#
+# NOTE: This password is plain text
+#
+SSH_PASSWORD=vagrant
+
+##
+# CPP-Driver Options
+##
+#
+# IP Prefix (Single/Multiple Node Test Connections)
+#
+# Cassandra node IP prefix for cpp-driver connection(s) and CCM node creation
+#
+IP_PREFIX=192.168.33.1
+</code></pre>
+<p>(where <code>CASSANDRA_VERSION=2.1.3</code> is the latest version of Cassandra)</p>
+
+<h2 id="driver-downgrade-test-suite">Driver Downgrade Test Suite<a class="anchor" href="#driver-downgrade-test-suite" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h2>
+
+<p>To execute any of the tests in the <code>version1_downgrade</code> test suite, a copy of
+<code>config.txt</code> above should be created called <code>config_v1.txt</code> and the
+<code>CASSANDRA_VERSION</code> option must be updated to a Cassandra in the 1.x family.</p>
+<pre class="highlight"><code>CASSANDRA_VERSION=1.2.19
+</code></pre>
+<p>(where <code>CASSANDRA_VERSION=1.2.19</code> is the latest version of Cassandra 1.2)</p>
+
+<h2 id="ssl-test-suite">SSL Test Suite<a class="anchor" href="#ssl-test-suite" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h2>
+
+<p>To execute any of the tests in the <code>ssl</code> test suite, follow the <a href="https://github.com/datastax/cpp-driver/tree/1.0/test/ccm_bridge/data/ssl">instructions</a>
+for generating public and private keys to use with the driver and Cassandra.</p>
+
+
+        </div>
+        <div class="col-md-3">
+          <div id="navigation" class="panel-group side-nav" data-spy="affix" data-offset-top="60" data-offset-bottom="80" role="tablist" aria-multiselectable="true">
+            <div id="table-of-contents-panel" class="panel panel-default">
+              <div id="table-of-contents-heading" class="panel-heading" role="tab">
+                <h4 class="panel-title">
+                  <a data-toggle="collapse" href="#table-of-contents" aria-expanded="true" aria-controls="table-of-contents">
+                    Contents<i class="pull-right glyphicon glyphicon-chevron-up"></i>
+                  </a>
+                </h4>
+              </div>
+              <div id="table-of-contents" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="table-of-contents-heading">
+                <div class="panel-body">
+                  <ol class="nav nav-pills nav-stacked toc">
+<li><a href="#driver-downgrade-test-suite">Driver Downgrade Test Suite
+</a></li>
+<li><a href="#ssl-test-suite">SSL Test Suite
+</a></li>
+</ol>
+                </div>
+              </div>
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+
+    
+
+    <script src="../../../../js/jquery.js"></script>
+    <script src="../../../../js/bootstrap.js"></script>
+    <script src="../../../../js/angular.js"></script>
+    <script src="../../../../js/mousetrap.js"></script>
+    <script src="../../../../js/hotkeys.js"></script>
+    <script src="../../../../js/ZeroClipboard.js"></script>
+    <script src="../../../../js/lunr.js"></script>
+    <script src="../../../../js/app.js"></script>
+  </body>
+</html>

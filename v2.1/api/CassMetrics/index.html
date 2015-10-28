@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <meta name="description" content="DataStax C++ Driver for Apache Cassandra Documentation">
+    <meta name="author" content="DataStax">
+
+    <title>DataStax C/C++ Driver - CassMetrics</title>
+
+    <link rel="icon" href="../../../favicon.ico">
+    <link rel="apple-touch-icon" href="../../../favicon.png">
+    <link href="../../../css/style.css" rel="stylesheet">
+    <link href="../../../css/pygments.css" rel="stylesheet">
+    <link href="../../../css/hotkeys.css" rel="stylesheet">
+
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body ng-app="docs" data-spy="scroll" data-target=".side-nav">
+    <header class="navbar navbar-default navbar-static-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="../../">DataStax C/C++ Driver</a>
+        </div>
+        <div class="collapse navbar-collapse" ng-controller="search">
+          <ul class="nav navbar-nav">
+            
+            
+            
+            <li>
+              <a href="../../topics/">Topics</a>
+            </li>
+            
+            
+            <li class="active">
+              <a href="../">API docs</a>
+            </li>
+            
+          </ul>
+          <form class="navbar-form form-search navbar-right dropdown visible-lg-block" ng-class="{open: hasResults}" role="search" ng-submit="submit()">
+            <div class="form-group has-feedback">
+              <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.1')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
+            </div>
+            <ul class="dropdown-menu" role="menu">
+              <li ng-repeat="result in results" ng-class="{'bg-warning': $index == current}"><a ng-href="{{basePath}}{{result.path}}"><span ng-bind-html="summary(result)"></span></a></li>
+            </ul>
+          </form>
+        </div>
+      </div>
+    </header>
+
+    <div class="container" id="content">
+      <div class="row">
+        <div class="col-md-9 content">
+          <nav class="crumbs">
+            <ol class="breadcrumb">
+              
+              <li>
+                <div class="dropdown">
+                  <button id="current-version" class="btn btn-default btn-sm" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    v2.1
+                    <span class="caret"></span>
+                  </button>
+                  <ul class="dropdown-menu" role="menu" aria-labelledby="current-version">
+                  
+                    <li><a href="../../../api/CassMetrics/">v2.2</a></li>
+                  
+                    <li class="disabled"><a href="./">v2.1</a></li>
+                  
+                    <li><a href="../../../v2.0/api/CassMetrics/">v2.0</a></li>
+                  
+                    <li><a href="../../../v1.0/">v1.0</a></li>
+                  
+                  </ul>
+                </div>
+              </li>
+              
+              
+              
+              
+              <li><a href="../../">Home</a></li>
+              
+              
+              
+              
+              
+              <li><a href="../">API docs</a></li>
+              
+              
+              
+              
+              
+              <li class="active">CassMetrics</li>
+              
+              
+              
+            </ol>
+          </nav>
+          
+
+<div class="page-header">
+  <h1 id="struct-cass-metrics">
+    <small>struct</small>
+    CassMetrics
+  <a class="anchor" href="#struct-cass-metrics" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h1>
+</div>
+
+<p>A snapshot of the session’s performance/diagnostic metrics.</p>
+
+<h2 id="attributes">Attributes<a class="anchor" href="#attributes" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h2>
+
+<div class="attributes-content">
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading attribute-heading">
+      <code><a href="../cassandra.h/#cass-uint64-t">cassandra.h::cass_uint64_t</a></code> <h3 id="min">min<a class="anchor" href="#min" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3>
+    </div>
+    <div class="panel-body attribute-body">
+      <p>Minimum in microseconds</p>
+
+      
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading attribute-heading">
+      <code><a href="../cassandra.h/#cass-uint64-t">cassandra.h::cass_uint64_t</a></code> <h3 id="max">max<a class="anchor" href="#max" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3>
+    </div>
+    <div class="panel-body attribute-body">
+      <p>Maximum in microseconds</p>
+
+      
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading attribute-heading">
+      <code><a href="../cassandra.h/#cass-uint64-t">cassandra.h::cass_uint64_t</a></code> <h3 id="mean">mean<a class="anchor" href="#mean" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3>
+    </div>
+    <div class="panel-body attribute-body">
+      <p>Mean in microseconds</p>
+
+      
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading attribute-heading">
+      <code><a href="../cassandra.h/#cass-uint64-t">cassandra.h::cass_uint64_t</a></code> <h3 id="stddev">stddev<a class="anchor" href="#stddev" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3>
+    </div>
+    <div class="panel-body attribute-body">
+      <p>Standard deviation in microseconds</p>
+
+      
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading attribute-heading">
+      <code><a href="../cassandra.h/#cass-uint64-t">cassandra.h::cass_uint64_t</a></code> <h3 id="median">median<a class="anchor" href="#median" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3>
+    </div>
+    <div class="panel-body attribute-body">
+      <p>Median in microseconds</p>
+
+      
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading attribute-heading">
+      <code><a href="../cassandra.h/#cass-uint64-t">cassandra.h::cass_uint64_t</a></code> <h3 id="percentile-75th">percentile_75th<a class="anchor" href="#percentile-75th" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3>
+    </div>
+    <div class="panel-body attribute-body">
+      <p>75th percentile in microseconds</p>
+
+      
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading attribute-heading">
+      <code><a href="../cassandra.h/#cass-uint64-t">cassandra.h::cass_uint64_t</a></code> <h3 id="percentile-95th">percentile_95th<a class="anchor" href="#percentile-95th" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3>
+    </div>
+    <div class="panel-body attribute-body">
+      <p>95th percentile in microseconds</p>
+
+      
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading attribute-heading">
+      <code><a href="../cassandra.h/#cass-uint64-t">cassandra.h::cass_uint64_t</a></code> <h3 id="percentile-98th">percentile_98th<a class="anchor" href="#percentile-98th" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3>
+    </div>
+    <div class="panel-body attribute-body">
+      <p>98th percentile in microseconds</p>
+
+      
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading attribute-heading">
+      <code><a href="../cassandra.h/#cass-uint64-t">cassandra.h::cass_uint64_t</a></code> <h3 id="percentile-99th">percentile_99th<a class="anchor" href="#percentile-99th" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3>
+    </div>
+    <div class="panel-body attribute-body">
+      <p>99the percentile in microseconds</p>
+
+      
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading attribute-heading">
+      <code><a href="../cassandra.h/#cass-uint64-t">cassandra.h::cass_uint64_t</a></code> <h3 id="percentile-999th">percentile_999th<a class="anchor" href="#percentile-999th" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3>
+    </div>
+    <div class="panel-body attribute-body">
+      <p>99.9th percentile in microseconds</p>
+
+      
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading attribute-heading">
+      <code><a href="../cassandra.h/#cass-double-t">cassandra.h::cass_double_t</a></code> <h3 id="mean-rate">mean_rate<a class="anchor" href="#mean-rate" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3>
+    </div>
+    <div class="panel-body attribute-body">
+      <p>Mean rate in requests per second</p>
+
+      
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading attribute-heading">
+      <code><a href="../cassandra.h/#cass-double-t">cassandra.h::cass_double_t</a></code> <h3 id="one-minute-rate">one_minute_rate<a class="anchor" href="#one-minute-rate" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3>
+    </div>
+    <div class="panel-body attribute-body">
+      <p>1 minute rate in requests per second</p>
+
+      
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading attribute-heading">
+      <code><a href="../cassandra.h/#cass-double-t">cassandra.h::cass_double_t</a></code> <h3 id="five-minute-rate">five_minute_rate<a class="anchor" href="#five-minute-rate" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3>
+    </div>
+    <div class="panel-body attribute-body">
+      <p>5 minute rate in requests per second</p>
+
+      
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading attribute-heading">
+      <code><a href="../cassandra.h/#cass-double-t">cassandra.h::cass_double_t</a></code> <h3 id="fifteen-minute-rate">fifteen_minute_rate<a class="anchor" href="#fifteen-minute-rate" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3>
+    </div>
+    <div class="panel-body attribute-body">
+      <p>15 minute rate in requests per second</p>
+
+      
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading attribute-heading">
+      <code>struct CassMetrics::@0</code> <h3 id="requests">requests<a class="anchor" href="#requests" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3>
+    </div>
+    <div class="panel-body attribute-body">
+      
+      
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading attribute-heading">
+      <code><a href="../cassandra.h/#cass-uint64-t">cassandra.h::cass_uint64_t</a></code> <h3 id="total-connections">total_connections<a class="anchor" href="#total-connections" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3>
+    </div>
+    <div class="panel-body attribute-body">
+      <p>The total number of connections</p>
+
+      
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading attribute-heading">
+      <code><a href="../cassandra.h/#cass-uint64-t">cassandra.h::cass_uint64_t</a></code> <h3 id="available-connections">available_connections<a class="anchor" href="#available-connections" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3>
+    </div>
+    <div class="panel-body attribute-body">
+      <p>The number of connections available to take requests</p>
+
+      
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading attribute-heading">
+      <code><a href="../cassandra.h/#cass-uint64-t">cassandra.h::cass_uint64_t</a></code> <h3 id="exceeded-pending-requests-water-mark">exceeded_pending_requests_water_mark<a class="anchor" href="#exceeded-pending-requests-water-mark" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3>
+    </div>
+    <div class="panel-body attribute-body">
+      <p>Occurrences when requests exceeded a pool’s water mark</p>
+
+      
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading attribute-heading">
+      <code><a href="../cassandra.h/#cass-uint64-t">cassandra.h::cass_uint64_t</a></code> <h3 id="exceeded-write-bytes-water-mark">exceeded_write_bytes_water_mark<a class="anchor" href="#exceeded-write-bytes-water-mark" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3>
+    </div>
+    <div class="panel-body attribute-body">
+      <p>Occurrences when number of bytes exceeded a connection’s water mark</p>
+
+      
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading attribute-heading">
+      <code>struct CassMetrics::@1</code> <h3 id="stats">stats<a class="anchor" href="#stats" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3>
+    </div>
+    <div class="panel-body attribute-body">
+      
+      
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading attribute-heading">
+      <code><a href="../cassandra.h/#cass-uint64-t">cassandra.h::cass_uint64_t</a></code> <h3 id="connection-timeouts">connection_timeouts<a class="anchor" href="#connection-timeouts" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3>
+    </div>
+    <div class="panel-body attribute-body">
+      <p>Occurrences of a connection timeout</p>
+
+      
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading attribute-heading">
+      <code><a href="../cassandra.h/#cass-uint64-t">cassandra.h::cass_uint64_t</a></code> <h3 id="pending-request-timeouts">pending_request_timeouts<a class="anchor" href="#pending-request-timeouts" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3>
+    </div>
+    <div class="panel-body attribute-body">
+      
+      
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading attribute-heading">
+      <code><a href="../cassandra.h/#cass-uint64-t">cassandra.h::cass_uint64_t</a></code> <h3 id="request-timeouts">request_timeouts<a class="anchor" href="#request-timeouts" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3>
+    </div>
+    <div class="panel-body attribute-body">
+      <p>Occurrences of requests that timed out waiting for a connection</p>
+
+      
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading attribute-heading">
+      <code>struct CassMetrics::@2</code> <h3 id="errors">errors<a class="anchor" href="#errors" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3>
+    </div>
+    <div class="panel-body attribute-body">
+      
+      
+    </div>
+  </div>
+</div>
+
+
+
+        </div>
+        <div class="col-md-3">
+          <div id="navigation" class="panel-group side-nav" data-spy="affix" data-offset-top="60" data-offset-bottom="80" role="tablist" aria-multiselectable="true">
+            <div id="table-of-contents-panel" class="panel panel-default">
+              <div id="table-of-contents-heading" class="panel-heading" role="tab">
+                <h4 class="panel-title">
+                  <a data-toggle="collapse" href="#table-of-contents" aria-expanded="true" aria-controls="table-of-contents">
+                    Contents<i class="pull-right glyphicon glyphicon-chevron-up"></i>
+                  </a>
+                </h4>
+              </div>
+              <div id="table-of-contents" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="table-of-contents-heading">
+                <div class="panel-body">
+                  <ol class="nav nav-pills nav-stacked toc"><li>
+<a href="#attributes">Attributes
+</a><ol class="nav nav-pills nav-stacked">
+<li><a href="#min">min
+</a></li>
+<li><a href="#max">max
+</a></li>
+<li><a href="#mean">mean
+</a></li>
+<li><a href="#stddev">stddev
+</a></li>
+<li><a href="#median">median
+</a></li>
+<li><a href="#percentile-75th">percentile_75th
+</a></li>
+<li><a href="#percentile-95th">percentile_95th
+</a></li>
+<li><a href="#percentile-98th">percentile_98th
+</a></li>
+<li><a href="#percentile-99th">percentile_99th
+</a></li>
+<li><a href="#percentile-999th">percentile_999th
+</a></li>
+<li><a href="#mean-rate">mean_rate
+</a></li>
+<li><a href="#one-minute-rate">one_minute_rate
+</a></li>
+<li><a href="#five-minute-rate">five_minute_rate
+</a></li>
+<li><a href="#fifteen-minute-rate">fifteen_minute_rate
+</a></li>
+<li><a href="#requests">requests
+</a></li>
+<li><a href="#total-connections">total_connections
+</a></li>
+<li><a href="#available-connections">available_connections
+</a></li>
+<li><a href="#exceeded-pending-requests-water-mark">exceeded_pending_requests_water_mark
+</a></li>
+<li><a href="#exceeded-write-bytes-water-mark">exceeded_write_bytes_water_mark
+</a></li>
+<li><a href="#stats">stats
+</a></li>
+<li><a href="#connection-timeouts">connection_timeouts
+</a></li>
+<li><a href="#pending-request-timeouts">pending_request_timeouts
+</a></li>
+<li><a href="#request-timeouts">request_timeouts
+</a></li>
+<li><a href="#errors">errors
+</a></li>
+</ol>
+</li></ol>
+                </div>
+              </div>
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+
+    
+
+    <script src="../../../js/jquery.js"></script>
+    <script src="../../../js/bootstrap.js"></script>
+    <script src="../../../js/angular.js"></script>
+    <script src="../../../js/mousetrap.js"></script>
+    <script src="../../../js/hotkeys.js"></script>
+    <script src="../../../js/ZeroClipboard.js"></script>
+    <script src="../../../js/lunr.js"></script>
+    <script src="../../../js/app.js"></script>
+  </body>
+</html>
