@@ -51,7 +51,7 @@
           </ul>
           <form class="navbar-form form-search navbar-right dropdown visible-lg-block" ng-class="{open: hasResults}" role="search" ng-submit="submit()">
             <div class="form-group has-feedback">
-              <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.1')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
+              <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.2')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
             </div>
             <ul class="dropdown-menu" role="menu">
               <li ng-repeat="result in results" ng-class="{'bg-warning': $index == current}"><a ng-href="{{basePath}}{{result.path}}"><span ng-bind-html="summary(result)"></span></a></li>
@@ -70,12 +70,14 @@
               <li>
                 <div class="dropdown">
                   <button id="current-version" class="btn btn-default btn-sm" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    v2.1
+                    v2.2
                     <span class="caret"></span>
                   </button>
                   <ul class="dropdown-menu" role="menu" aria-labelledby="current-version">
                   
-                    <li class="disabled"><a href="./">v2.1</a></li>
+                    <li class="disabled"><a href="./">v2.2</a></li>
+                  
+                    <li><a href="../../v2.1/api/CassFuture/">v2.1</a></li>
                   
                     <li><a href="../../v2.0/api/CassFuture/">v2.0</a></li>
                   
@@ -332,7 +334,7 @@
 </h3> <big>(</big> <code><a href="./">CassFuture</a> *</code> future <big>)</big>
     </div>
     <div class="panel-body function-body">
-      <p>Gets the result of a successful future. If the future is not ready this method will wait for the future to be set. The first successful call consumes the future, all subsequent calls will return NULL.</p>
+      <p>Gets the result of a successful future. If the future is not ready this method will wait for the future to be set.</p>
 
       <dl class="tags">
 <dt class="tag-title">Parameters:</dt>
@@ -376,7 +378,7 @@
 </h3> <big>(</big> <code><a href="./">CassFuture</a> *</code> future <big>)</big>
     </div>
     <div class="panel-body function-body">
-      <p>Gets the error result from a future that failed as a result of a server error. If the future is not ready this method will wait for the future to be set. The first successful call consumes the future, all subsequent calls will return NULL.</p>
+      <p>Gets the error result from a future that failed as a result of a server error. If the future is not ready this method will wait for the future to be set.</p>
 
       <dl class="tags">
 <dt class="tag-title">Parameters:</dt>
@@ -403,7 +405,7 @@
 <tbody><tr>
 <td><code>const <a href="../CassErrorResult/">CassErrorResult</a> *</code></td>
 <td>
-<p><code><a href="../CassErrorResult/">CassErrorResult</a></code> instance if the request failed with a server error, otherwise NULL if the request was sucessful or the failure was not caused by a server error. The return instance must be freed using <code><a href="../CassErrorResult/#cass-error-result-free">CassErrorResult::cass_error_result_free</a></code>.</p>
+<p><code><a href="../CassErrorResult/">CassErrorResult</a></code> instance if the request failed with a server error, otherwise NULL if the request was successful or the failure was not caused by a server error. The return instance must be freed using <code><a href="../CassErrorResult/#cass-error-result-free">CassErrorResult::cass_error_result_free</a></code>.</p>
 </td>
 </tr></tbody>
 </table></dd>
@@ -543,6 +545,123 @@
 </dl>
     </div>
   </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading function-heading">
+      <code>size_t</code> <h3 id="cass-future-custom-payload-item-count">cass_future_custom_payload_item_count<a class="anchor" href="#cass-future-custom-payload-item-count" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3> <big>(</big> <code><a href="./">CassFuture</a> *</code> future <big>)</big>
+    </div>
+    <div class="panel-body function-body">
+      <p>Gets a the number of custom payload items from a response future. If the future is not ready this method will wait for the future to be set.</p>
+
+      <dl class="tags">
+<dt class="tag-title">Parameters:</dt>
+<dd class="tag-content"><table class="table table-striped param">
+<thead><tr>
+<th class="name">Name</th>
+<th class="type">Type</th>
+<th class="details">Details</th>
+</tr></thead>
+<tbody><tr>
+<td>
+<small>in</small> <var>future</var>
+</td>
+<td><code><a href="./">CassFuture</a> *</code></td>
+<td></td>
+</tr></tbody>
+</table></dd>
+<dt class="tag-title">Returns:</dt>
+<dd class="tag-content"><table class="table table-striped return">
+<thead><tr>
+<th class="type">Type</th>
+<th class="details">Details</th>
+</tr></thead>
+<tbody><tr>
+<td><code>size_t</code></td>
+<td>
+<p>the number of custom payload items.</p>
+</td>
+</tr></tbody>
+</table></dd>
+</dl>
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading function-heading">
+      <code><a href="../cassandra.h/#cass-error">cassandra.h::CassError</a></code> <h3 id="cass-future-custom-payload-item">cass_future_custom_payload_item<a class="anchor" href="#cass-future-custom-payload-item" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3> <big>(</big> <code><a href="./">CassFuture</a> *</code> future, <code>size_t</code> index, <code>const char **</code> name, <code>size_t *</code> name_length, <code>const <a href="../cassandra.h/#cass-byte-t">cassandra.h::cass_byte_t</a> **</code> value, <code>size_t *</code> value_size <big>)</big>
+    </div>
+    <div class="panel-body function-body">
+      <p>Gets a custom payload item from a response future at the specified index. If the future is not ready this method will wait for the future to be set.</p>
+
+      <dl class="tags">
+<dt class="tag-title">Parameters:</dt>
+<dd class="tag-content"><table class="table table-striped param">
+<thead><tr>
+<th class="name">Name</th>
+<th class="type">Type</th>
+<th class="details">Details</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>
+<small>in</small> <var>future</var>
+</td>
+<td><code><a href="./">CassFuture</a> *</code></td>
+<td></td>
+</tr>
+<tr>
+<td>
+<small>in</small> <var>index</var>
+</td>
+<td><code>size_t</code></td>
+<td></td>
+</tr>
+<tr>
+<td>
+<small>out</small> <var>name</var>
+</td>
+<td><code>const char **</code></td>
+<td></td>
+</tr>
+<tr>
+<td>
+<small>out</small> <var>name_length</var>
+</td>
+<td><code>size_t *</code></td>
+<td></td>
+</tr>
+<tr>
+<td>
+<small>out</small> <var>value</var>
+</td>
+<td><code>const <a href="../cassandra.h/#cass-byte-t">cassandra.h::cass_byte_t</a> **</code></td>
+<td></td>
+</tr>
+<tr>
+<td>
+<small>out</small> <var>value_size</var>
+</td>
+<td><code>size_t *</code></td>
+<td></td>
+</tr>
+</tbody>
+</table></dd>
+<dt class="tag-title">Returns:</dt>
+<dd class="tag-content"><table class="table table-striped return">
+<thead><tr>
+<th class="type">Type</th>
+<th class="details">Details</th>
+</tr></thead>
+<tbody><tr>
+<td><code><a href="../cassandra.h/#cass-error">cassandra.h::CassError</a></code></td>
+<td>
+<p>CASS_OK if successful, otherwise an error occurred.</p>
+</td>
+</tr></tbody>
+</table></dd>
+</dl>
+    </div>
+  </div>
 </div>
 
 
@@ -581,6 +700,10 @@
 <li><a href="#cass-future-error-code">cass_future_error_code
 </a></li>
 <li><a href="#cass-future-error-message">cass_future_error_message
+</a></li>
+<li><a href="#cass-future-custom-payload-item-count">cass_future_custom_payload_item_count
+</a></li>
+<li><a href="#cass-future-custom-payload-item">cass_future_custom_payload_item
 </a></li>
 </ol>
 </li></ol>

@@ -51,7 +51,7 @@
           </ul>
           <form class="navbar-form form-search navbar-right dropdown visible-lg-block" ng-class="{open: hasResults}" role="search" ng-submit="submit()">
             <div class="form-group has-feedback">
-              <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.1')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
+              <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.2')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
             </div>
             <ul class="dropdown-menu" role="menu">
               <li ng-repeat="result in results" ng-class="{'bg-warning': $index == current}"><a ng-href="{{basePath}}{{result.path}}"><span ng-bind-html="summary(result)"></span></a></li>
@@ -70,12 +70,14 @@
               <li>
                 <div class="dropdown">
                   <button id="current-version" class="btn btn-default btn-sm" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    v2.1
+                    v2.2
                     <span class="caret"></span>
                   </button>
                   <ul class="dropdown-menu" role="menu" aria-labelledby="current-version">
                   
-                    <li class="disabled"><a href="./">v2.1</a></li>
+                    <li class="disabled"><a href="./">v2.2</a></li>
+                  
+                    <li><a href="../../v2.1/api/CassBatch/">v2.1</a></li>
                   
                     <li><a href="../../v2.0/api/CassBatch/">v2.0</a></li>
                   
@@ -396,6 +398,55 @@
   </div>
   <div class="panel panel-default member-definition">
     <div class="panel-heading function-heading">
+      <code><a href="../cassandra.h/#cass-error">cassandra.h::CassError</a></code> <h3 id="cass-batch-set-custom-payload">cass_batch_set_custom_payload<a class="anchor" href="#cass-batch-set-custom-payload" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3> <big>(</big> <code><a href="./">CassBatch</a> *</code> batch, <code>const <a href="../CassCustomPayload/">CassCustomPayload</a> *</code> payload <big>)</big>
+    </div>
+    <div class="panel-body function-body">
+      <p>Sets the batch’s custom payload.</p>
+
+      <dl class="tags">
+<dt class="tag-title">Parameters:</dt>
+<dd class="tag-content"><table class="table table-striped param">
+<thead><tr>
+<th class="name">Name</th>
+<th class="type">Type</th>
+<th class="details">Details</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>
+<small>in</small> <var>batch</var>
+</td>
+<td><code><a href="./">CassBatch</a> *</code></td>
+<td></td>
+</tr>
+<tr>
+<td>
+<small>in</small> <var>payload</var>
+</td>
+<td><code>const <a href="../CassCustomPayload/">CassCustomPayload</a> *</code></td>
+<td></td>
+</tr>
+</tbody>
+</table></dd>
+<dt class="tag-title">Returns:</dt>
+<dd class="tag-content"><table class="table table-striped return">
+<thead><tr>
+<th class="type">Type</th>
+<th class="details">Details</th>
+</tr></thead>
+<tbody><tr>
+<td><code><a href="../cassandra.h/#cass-error">cassandra.h::CassError</a></code></td>
+<td>
+<p>CASS_OK if successful, otherwise an error occurred.</p>
+</td>
+</tr></tbody>
+</table></dd>
+</dl>
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading function-heading">
       <code><a href="../cassandra.h/#cass-error">cassandra.h::CassError</a></code> <h3 id="cass-batch-add-statement">cass_batch_add_statement<a class="anchor" href="#cass-batch-add-statement" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h3> <big>(</big> <code><a href="./">CassBatch</a> *</code> batch, <code><a href="../CassStatement/">CassStatement</a> *</code> statement <big>)</big>
     </div>
@@ -473,6 +524,8 @@
 <li><a href="#cass-batch-set-timestamp">cass_batch_set_timestamp
 </a></li>
 <li><a href="#cass-batch-set-retry-policy">cass_batch_set_retry_policy
+</a></li>
+<li><a href="#cass-batch-set-custom-payload">cass_batch_set_custom_payload
 </a></li>
 <li><a href="#cass-batch-add-statement">cass_batch_add_statement
 </a></li>

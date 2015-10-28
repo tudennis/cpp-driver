@@ -51,7 +51,7 @@
           </ul>
           <form class="navbar-form form-search navbar-right dropdown visible-lg-block" ng-class="{open: hasResults}" role="search" ng-submit="submit()">
             <div class="form-group has-feedback">
-              <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.1')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
+              <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.2')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
             </div>
             <ul class="dropdown-menu" role="menu">
               <li ng-repeat="result in results" ng-class="{'bg-warning': $index == current}"><a ng-href="{{basePath}}{{result.path}}"><span ng-bind-html="summary(result)"></span></a></li>
@@ -70,12 +70,14 @@
               <li>
                 <div class="dropdown">
                   <button id="current-version" class="btn btn-default btn-sm" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    v2.1
+                    v2.2
                     <span class="caret"></span>
                   </button>
                   <ul class="dropdown-menu" role="menu" aria-labelledby="current-version">
                   
-                    <li class="disabled"><a href="./">v2.1</a></li>
+                    <li class="disabled"><a href="./">v2.2</a></li>
+                  
+                    <li><a href="../../v2.1/api/CassCollection/">v2.1</a></li>
                   
                     <li><a href="../../v2.0/api/CassCollection/">v2.0</a></li>
                   
@@ -259,6 +261,104 @@
   </div>
   <div class="panel panel-default member-definition">
     <div class="panel-heading function-heading">
+      <code><a href="../cassandra.h/#cass-error">cassandra.h::CassError</a></code> <h3 id="cass-collection-append-int8">cass_collection_append_int8<a class="anchor" href="#cass-collection-append-int8" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3> <big>(</big> <code><a href="./">CassCollection</a> *</code> collection, <code><a href="../cassandra.h/#cass-int8-t">cassandra.h::cass_int8_t</a></code> value <big>)</big>
+    </div>
+    <div class="panel-body function-body">
+      <p>Appends a “tinyint” to the collection.</p>
+
+      <dl class="tags">
+<dt class="tag-title">Parameters:</dt>
+<dd class="tag-content"><table class="table table-striped param">
+<thead><tr>
+<th class="name">Name</th>
+<th class="type">Type</th>
+<th class="details">Details</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>
+<small>in</small> <var>collection</var>
+</td>
+<td><code><a href="./">CassCollection</a> *</code></td>
+<td></td>
+</tr>
+<tr>
+<td>
+<small>in</small> <var>value</var>
+</td>
+<td><code><a href="../cassandra.h/#cass-int8-t">cassandra.h::cass_int8_t</a></code></td>
+<td></td>
+</tr>
+</tbody>
+</table></dd>
+<dt class="tag-title">Returns:</dt>
+<dd class="tag-content"><table class="table table-striped return">
+<thead><tr>
+<th class="type">Type</th>
+<th class="details">Details</th>
+</tr></thead>
+<tbody><tr>
+<td><code><a href="../cassandra.h/#cass-error">cassandra.h::CassError</a></code></td>
+<td>
+<p>CASS_OK if successful, otherwise an error occurred.</p>
+</td>
+</tr></tbody>
+</table></dd>
+</dl>
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading function-heading">
+      <code><a href="../cassandra.h/#cass-error">cassandra.h::CassError</a></code> <h3 id="cass-collection-append-int16">cass_collection_append_int16<a class="anchor" href="#cass-collection-append-int16" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3> <big>(</big> <code><a href="./">CassCollection</a> *</code> collection, <code><a href="../cassandra.h/#cass-int16-t">cassandra.h::cass_int16_t</a></code> value <big>)</big>
+    </div>
+    <div class="panel-body function-body">
+      <p>Appends an “smallint” to the collection.</p>
+
+      <dl class="tags">
+<dt class="tag-title">Parameters:</dt>
+<dd class="tag-content"><table class="table table-striped param">
+<thead><tr>
+<th class="name">Name</th>
+<th class="type">Type</th>
+<th class="details">Details</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>
+<small>in</small> <var>collection</var>
+</td>
+<td><code><a href="./">CassCollection</a> *</code></td>
+<td></td>
+</tr>
+<tr>
+<td>
+<small>in</small> <var>value</var>
+</td>
+<td><code><a href="../cassandra.h/#cass-int16-t">cassandra.h::cass_int16_t</a></code></td>
+<td></td>
+</tr>
+</tbody>
+</table></dd>
+<dt class="tag-title">Returns:</dt>
+<dd class="tag-content"><table class="table table-striped return">
+<thead><tr>
+<th class="type">Type</th>
+<th class="details">Details</th>
+</tr></thead>
+<tbody><tr>
+<td><code><a href="../cassandra.h/#cass-error">cassandra.h::CassError</a></code></td>
+<td>
+<p>CASS_OK if successful, otherwise an error occurred.</p>
+</td>
+</tr></tbody>
+</table></dd>
+</dl>
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading function-heading">
       <code><a href="../cassandra.h/#cass-error">cassandra.h::CassError</a></code> <h3 id="cass-collection-append-int32">cass_collection_append_int32<a class="anchor" href="#cass-collection-append-int32" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h3> <big>(</big> <code><a href="./">CassCollection</a> *</code> collection, <code><a href="../cassandra.h/#cass-int32-t">cassandra.h::cass_int32_t</a></code> value <big>)</big>
     </div>
@@ -308,11 +408,60 @@
   </div>
   <div class="panel panel-default member-definition">
     <div class="panel-heading function-heading">
+      <code><a href="../cassandra.h/#cass-error">cassandra.h::CassError</a></code> <h3 id="cass-collection-append-uint32">cass_collection_append_uint32<a class="anchor" href="#cass-collection-append-uint32" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3> <big>(</big> <code><a href="./">CassCollection</a> *</code> collection, <code><a href="../cassandra.h/#cass-uint32-t">cassandra.h::cass_uint32_t</a></code> value <big>)</big>
+    </div>
+    <div class="panel-body function-body">
+      <p>Appends a “date” to the collection.</p>
+
+      <dl class="tags">
+<dt class="tag-title">Parameters:</dt>
+<dd class="tag-content"><table class="table table-striped param">
+<thead><tr>
+<th class="name">Name</th>
+<th class="type">Type</th>
+<th class="details">Details</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>
+<small>in</small> <var>collection</var>
+</td>
+<td><code><a href="./">CassCollection</a> *</code></td>
+<td></td>
+</tr>
+<tr>
+<td>
+<small>in</small> <var>value</var>
+</td>
+<td><code><a href="../cassandra.h/#cass-uint32-t">cassandra.h::cass_uint32_t</a></code></td>
+<td></td>
+</tr>
+</tbody>
+</table></dd>
+<dt class="tag-title">Returns:</dt>
+<dd class="tag-content"><table class="table table-striped return">
+<thead><tr>
+<th class="type">Type</th>
+<th class="details">Details</th>
+</tr></thead>
+<tbody><tr>
+<td><code><a href="../cassandra.h/#cass-error">cassandra.h::CassError</a></code></td>
+<td>
+<p>CASS_OK if successful, otherwise an error occurred.</p>
+</td>
+</tr></tbody>
+</table></dd>
+</dl>
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading function-heading">
       <code><a href="../cassandra.h/#cass-error">cassandra.h::CassError</a></code> <h3 id="cass-collection-append-int64">cass_collection_append_int64<a class="anchor" href="#cass-collection-append-int64" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h3> <big>(</big> <code><a href="./">CassCollection</a> *</code> collection, <code><a href="../cassandra.h/#cass-int64-t">cassandra.h::cass_int64_t</a></code> value <big>)</big>
     </div>
     <div class="panel-body function-body">
-      <p>Appends a “bigint”, “counter” or “timestamp” to the collection.</p>
+      <p>Appends a “bigint”, “counter”, “timestamp” or “time” to the collection.</p>
 
       <dl class="tags">
 <dt class="tag-title">Parameters:</dt>
@@ -1005,7 +1154,13 @@
 </a></li>
 <li><a href="#cass-collection-free">cass_collection_free
 </a></li>
+<li><a href="#cass-collection-append-int8">cass_collection_append_int8
+</a></li>
+<li><a href="#cass-collection-append-int16">cass_collection_append_int16
+</a></li>
 <li><a href="#cass-collection-append-int32">cass_collection_append_int32
+</a></li>
+<li><a href="#cass-collection-append-uint32">cass_collection_append_uint32
 </a></li>
 <li><a href="#cass-collection-append-int64">cass_collection_append_int64
 </a></li>

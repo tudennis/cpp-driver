@@ -51,7 +51,7 @@
           </ul>
           <form class="navbar-form form-search navbar-right dropdown visible-lg-block" ng-class="{open: hasResults}" role="search" ng-submit="submit()">
             <div class="form-group has-feedback">
-              <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.1')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
+              <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.2')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
             </div>
             <ul class="dropdown-menu" role="menu">
               <li ng-repeat="result in results" ng-class="{'bg-warning': $index == current}"><a ng-href="{{basePath}}{{result.path}}"><span ng-bind-html="summary(result)"></span></a></li>
@@ -70,12 +70,14 @@
               <li>
                 <div class="dropdown">
                   <button id="current-version" class="btn btn-default btn-sm" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    v2.1
+                    v2.2
                     <span class="caret"></span>
                   </button>
                   <ul class="dropdown-menu" role="menu" aria-labelledby="current-version">
                   
-                    <li class="disabled"><a href="./">v2.1</a></li>
+                    <li class="disabled"><a href="./">v2.2</a></li>
+                  
+                    <li><a href="../../v2.1/api/cassandra.h/">v2.1</a></li>
                   
                     <li><a href="../../v2.0/api/cassandra.h/">v2.0</a></li>
                   
@@ -138,7 +140,7 @@
     <div class="panel-heading macro-heading">
       <h3 id="cass-version-minor">CASS_VERSION_MINOR<a class="anchor" href="#cass-version-minor" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h3>
-<big>=</big> <code>1</code>
+<big>=</big> <code>2</code>
     </div>
     <div class="panel-body macro-body">
       
@@ -210,7 +212,7 @@
 <big>=</big> <code>37</code>
     </div>
     <div class="panel-body macro-body">
-      <p>The size of a hexidecimal UUID string including a null terminator.</p>
+      <p>The size of a hexadecimal UUID string including a null terminator.</p>
 
       
     </div>
@@ -537,6 +539,28 @@
   </div>
   <div class="panel panel-default member-definition">
     <div class="panel-heading type-heading">
+      <h3 id="cass-function-meta">CassFunctionMeta<a class="anchor" href="#cass-function-meta" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3>
+    </div>
+    <div class="panel-body type-body">
+      <pre>typedef struct CassFunctionMeta_ CassFunctionMeta</pre>
+      
+      
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading type-heading">
+      <h3 id="cass-aggregate-meta">CassAggregateMeta<a class="anchor" href="#cass-aggregate-meta" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3>
+    </div>
+    <div class="panel-body type-body">
+      <pre>typedef struct CassAggregateMeta_ CassAggregateMeta</pre>
+      
+      
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading type-heading">
       <h3 id="cass-collection">CassCollection<a class="anchor" href="#cass-collection" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h3>
     </div>
@@ -581,17 +605,6 @@
   </div>
   <div class="panel panel-default member-definition">
     <div class="panel-heading type-heading">
-      <h3 id="cass-schema">CassSchema<a class="anchor" href="#cass-schema" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
-</h3>
-    </div>
-    <div class="panel-body type-body">
-      <pre>typedef struct CassSchema_ CassSchema</pre>
-      
-      
-    </div>
-  </div>
-  <div class="panel panel-default member-definition">
-    <div class="panel-heading type-heading">
       <h3 id="cass-schema-meta">CassSchemaMeta<a class="anchor" href="#cass-schema-meta" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h3>
     </div>
@@ -603,11 +616,33 @@
   </div>
   <div class="panel panel-default member-definition">
     <div class="panel-heading type-heading">
-      <h3 id="cass-schema-meta-field">CassSchemaMetaField<a class="anchor" href="#cass-schema-meta-field" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+      <h3 id="cass-keyspace-meta">CassKeyspaceMeta<a class="anchor" href="#cass-keyspace-meta" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h3>
     </div>
     <div class="panel-body type-body">
-      <pre>typedef struct CassSchemaMetaField_ CassSchemaMetaField</pre>
+      <pre>typedef struct CassKeyspaceMeta_ CassKeyspaceMeta</pre>
+      
+      
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading type-heading">
+      <h3 id="cass-table-meta">CassTableMeta<a class="anchor" href="#cass-table-meta" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3>
+    </div>
+    <div class="panel-body type-body">
+      <pre>typedef struct CassTableMeta_ CassTableMeta</pre>
+      
+      
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading type-heading">
+      <h3 id="cass-column-meta">CassColumnMeta<a class="anchor" href="#cass-column-meta" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3>
+    </div>
+    <div class="panel-body type-body">
+      <pre>typedef struct CassColumnMeta_ CassColumnMeta</pre>
       
       
     </div>
@@ -641,6 +676,17 @@
     </div>
     <div class="panel-body type-body">
       <pre>typedef struct CassRetryPolicy_ CassRetryPolicy</pre>
+      
+      
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading type-heading">
+      <h3 id="cass-custom-payload">CassCustomPayload<a class="anchor" href="#cass-custom-payload" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3>
+    </div>
+    <div class="panel-body type-body">
+      <pre>typedef struct CassCustomPayload_ CassCustomPayload</pre>
       
       
     </div>
@@ -872,6 +918,22 @@
 </dt>
         
         <dt>
+<code>CASS_VALUE_TYPE_DATE</code> <big>=</big> <var>0x0011</var>
+</dt>
+        
+        <dt>
+<code>CASS_VALUE_TYPE_TIME</code> <big>=</big> <var>0x0012</var>
+</dt>
+        
+        <dt>
+<code>CASS_VALUE_TYPE_SMALL_INT</code> <big>=</big> <var>0x0013</var>
+</dt>
+        
+        <dt>
+<code>CASS_VALUE_TYPE_TINY_INT</code> <big>=</big> <var>0x0014</var>
+</dt>
+        
+        <dt>
 <code>CASS_VALUE_TYPE_LIST</code> <big>=</big> <var>0x0020</var>
 </dt>
         
@@ -962,32 +1024,23 @@
         
         <dt><code>CASS_ITERATOR_TYPE_MAP</code></dt>
         
-        <dt><code>CASS_ITERATOR_TYPE_SCHEMA_META</code></dt>
-        
-        <dt><code>CASS_ITERATOR_TYPE_SCHEMA_META_FIELD</code></dt>
-        
         <dt><code>CASS_ITERATOR_TYPE_TUPLE</code></dt>
         
-        <dt><code>CASS_ITERATOR_TYPE_USER_TYPE</code></dt>
+        <dt><code>CASS_ITERATOR_TYPE_USER_TYPE_FIELD</code></dt>
         
-      </dl>
-      
-      
-    </div>
-  </div>
-  <div class="panel panel-default member-definition">
-    <div class="panel-heading enum-heading">
-      <h3 id="cass-schema-meta-type">CassSchemaMetaType<a class="anchor" href="#cass-schema-meta-type" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
-</h3>
-    </div>
-    <div class="panel-body enum-body">
-      <dl class="values">
+        <dt><code>CASS_ITERATOR_TYPE_META_FIELD</code></dt>
         
-        <dt><code>CASS_SCHEMA_META_TYPE_KEYSPACE</code></dt>
+        <dt><code>CASS_ITERATOR_TYPE_KEYSPACE_META</code></dt>
         
-        <dt><code>CASS_SCHEMA_META_TYPE_TABLE</code></dt>
+        <dt><code>CASS_ITERATOR_TYPE_TABLE_META</code></dt>
         
-        <dt><code>CASS_SCHEMA_META_TYPE_COLUMN</code></dt>
+        <dt><code>CASS_ITERATOR_TYPE_TYPE_META</code></dt>
+        
+        <dt><code>CASS_ITERATOR_TYPE_FUNCTION_META</code></dt>
+        
+        <dt><code>CASS_ITERATOR_TYPE_AGGREGATE_META</code></dt>
+        
+        <dt><code>CASS_ITERATOR_TYPE_COLUMN_META</code></dt>
         
       </dl>
       
@@ -1034,6 +1087,27 @@
         <dt><code>CASS_SSL_VERIFY_PEER_CERT</code></dt>
         
         <dt><code>CASS_SSL_VERIFY_PEER_IDENTITY</code></dt>
+        
+      </dl>
+      
+      
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading enum-heading">
+      <h3 id="cass-column-type">CassColumnType<a class="anchor" href="#cass-column-type" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3>
+    </div>
+    <div class="panel-body enum-body">
+      <dl class="values">
+        
+        <dt><code>CASS_COLUMN_TYPE_REGULAR</code></dt>
+        
+        <dt><code>CASS_COLUMN_TYPE_PARTITION_KEY</code></dt>
+        
+        <dt><code>CASS_COLUMN_TYPE_CLUSTERING_KEY</code></dt>
+        
+        <dt><code>CASS_COLUMN_TYPE_STATIC</code></dt>
         
       </dl>
       
@@ -1168,7 +1242,19 @@
 </dt>
         
         <dt>
-<code>CASS_ERROR_NO_PAGING_STATE</code> <big>=</big> <var>(( CASS_ERROR_SOURCE_LIB  &lt;&lt; 24) |  24 )</var>
+<code>CASS_ERROR_LIB_NO_PAGING_STATE</code> <big>=</big> <var>(( CASS_ERROR_SOURCE_LIB  &lt;&lt; 24) |  24 )</var>
+</dt>
+        
+        <dt>
+<code>CASS_ERROR_LIB_PARAMETER_UNSET</code> <big>=</big> <var>(( CASS_ERROR_SOURCE_LIB  &lt;&lt; 24) |  25 )</var>
+</dt>
+        
+        <dt>
+<code>CASS_ERROR_LIB_INVALID_ERROR_RESULT_TYPE</code> <big>=</big> <var>(( CASS_ERROR_SOURCE_LIB  &lt;&lt; 24) |  26 )</var>
+</dt>
+        
+        <dt>
+<code>CASS_ERROR_LIB_INVALID_FUTURE_TYPE</code> <big>=</big> <var>(( CASS_ERROR_SOURCE_LIB  &lt;&lt; 24) |  27 )</var>
 </dt>
         
         <dt>
@@ -1205,6 +1291,18 @@
         
         <dt>
 <code>CASS_ERROR_SERVER_READ_TIMEOUT</code> <big>=</big> <var>(( CASS_ERROR_SOURCE_SERVER  &lt;&lt; 24) |  0x1200 )</var>
+</dt>
+        
+        <dt>
+<code>CASS_ERROR_SERVER_READ_FAILURE</code> <big>=</big> <var>(( CASS_ERROR_SOURCE_SERVER  &lt;&lt; 24) |  0x1300 )</var>
+</dt>
+        
+        <dt>
+<code>CASS_ERROR_SERVER_FUNCTION_FAILURE</code> <big>=</big> <var>(( CASS_ERROR_SOURCE_SERVER  &lt;&lt; 24) |  0x1400 )</var>
+</dt>
+        
+        <dt>
+<code>CASS_ERROR_SERVER_WRITE_FAILURE</code> <big>=</big> <var>(( CASS_ERROR_SOURCE_SERVER  &lt;&lt; 24) |  0x1500 )</var>
 </dt>
         
         <dt>
@@ -2554,6 +2652,135 @@
 </dl>
     </div>
   </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading function-heading">
+      <code><a href="#cass-uint32-t">cassandra.h::cass_uint32_t</a></code> <h3 id="cass-date-from-epoch">cass_date_from_epoch<a class="anchor" href="#cass-date-from-epoch" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3> <big>(</big> <code><a href="#cass-int64-t">cassandra.h::cass_int64_t</a></code> epoch_secs <big>)</big>
+    </div>
+    <div class="panel-body function-body">
+      <p>Converts a unix timestamp (in seconds) to the Cassandra “date” type. The “date” type represents the number of days since the Epoch (1970-01-01) with the Epoch centered at the value 2<sup>31.</sup></p>
+
+      <dl class="tags">
+<dt class="tag-title">Parameters:</dt>
+<dd class="tag-content"><table class="table table-striped param">
+<thead><tr>
+<th class="name">Name</th>
+<th class="type">Type</th>
+<th class="details">Details</th>
+</tr></thead>
+<tbody><tr>
+<td>
+<small>in</small> <var>epoch_secs</var>
+</td>
+<td><code><a href="#cass-int64-t">cassandra.h::cass_int64_t</a></code></td>
+<td></td>
+</tr></tbody>
+</table></dd>
+<dt class="tag-title">Returns:</dt>
+<dd class="tag-content"><table class="table table-striped return">
+<thead><tr>
+<th class="type">Type</th>
+<th class="details">Details</th>
+</tr></thead>
+<tbody><tr>
+<td><code><a href="#cass-uint32-t">cassandra.h::cass_uint32_t</a></code></td>
+<td>
+<p>the number of days since the date -5877641-06-23</p>
+</td>
+</tr></tbody>
+</table></dd>
+</dl>
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading function-heading">
+      <code><a href="#cass-int64-t">cassandra.h::cass_int64_t</a></code> <h3 id="cass-time-from-epoch">cass_time_from_epoch<a class="anchor" href="#cass-time-from-epoch" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3> <big>(</big> <code><a href="#cass-int64-t">cassandra.h::cass_int64_t</a></code> epoch_secs <big>)</big>
+    </div>
+    <div class="panel-body function-body">
+      <p>Converts a unix timestamp (in seconds) to the Cassandra “time” type. The “time” type represents the number of nanoseconds since midnight (range 0 to 86399999999999).</p>
+
+      <dl class="tags">
+<dt class="tag-title">Parameters:</dt>
+<dd class="tag-content"><table class="table table-striped param">
+<thead><tr>
+<th class="name">Name</th>
+<th class="type">Type</th>
+<th class="details">Details</th>
+</tr></thead>
+<tbody><tr>
+<td>
+<small>in</small> <var>epoch_secs</var>
+</td>
+<td><code><a href="#cass-int64-t">cassandra.h::cass_int64_t</a></code></td>
+<td></td>
+</tr></tbody>
+</table></dd>
+<dt class="tag-title">Returns:</dt>
+<dd class="tag-content"><table class="table table-striped return">
+<thead><tr>
+<th class="type">Type</th>
+<th class="details">Details</th>
+</tr></thead>
+<tbody><tr>
+<td><code><a href="#cass-int64-t">cassandra.h::cass_int64_t</a></code></td>
+<td>
+<p>nanoseconds since midnight</p>
+</td>
+</tr></tbody>
+</table></dd>
+</dl>
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading function-heading">
+      <code><a href="#cass-int64-t">cassandra.h::cass_int64_t</a></code> <h3 id="cass-date-time-to-epoch">cass_date_time_to_epoch<a class="anchor" href="#cass-date-time-to-epoch" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3> <big>(</big> <code><a href="#cass-uint32-t">cassandra.h::cass_uint32_t</a></code> date, <code><a href="#cass-int64-t">cassandra.h::cass_int64_t</a></code> time <big>)</big>
+    </div>
+    <div class="panel-body function-body">
+      <p>Combines the Cassandra “date” and “time” types to Epoch time in seconds.</p>
+
+      <dl class="tags">
+<dt class="tag-title">Parameters:</dt>
+<dd class="tag-content"><table class="table table-striped param">
+<thead><tr>
+<th class="name">Name</th>
+<th class="type">Type</th>
+<th class="details">Details</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>
+<small>in</small> <var>date</var>
+</td>
+<td><code><a href="#cass-uint32-t">cassandra.h::cass_uint32_t</a></code></td>
+<td></td>
+</tr>
+<tr>
+<td>
+<small>in</small> <var>time</var>
+</td>
+<td><code><a href="#cass-int64-t">cassandra.h::cass_int64_t</a></code></td>
+<td></td>
+</tr>
+</tbody>
+</table></dd>
+<dt class="tag-title">Returns:</dt>
+<dd class="tag-content"><table class="table table-striped return">
+<thead><tr>
+<th class="type">Type</th>
+<th class="details">Details</th>
+</tr></thead>
+<tbody><tr>
+<td><code><a href="#cass-int64-t">cassandra.h::cass_int64_t</a></code></td>
+<td>
+<p>Epoch time in seconds. Negative times are possible if the date occurs before the Epoch (1970-1-1).</p>
+</td>
+</tr></tbody>
+</table></dd>
+</dl>
+    </div>
+  </div>
 </div>
 
 
@@ -2649,6 +2876,10 @@
 </a></li>
 <li><a href="#cass-data-type">CassDataType
 </a></li>
+<li><a href="#cass-function-meta">CassFunctionMeta
+</a></li>
+<li><a href="#cass-aggregate-meta">CassAggregateMeta
+</a></li>
 <li><a href="#cass-collection">CassCollection
 </a></li>
 <li><a href="#cass-tuple">CassTuple
@@ -2657,17 +2888,21 @@
 </a></li>
 <li><a href="#cass-ssl">CassSsl
 </a></li>
-<li><a href="#cass-schema">CassSchema
-</a></li>
 <li><a href="#cass-schema-meta">CassSchemaMeta
 </a></li>
-<li><a href="#cass-schema-meta-field">CassSchemaMetaField
+<li><a href="#cass-keyspace-meta">CassKeyspaceMeta
+</a></li>
+<li><a href="#cass-table-meta">CassTableMeta
+</a></li>
+<li><a href="#cass-column-meta">CassColumnMeta
 </a></li>
 <li><a href="#cass-uuid-gen">CassUuidGen
 </a></li>
 <li><a href="#cass-timestamp-gen">CassTimestampGen
 </a></li>
 <li><a href="#cass-retry-policy">CassRetryPolicy
+</a></li>
+<li><a href="#cass-custom-payload">CassCustomPayload
 </a></li>
 <li><a href="#cass-future-callback">CassFutureCallback
 </a></li>
@@ -2692,11 +2927,11 @@
 </a></li>
 <li><a href="#cass-iterator-type">CassIteratorType
 </a></li>
-<li><a href="#cass-schema-meta-type">CassSchemaMetaType
-</a></li>
 <li><a href="#cass-log-level">CassLogLevel
 </a></li>
 <li><a href="#cass-ssl-verify-flags">CassSslVerifyFlags
+</a></li>
+<li><a href="#cass-column-type">CassColumnType
 </a></li>
 <li><a href="#cass-error-source">CassErrorSource
 </a></li>
@@ -2760,6 +2995,12 @@
 <li><a href="#cass-log-set-queue-size">cass_log_set_queue_size
 </a></li>
 <li><a href="#cass-log-level-string">cass_log_level_string
+</a></li>
+<li><a href="#cass-date-from-epoch">cass_date_from_epoch
+</a></li>
+<li><a href="#cass-time-from-epoch">cass_time_from_epoch
+</a></li>
+<li><a href="#cass-date-time-to-epoch">cass_date_time_to_epoch
 </a></li>
 </ol>
 </li>

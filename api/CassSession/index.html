@@ -51,7 +51,7 @@
           </ul>
           <form class="navbar-form form-search navbar-right dropdown visible-lg-block" ng-class="{open: hasResults}" role="search" ng-submit="submit()">
             <div class="form-group has-feedback">
-              <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.1')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
+              <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.2')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
             </div>
             <ul class="dropdown-menu" role="menu">
               <li ng-repeat="result in results" ng-class="{'bg-warning': $index == current}"><a ng-href="{{basePath}}{{result.path}}"><span ng-bind-html="summary(result)"></span></a></li>
@@ -70,12 +70,14 @@
               <li>
                 <div class="dropdown">
                   <button id="current-version" class="btn btn-default btn-sm" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    v2.1
+                    v2.2
                     <span class="caret"></span>
                   </button>
                   <ul class="dropdown-menu" role="menu" aria-labelledby="current-version">
                   
-                    <li class="disabled"><a href="./">v2.1</a></li>
+                    <li class="disabled"><a href="./">v2.2</a></li>
+                  
+                    <li><a href="../../v2.1/api/CassSession/">v2.1</a></li>
                   
                     <li><a href="../../v2.0/api/CassSession/">v2.0</a></li>
                   
@@ -610,11 +612,11 @@
   </div>
   <div class="panel panel-default member-definition">
     <div class="panel-heading function-heading">
-      <code>const <a href="../CassSchema/">CassSchema</a> *</code> <h3 id="cass-session-get-schema">cass_session_get_schema<a class="anchor" href="#cass-session-get-schema" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
-</h3> <big>(</big> <code><a href="./">CassSession</a> *</code> session <big>)</big>
+      <code>const <a href="../CassSchemaMeta/">CassSchemaMeta</a> *</code> <h3 id="cass-session-get-schema-meta">cass_session_get_schema_meta<a class="anchor" href="#cass-session-get-schema-meta" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3> <big>(</big> <code>const <a href="./">CassSession</a> *</code> session <big>)</big>
     </div>
     <div class="panel-body function-body">
-      <p>Gets a copy of this session’s schema metadata. The returned copy of the schema metadata is not updated. This function must be called again to retrieve any schema changes since the previous call.</p>
+      <p>Gets a snapshot of this session’s schema metadata. The returned snapshot of the schema metadata is not updated. This function must be called again to retrieve any schema changes since the previous call.</p>
 
       <dl class="tags">
 <dt class="tag-title">Parameters:</dt>
@@ -628,7 +630,7 @@
 <td>
 <small>in</small> <var>session</var>
 </td>
-<td><code><a href="./">CassSession</a> *</code></td>
+<td><code>const <a href="./">CassSession</a> *</code></td>
 <td></td>
 </tr></tbody>
 </table></dd>
@@ -639,21 +641,21 @@
 <th class="details">Details</th>
 </tr></thead>
 <tbody><tr>
-<td><code>const <a href="../CassSchema/">CassSchema</a> *</code></td>
+<td><code>const <a href="../CassSchemaMeta/">CassSchemaMeta</a> *</code></td>
 <td>
 <p>A schema instance that must be freed.</p>
 </td>
 </tr></tbody>
 </table></dd>
 <dt class="tag-title">See Also:</dt>
-<dd class="tag-content"><ul class="see"><li><code><a href="../CassSchema/#cass-schema-free">CassSchema::cass_schema_free</a></code></li></ul></dd>
+<dd class="tag-content"><ul class="see"><li>cass_schema_free()</li></ul></dd>
 </dl>
     </div>
   </div>
   <div class="panel panel-default member-definition">
     <div class="panel-heading function-heading">
       <code>void</code> <h3 id="cass-session-get-metrics">cass_session_get_metrics<a class="anchor" href="#cass-session-get-metrics" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
-</h3> <big>(</big> <code><a href="./">CassSession</a> *</code> session, <code><a href="../CassMetrics/">CassMetrics</a> *</code> output <big>)</big>
+</h3> <big>(</big> <code>const <a href="./">CassSession</a> *</code> session, <code><a href="../CassMetrics/">CassMetrics</a> *</code> output <big>)</big>
     </div>
     <div class="panel-body function-body">
       <p>Gets a copy of this session’s performance/diagnostic metrics.</p>
@@ -671,7 +673,7 @@
 <td>
 <small>in</small> <var>session</var>
 </td>
-<td><code><a href="./">CassSession</a> *</code></td>
+<td><code>const <a href="./">CassSession</a> *</code></td>
 <td></td>
 </tr>
 <tr>
@@ -684,7 +686,7 @@
 </tbody>
 </table></dd>
 <dt class="tag-title">See Also:</dt>
-<dd class="tag-content"><ul class="see"><li><code><a href="../CassSchema/#cass-schema-free">CassSchema::cass_schema_free</a></code></li></ul></dd>
+<dd class="tag-content"><ul class="see"><li>cass_schema_free()</li></ul></dd>
 </dl>
     </div>
   </div>
@@ -727,7 +729,7 @@
 </a></li>
 <li><a href="#cass-session-execute-batch">cass_session_execute_batch
 </a></li>
-<li><a href="#cass-session-get-schema">cass_session_get_schema
+<li><a href="#cass-session-get-schema-meta">cass_session_get_schema_meta
 </a></li>
 <li><a href="#cass-session-get-metrics">cass_session_get_metrics
 </a></li>

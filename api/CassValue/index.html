@@ -51,7 +51,7 @@
           </ul>
           <form class="navbar-form form-search navbar-right dropdown visible-lg-block" ng-class="{open: hasResults}" role="search" ng-submit="submit()">
             <div class="form-group has-feedback">
-              <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.1')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
+              <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.2')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
             </div>
             <ul class="dropdown-menu" role="menu">
               <li ng-repeat="result in results" ng-class="{'bg-warning': $index == current}"><a ng-href="{{basePath}}{{result.path}}"><span ng-bind-html="summary(result)"></span></a></li>
@@ -70,12 +70,14 @@
               <li>
                 <div class="dropdown">
                   <button id="current-version" class="btn btn-default btn-sm" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    v2.1
+                    v2.2
                     <span class="caret"></span>
                   </button>
                   <ul class="dropdown-menu" role="menu" aria-labelledby="current-version">
                   
-                    <li class="disabled"><a href="./">v2.1</a></li>
+                    <li class="disabled"><a href="./">v2.2</a></li>
+                  
+                    <li><a href="../../v2.1/api/CassValue/">v2.1</a></li>
                   
                     <li><a href="../../v2.0/api/CassValue/">v2.0</a></li>
                   
@@ -240,7 +242,7 @@
 <tbody><tr>
 <td><code><a href="../CassIterator/">CassIterator</a> *</code></td>
 <td>
-<p>A new iterator that must be freed. NULL returned if the value is not a collection.</p>
+<p>A new iterator that must be freed. NULL returned if the value is not a tuple.</p>
 </td>
 </tr></tbody>
 </table></dd>
@@ -251,7 +253,7 @@
   </div>
   <div class="panel panel-default member-definition">
     <div class="panel-heading function-heading">
-      <code><a href="../CassIterator/">CassIterator</a> *</code> <h3 id="cass-iterator-from-user-type">cass_iterator_from_user_type<a class="anchor" href="#cass-iterator-from-user-type" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+      <code><a href="../CassIterator/">CassIterator</a> *</code> <h3 id="cass-iterator-fields-from-user-type">cass_iterator_fields_from_user_type<a class="anchor" href="#cass-iterator-fields-from-user-type" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h3> <big>(</big> <code>const <a href="./">CassValue</a> *</code> value <big>)</big>
     </div>
     <div class="panel-body function-body">
@@ -333,6 +335,104 @@
   </div>
   <div class="panel panel-default member-definition">
     <div class="panel-heading function-heading">
+      <code><a href="../cassandra.h/#cass-error">cassandra.h::CassError</a></code> <h3 id="cass-value-get-int8">cass_value_get_int8<a class="anchor" href="#cass-value-get-int8" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3> <big>(</big> <code>const <a href="./">CassValue</a> *</code> value, <code><a href="../cassandra.h/#cass-int8-t">cassandra.h::cass_int8_t</a> *</code> output <big>)</big>
+    </div>
+    <div class="panel-body function-body">
+      <p>Gets an int8 for the specified value.</p>
+
+      <dl class="tags">
+<dt class="tag-title">Parameters:</dt>
+<dd class="tag-content"><table class="table table-striped param">
+<thead><tr>
+<th class="name">Name</th>
+<th class="type">Type</th>
+<th class="details">Details</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>
+<small>in</small> <var>value</var>
+</td>
+<td><code>const <a href="./">CassValue</a> *</code></td>
+<td></td>
+</tr>
+<tr>
+<td>
+<small>out</small> <var>output</var>
+</td>
+<td><code><a href="../cassandra.h/#cass-int8-t">cassandra.h::cass_int8_t</a> *</code></td>
+<td></td>
+</tr>
+</tbody>
+</table></dd>
+<dt class="tag-title">Returns:</dt>
+<dd class="tag-content"><table class="table table-striped return">
+<thead><tr>
+<th class="type">Type</th>
+<th class="details">Details</th>
+</tr></thead>
+<tbody><tr>
+<td><code><a href="../cassandra.h/#cass-error">cassandra.h::CassError</a></code></td>
+<td>
+<p>CASS_OK if successful, otherwise error occurred</p>
+</td>
+</tr></tbody>
+</table></dd>
+</dl>
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading function-heading">
+      <code><a href="../cassandra.h/#cass-error">cassandra.h::CassError</a></code> <h3 id="cass-value-get-int16">cass_value_get_int16<a class="anchor" href="#cass-value-get-int16" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3> <big>(</big> <code>const <a href="./">CassValue</a> *</code> value, <code><a href="../cassandra.h/#cass-int16-t">cassandra.h::cass_int16_t</a> *</code> output <big>)</big>
+    </div>
+    <div class="panel-body function-body">
+      <p>Gets an int16 for the specified value.</p>
+
+      <dl class="tags">
+<dt class="tag-title">Parameters:</dt>
+<dd class="tag-content"><table class="table table-striped param">
+<thead><tr>
+<th class="name">Name</th>
+<th class="type">Type</th>
+<th class="details">Details</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>
+<small>in</small> <var>value</var>
+</td>
+<td><code>const <a href="./">CassValue</a> *</code></td>
+<td></td>
+</tr>
+<tr>
+<td>
+<small>out</small> <var>output</var>
+</td>
+<td><code><a href="../cassandra.h/#cass-int16-t">cassandra.h::cass_int16_t</a> *</code></td>
+<td></td>
+</tr>
+</tbody>
+</table></dd>
+<dt class="tag-title">Returns:</dt>
+<dd class="tag-content"><table class="table table-striped return">
+<thead><tr>
+<th class="type">Type</th>
+<th class="details">Details</th>
+</tr></thead>
+<tbody><tr>
+<td><code><a href="../cassandra.h/#cass-error">cassandra.h::CassError</a></code></td>
+<td>
+<p>CASS_OK if successful, otherwise error occurred</p>
+</td>
+</tr></tbody>
+</table></dd>
+</dl>
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading function-heading">
       <code><a href="../cassandra.h/#cass-error">cassandra.h::CassError</a></code> <h3 id="cass-value-get-int32">cass_value_get_int32<a class="anchor" href="#cass-value-get-int32" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h3> <big>(</big> <code>const <a href="./">CassValue</a> *</code> value, <code><a href="../cassandra.h/#cass-int32-t">cassandra.h::cass_int32_t</a> *</code> output <big>)</big>
     </div>
@@ -360,6 +460,55 @@
 <small>out</small> <var>output</var>
 </td>
 <td><code><a href="../cassandra.h/#cass-int32-t">cassandra.h::cass_int32_t</a> *</code></td>
+<td></td>
+</tr>
+</tbody>
+</table></dd>
+<dt class="tag-title">Returns:</dt>
+<dd class="tag-content"><table class="table table-striped return">
+<thead><tr>
+<th class="type">Type</th>
+<th class="details">Details</th>
+</tr></thead>
+<tbody><tr>
+<td><code><a href="../cassandra.h/#cass-error">cassandra.h::CassError</a></code></td>
+<td>
+<p>CASS_OK if successful, otherwise error occurred</p>
+</td>
+</tr></tbody>
+</table></dd>
+</dl>
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading function-heading">
+      <code><a href="../cassandra.h/#cass-error">cassandra.h::CassError</a></code> <h3 id="cass-value-get-uint32">cass_value_get_uint32<a class="anchor" href="#cass-value-get-uint32" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3> <big>(</big> <code>const <a href="./">CassValue</a> *</code> value, <code><a href="../cassandra.h/#cass-uint32-t">cassandra.h::cass_uint32_t</a> *</code> output <big>)</big>
+    </div>
+    <div class="panel-body function-body">
+      <p>Gets an uint32 for the specified value.</p>
+
+      <dl class="tags">
+<dt class="tag-title">Parameters:</dt>
+<dd class="tag-content"><table class="table table-striped param">
+<thead><tr>
+<th class="name">Name</th>
+<th class="type">Type</th>
+<th class="details">Details</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>
+<small>in</small> <var>value</var>
+</td>
+<td><code>const <a href="./">CassValue</a> *</code></td>
+<td></td>
+</tr>
+<tr>
+<td>
+<small>out</small> <var>output</var>
+</td>
+<td><code><a href="../cassandra.h/#cass-uint32-t">cassandra.h::cass_uint32_t</a> *</code></td>
 <td></td>
 </tr>
 </tbody>
@@ -1114,11 +1263,17 @@
 </a></li>
 <li><a href="#cass-iterator-from-tuple">cass_iterator_from_tuple
 </a></li>
-<li><a href="#cass-iterator-from-user-type">cass_iterator_from_user_type
+<li><a href="#cass-iterator-fields-from-user-type">cass_iterator_fields_from_user_type
 </a></li>
 <li><a href="#cass-value-data-type">cass_value_data_type
 </a></li>
+<li><a href="#cass-value-get-int8">cass_value_get_int8
+</a></li>
+<li><a href="#cass-value-get-int16">cass_value_get_int16
+</a></li>
 <li><a href="#cass-value-get-int32">cass_value_get_int32
+</a></li>
+<li><a href="#cass-value-get-uint32">cass_value_get_uint32
 </a></li>
 <li><a href="#cass-value-get-int64">cass_value_get_int64
 </a></li>

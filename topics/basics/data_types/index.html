@@ -51,7 +51,7 @@
           </ul>
           <form class="navbar-form form-search navbar-right dropdown visible-lg-block" ng-class="{open: hasResults}" role="search" ng-submit="submit()">
             <div class="form-group has-feedback">
-              <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.1')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
+              <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.2')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
             </div>
             <ul class="dropdown-menu" role="menu">
               <li ng-repeat="result in results" ng-class="{'bg-warning': $index == current}"><a ng-href="{{basePath}}{{result.path}}"><span ng-bind-html="summary(result)"></span></a></li>
@@ -70,12 +70,14 @@
               <li>
                 <div class="dropdown">
                   <button id="current-version" class="btn btn-default btn-sm" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    v2.1
+                    v2.2
                     <span class="caret"></span>
                   </button>
                   <ul class="dropdown-menu" role="menu" aria-labelledby="current-version">
                   
-                    <li class="disabled"><a href="./">v2.1</a></li>
+                    <li class="disabled"><a href="./">v2.2</a></li>
+                  
+                    <li><a href="../../../v2.1/topics/basics/data_types/">v2.1</a></li>
                   
                     <li><a href="../../../v2.0/">v2.0</a></li>
                   
@@ -136,20 +138,24 @@ constructed programmatically.</p>
 <p><strong>Important</strong>: Any <code>const [CassDataType]*</code> object doesn’t need to be freed. It’s
 lifetime is bound to the object it came from.</p>
 
-<p>UDT data types can be retrieved using a <a href="../../../api/CassSchema/"><code>CassSchema</code></a> object. The resulting
+<p>UDT data types can be retrieved using a <a href="../../../api/CassSchemaMeta/"><code>CassSchemaMeta</code></a> object. The resulting
 data type object can be used to construct a new [<code>CassUserType</code>] object using
 <a href="../../../api/CassUserType/#cass-user-type-new-from-data-type"><code>cass_user_type_new_from_data_type()</code></a>.</p>
 <pre class="highlight"><code><span class="cm">/* Get schema object (this should be cached) */</span>
-<span class="k">const</span> <span class="nc">CassSchema</span><span class="o">*</span> <span class="n">schema</span> <span class="o">=</span> <span class="nb">cass_session_get_schema</span><span class="p">(</span><span class="n">session</span><span class="p">);</span>
+<span class="k">const</span> <span class="nc">CassSchemaMeta</span><span class="o">*</span> <span class="n">schema_meta</span> <span class="o">=</span> <span class="nb">cass_session_get_schema_meta</span><span class="p">(</span><span class="n">session</span><span class="p">);</span>
+
+<span class="cm">/* Get the keyspace for the user defined type. It doesn't need to be freed */</span>
+<span class="k">const</span> <span class="nc">CassKeyspaceMeta</span><span class="o">*</span> <span class="n">keyspace_meta</span> <span class="o">=</span>
+  <span class="nb">cass_schema_meta_keyspace_by_name</span><span class="p">(</span><span class="s">"examples"</span><span class="p">);</span>
 
 <span class="cm">/* This data type object doesn't need to be freed */</span>
 <span class="k">const</span> <span class="n">DataType</span><span class="o">*</span> <span class="n">person_data_type</span> <span class="o">=</span>
-  <span class="nb">cass_schema_get_udt</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="s">"keyspace"</span><span class="p">,</span> <span class="s">"person"</span><span class="p">);</span>
+  <span class="nb">cass_keyspace_meta_user_type_by_name</span><span class="p">(</span><span class="n">keyspace_meta</span><span class="p">,</span> <span class="s">"person"</span><span class="p">);</span>
 
 <span class="cm">/* ... */</span>
 
 <span class="cm">/* Schema object must be freed */</span>
-<span class="nb">cass_schema_free</span><span class="p">(</span><span class="n">schema</span><span class="p">);</span>
+<span class="nb">cass_schema_meta_free</span><span class="p">(</span><span class="n">schema_meta</span><span class="p">);</span>
 </code></pre>
 <p>Data types can also be retrieved from <a href="../../../api/CassResult/"><code>CassResult</code></a>, <a href="../../../api/CassPrepared/"><code>CassPrepared</code></a>, and
 <a href="../../../api/CassValue/"><code>CassValue</code></a> objects.</p>

@@ -51,7 +51,7 @@
           </ul>
           <form class="navbar-form form-search navbar-right dropdown visible-lg-block" ng-class="{open: hasResults}" role="search" ng-submit="submit()">
             <div class="form-group has-feedback">
-              <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.1')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
+              <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.2')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
             </div>
             <ul class="dropdown-menu" role="menu">
               <li ng-repeat="result in results" ng-class="{'bg-warning': $index == current}"><a ng-href="{{basePath}}{{result.path}}"><span ng-bind-html="summary(result)"></span></a></li>
@@ -70,12 +70,14 @@
               <li>
                 <div class="dropdown">
                   <button id="current-version" class="btn btn-default btn-sm" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    v2.1
+                    v2.2
                     <span class="caret"></span>
                   </button>
                   <ul class="dropdown-menu" role="menu" aria-labelledby="current-version">
                   
-                    <li class="disabled"><a href="./">v2.1</a></li>
+                    <li class="disabled"><a href="./">v2.2</a></li>
+                  
+                    <li><a href="../../../v2.1/topics/basics/prepared_statements/">v2.1</a></li>
                   
                     <li><a href="../../../v2.0/topics/basics/prepared_statements/">v2.0</a></li>
                   
@@ -143,7 +145,7 @@
 <span class="nc">CassStatement</span><span class="o">*</span> <span class="n">statement</span> <span class="o">=</span> <span class="nb">cass_prepared_bind</span><span class="p">(</span><span class="n">prepared</span><span class="p">);</span>
 
 <span class="cm">/* Bind variables by name this time (this can only be done with prepared statements)*/</span>
-<span class="nb">cass_statement_bind_string_by_name</span><span class="p">(</span><span class="n">statement</span><span class="p">,</span> <span class="s">"key"</span><span class="p">,</span> <span class="nb">cass_string_init</span><span class="p">(</span><span class="s">"abc"</span><span class="p">));</span>
+<span class="nb">cass_statement_bind_string_by_name</span><span class="p">(</span><span class="n">statement</span><span class="p">,</span> <span class="s">"key"</span><span class="p">,</span> <span class="s">"abc"</span><span class="p">);</span>
 <span class="nb">cass_statement_bind_int32_by_name</span><span class="p">(</span><span class="n">statement</span><span class="p">,</span> <span class="s">"value"</span><span class="p">,</span> <span class="mi">123</span><span class="p">);</span>
 
 <span class="cm">/* Execute statement (same a the non-prepared code) */</span>

@@ -51,7 +51,7 @@
           </ul>
           <form class="navbar-form form-search navbar-right dropdown visible-lg-block" ng-class="{open: hasResults}" role="search" ng-submit="submit()">
             <div class="form-group has-feedback">
-              <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.1')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
+              <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.2')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
             </div>
             <ul class="dropdown-menu" role="menu">
               <li ng-repeat="result in results" ng-class="{'bg-warning': $index == current}"><a ng-href="{{basePath}}{{result.path}}"><span ng-bind-html="summary(result)"></span></a></li>
@@ -70,12 +70,14 @@
               <li>
                 <div class="dropdown">
                   <button id="current-version" class="btn btn-default btn-sm" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    v2.1
+                    v2.2
                     <span class="caret"></span>
                   </button>
                   <ul class="dropdown-menu" role="menu" aria-labelledby="current-version">
                   
-                    <li class="disabled"><a href="./">v2.1</a></li>
+                    <li class="disabled"><a href="./">v2.2</a></li>
+                  
+                    <li><a href="../v2.1/topics/">v2.1</a></li>
                   
                     <li><a href="../v2.0/topics/">v2.0</a></li>
                   
@@ -121,7 +123,7 @@
   <span class="nc">CassSession</span><span class="o">*</span> <span class="n">session</span> <span class="o">=</span> <span class="nb">cass_session_new</span><span class="p">();</span>
 
   <span class="cm">/* Add contact points */</span>
-  <span class="nb">cass_cluster_set_contact_points</span><span class="p">(</span><span class="s">"127.0.0.1"</span><span class="p">);</span>
+  <span class="nb">cass_cluster_set_contact_points</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="s">"127.0.0.1"</span><span class="p">);</span>
 
   <span class="cm">/* Provide the cluster object as configuration to connect the session */</span>
   <span class="nc">CassFuture</span><span class="o">*</span> <span class="n">connect_future</span> <span class="o">=</span> <span class="nb">cass_session_connect</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">cluster</span><span class="p">);</span>
@@ -182,7 +184,7 @@
   <span class="o">=</span> <span class="nb">cass_statement_new</span><span class="p">(</span><span class="s">"INSERT INTO example (key, value) VALUES (?, ?)"</span><span class="p">,</span> <span class="mi">2</span><span class="p">);</span>
 
 <span class="cm">/* Bind the values using the indices of the bind variables */</span>
-<span class="nb">cass_statement_bind_string</span><span class="p">(</span><span class="n">statement</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">cass_string_init</span><span class="p">(</span><span class="s">"abc"</span><span class="p">));</span>
+<span class="nb">cass_statement_bind_string</span><span class="p">(</span><span class="n">statement</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">"abc"</span><span class="p">);</span>
 <span class="nb">cass_statement_bind_int32</span><span class="p">(</span><span class="n">statement</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">123</span><span class="p">);</span>
 
 <span class="nc">CassFuture</span><span class="o">*</span> <span class="n">query_future</span> <span class="o">=</span> <span class="nb">cass_session_execute</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">statement</span><span class="p">);</span>
@@ -253,14 +255,14 @@
 Cassandra cluster and each of those connections can handle several simultaneous
 requests using pipelining. Asynchronous I/O and pipelining together allow each
 connection to handle several (up to 128 requests with protocol v1/v2 and 32k with
-protocol v3) in-flight requests concurrently. This significantly reduces the
+protocol v3/v4) in-flight requests concurrently. This significantly reduces the
 number of connections required to be open to Cassandra and
 allows the driver to batch requests destined for the same node.</p>
 
 <h2 id="thread-safety">Thread safety<a class="anchor" href="#thread-safety" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h2>
 
-<p>A <a href="../api/CassSession/"><code>CassSession</code></a> is designed to be used concurrently from multiple threads. <a href="../api/CassFuture/"><code>CassFuture</code></a> is also thread safe. Other than these exclusions, in general, functions that might modify an object’s state are <strong>NOT</strong> thread safe. Object’s that are immutable (marked ‘const’) can be read safely by multiple threads.</p>
+<p>A <a href="../api/CassSession/"><code>CassSession</code></a> is designed to be used concurrently from multiple threads. <a href="../api/CassFuture/"><code>CassFuture</code></a> is also thread safe. Other than these exclusions, in general, functions that might modify an object’s state are <strong>NOT</strong> thread safe. Objects that are immutable (marked ‘const’) can be read safely by multiple threads.</p>
 
 <p><strong>NOTE:</strong> The object/resource free-ing functions (e.g. cass_cluster_free, cass_session_free, … cass_*_free) cannot be called concurrently on the same instance of an object.</p>
 
@@ -282,7 +284,6 @@ allows the driver to batch requests destined for the same node.</p>
 <li>Event registration and notification</li>
 <li>Callback interfaces for load balancing, authentication, reconnection and retry</li>
 <li>Generic SASL authentication interface</li>
-<li><a href="http://www.datastax.com/documentation/cql/3.1/cql/cql_reference/cqlRefUDType.html">User Defined Type (UDT)</a></li>
 </ul>
 
 

@@ -51,7 +51,7 @@
           </ul>
           <form class="navbar-form form-search navbar-right dropdown visible-lg-block" ng-class="{open: hasResults}" role="search" ng-submit="submit()">
             <div class="form-group has-feedback">
-              <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.1')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
+              <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.2')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
             </div>
             <ul class="dropdown-menu" role="menu">
               <li ng-repeat="result in results" ng-class="{'bg-warning': $index == current}"><a ng-href="{{basePath}}{{result.path}}"><span ng-bind-html="summary(result)"></span></a></li>
@@ -70,12 +70,14 @@
               <li>
                 <div class="dropdown">
                   <button id="current-version" class="btn btn-default btn-sm" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    v2.1
+                    v2.2
                     <span class="caret"></span>
                   </button>
                   <ul class="dropdown-menu" role="menu" aria-labelledby="current-version">
                   
-                    <li class="disabled"><a href="./">v2.1</a></li>
+                    <li class="disabled"><a href="./">v2.2</a></li>
+                  
+                    <li><a href="../../v2.1/api/CassResult/">v2.1</a></li>
                   
                     <li><a href="../../v2.0/api/CassResult/">v2.0</a></li>
                   
@@ -479,7 +481,7 @@
   </div>
   <div class="panel panel-default member-definition">
     <div class="panel-heading function-heading">
-      <code><a href="../cassandra.h/#cass-error">cassandra.h::CassError</a></code> <h3 id="cass-result-paging-state">cass_result_paging_state<a class="anchor" href="#cass-result-paging-state" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+      <code><a href="../cassandra.h/#cass-error">cassandra.h::CassError</a></code> <h3 id="cass-result-paging-state-token">cass_result_paging_state_token<a class="anchor" href="#cass-result-paging-state-token" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h3> <big>(</big> <code>const <a href="./">CassResult</a> *</code> result, <code>const char **</code> paging_state, <code>size_t *</code> paging_state_size <big>)</big>
     </div>
     <div class="panel-body function-body">
@@ -533,7 +535,7 @@
 </tr></tbody>
 </table></dd>
 <dt class="tag-title">See Also:</dt>
-<dd class="tag-content"><ul class="see"><li><code><a href="../CassStatement/#cass-statement-set-paging-state-raw">CassStatement::cass_statement_set_paging_state_raw</a></code></li></ul></dd>
+<dd class="tag-content"><ul class="see"><li><code><a href="../CassStatement/#cass-statement-set-paging-state-token">CassStatement::cass_statement_set_paging_state_token</a></code></li></ul></dd>
 </dl>
     </div>
   </div>
@@ -614,7 +616,7 @@
 </a></li>
 <li><a href="#cass-result-has-more-pages">cass_result_has_more_pages
 </a></li>
-<li><a href="#cass-result-paging-state">cass_result_paging_state
+<li><a href="#cass-result-paging-state-token">cass_result_paging_state_token
 </a></li>
 <li><a href="#cass-iterator-from-result">cass_iterator_from_result
 </a></li>

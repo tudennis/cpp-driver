@@ -51,7 +51,7 @@
           </ul>
           <form class="navbar-form form-search navbar-right dropdown visible-lg-block" ng-class="{open: hasResults}" role="search" ng-submit="submit()">
             <div class="form-group has-feedback">
-              <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.1')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
+              <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.2')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
             </div>
             <ul class="dropdown-menu" role="menu">
               <li ng-repeat="result in results" ng-class="{'bg-warning': $index == current}"><a ng-href="{{basePath}}{{result.path}}"><span ng-bind-html="summary(result)"></span></a></li>
@@ -70,12 +70,14 @@
               <li>
                 <div class="dropdown">
                   <button id="current-version" class="btn btn-default btn-sm" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    v2.1
+                    v2.2
                     <span class="caret"></span>
                   </button>
                   <ul class="dropdown-menu" role="menu" aria-labelledby="current-version">
                   
-                    <li class="disabled"><a href="./">v2.1</a></li>
+                    <li class="disabled"><a href="./">v2.2</a></li>
+                  
+                    <li><a href="../../../v2.1/topics/basics/batches/">v2.1</a></li>
                   
                     <li><a href="../../../v2.0/topics/basics/batches/">v2.0</a></li>
                   
@@ -117,13 +119,13 @@
 <h1 id="batches">Batches<a class="anchor" href="#batches" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h1>
 
-<p>Batches can be used to group multiple mutations (<code>UPDATE</code>, <code>INSERT</code>, <code>DELETE</code>) together into a single statement; simple or perpared. There are three different types of batches supported by Cassandra 2.0 or later.</p>
+<p>Batches can be used to group multiple mutations (<code>UPDATE</code>, <code>INSERT</code>, <code>DELETE</code>) together into a single statement; simple or prepared. There are three different types of batches supported by Cassandra 2.0 or later.</p>
 
 <ul>
 <li>
-<code>CASS_BATCH_TYPE_LOGGED</code> is used to make sure that multiple mutations across multiple partitions happen atomically, that is, all the included mutations will eventually succeed. However, there is a performance penalty imposed by atomcity guarantee.</li>
+<code>CASS_BATCH_TYPE_LOGGED</code> is used to make sure that multiple mutations across multiple partitions happen atomically, that is, all the included mutations will eventually succeed. However, there is a performance penalty imposed by atomicity guarantee.</li>
 <li>
-<code>CASS_BATCH_TYPE_UNLOGGED</code> is generally used to group mutations for a single partition and do not suffer from the performance penalty imposed by logged batches, but there is no atomicty guarantee for  multi-partition updates.</li>
+<code>CASS_BATCH_TYPE_UNLOGGED</code> is generally used to group mutations for a single partition and do not suffer from the performance penalty imposed by logged batches, but there is no atomicity guarantee for  multi-partition updates.</li>
 <li>
 <code>CASS_BATCH_TYPE_COUNTER</code> is used to group counters updates.</li>
 </ul>
@@ -136,21 +138,21 @@
 
 <span class="p">{</span>
   <span class="nc">CassStatement</span><span class="o">*</span> <span class="n">statement</span>
-    <span class="o">=</span> <span class="nb">cass_statement_new</span><span class="p">(</span><span class="nb">cass_string_init</span><span class="p">(</span><span class="s">"INSERT INTO example1(key, value) VALUES ('a', '1')"</span><span class="p">),</span> <span class="mi">0</span><span class="p">);</span>
+    <span class="o">=</span> <span class="nb">cass_statement_new</span><span class="p">(</span><span class="s">"INSERT INTO example1(key, value) VALUES ('a', '1')"</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
   <span class="nb">cass_batch_add_statement</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">statement</span><span class="p">);</span>
   <span class="nb">cass_statement_free</span><span class="p">(</span><span class="n">statement</span><span class="p">);</span>
 <span class="p">}</span>
 
 <span class="p">{</span>
   <span class="nc">CassStatement</span><span class="o">*</span> <span class="n">statement</span>
-    <span class="o">=</span> <span class="nb">cass_statement_new</span><span class="p">(</span><span class="nb">cass_string_init</span><span class="p">(</span><span class="s">"UPDATE example2 set value = '2' WHERE key = 'b'"</span><span class="p">),</span> <span class="mi">0</span><span class="p">);</span>
+    <span class="o">=</span> <span class="nb">cass_statement_new</span><span class="p">(</span><span class="s">"UPDATE example2 set value = '2' WHERE key = 'b'"</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
   <span class="nb">cass_batch_add_statement</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">statement</span><span class="p">);</span>
   <span class="nb">cass_statement_free</span><span class="p">(</span><span class="n">statement</span><span class="p">);</span>
 <span class="p">}</span>
 
 <span class="p">{</span>
   <span class="nc">CassStatement</span><span class="o">*</span> <span class="n">statement</span>
-    <span class="o">=</span> <span class="nb">cass_statement_new</span><span class="p">(</span><span class="nb">cass_string_init</span><span class="p">(</span><span class="s">"DELETE FROM example3 WHERE key = 'c'"</span><span class="p">),</span> <span class="mi">0</span><span class="p">);</span>
+    <span class="o">=</span> <span class="nb">cass_statement_new</span><span class="p">(</span><span class="s">"DELETE FROM example3 WHERE key = 'c'"</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
   <span class="nb">cass_batch_add_statement</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">statement</span><span class="p">);</span>
   <span class="nb">cass_statement_free</span><span class="p">(</span><span class="n">statement</span><span class="p">);</span>
 <span class="p">}</span>

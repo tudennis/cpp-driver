@@ -51,7 +51,7 @@
           </ul>
           <form class="navbar-form form-search navbar-right dropdown visible-lg-block" ng-class="{open: hasResults}" role="search" ng-submit="submit()">
             <div class="form-group has-feedback">
-              <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.1')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
+              <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.2')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
             </div>
             <ul class="dropdown-menu" role="menu">
               <li ng-repeat="result in results" ng-class="{'bg-warning': $index == current}"><a ng-href="{{basePath}}{{result.path}}"><span ng-bind-html="summary(result)"></span></a></li>
@@ -70,12 +70,14 @@
               <li>
                 <div class="dropdown">
                   <button id="current-version" class="btn btn-default btn-sm" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    v2.1
+                    v2.2
                     <span class="caret"></span>
                   </button>
                   <ul class="dropdown-menu" role="menu" aria-labelledby="current-version">
                   
-                    <li class="disabled"><a href="./">v2.1</a></li>
+                    <li class="disabled"><a href="./">v2.2</a></li>
+                  
+                    <li><a href="../../../v2.1/topics/basics/user_defined_types/">v2.1</a></li>
                   
                     <li><a href="../../../v2.0/">v2.0</a></li>
                   
@@ -125,13 +127,17 @@ created from a manually defined data type.</p>
 <h2 id="creating-a-udt-from-schema">Creating a UDT from Schema<a class="anchor" href="#creating-a-udt-from-schema" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h2>
 
-<p>An <a href="../../../api/CassSchema/"><code>CassSchema</code></a> instance can be used to construct a new <a href="../../../api/CassUserType/"><code>CassUserType</code></a>. The
-<a href="../../../api/CassSchema/"><code>CassSchema</code></a> instance returns a <a href="../../../api/CassDataType/"><code>CassDataType</code></a> object which is used to
+<p>An <a href="../../../api/CassSchemaMeta/"><code>CassSchemaMeta</code></a> instance can be used to construct a new <a href="../../../api/CassUserType/"><code>CassUserType</code></a>. The
+<a href="../../../api/CassSchemaMeta/"><code>CassSchemaMeta</code></a> instance returns a <a href="../../../api/CassDataType/"><code>CassDataType</code></a> object which is used to
 describe Cassandra types including UDTs, tuples, collections and all basic types
 (<code>int</code>, <code>bigint</code>, <code>uuid</code>, etc.).</p>
-<pre class="highlight"><code><span class="nc">CassSchema</span><span class="o">*</span> <span class="n">schema</span> <span class="o">=</span> <span class="nb">cass_session_get_schema</span><span class="p">(</span><span class="n">session</span><span class="p">);</span>
+<pre class="highlight"><code><span class="k">const</span> <span class="nc">CassSchemaMeta</span><span class="o">*</span> <span class="n">schema_meta</span> <span class="o">=</span> <span class="nb">cass_session_get_schema_meta</span><span class="p">(</span><span class="n">session</span><span class="p">);</span>
 
-<span class="nc">CassDataType</span><span class="o">*</span> <span class="n">data_type</span> <span class="o">=</span> <span class="nb">cass_schema_get_udt</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="s">"keyspace"</span><span class="p">,</span> <span class="s">"typename"</span><span class="p">);</span>
+<span class="k">const</span> <span class="nc">CassKeyspaceMeta</span><span class="o">*</span> <span class="n">keyspace_meta</span> <span class="o">=</span>
+  <span class="nb">cass_schema_meta_keyspace_by_name</span><span class="p">(</span><span class="s">"keyspace"</span><span class="p">);</span>
+
+<span class="k">const</span> <span class="n">DataType</span><span class="o">*</span> <span class="n">data_type</span> <span class="o">=</span>
+  <span class="nb">cass_keyspace_meta_user_type_by_name</span><span class="p">(</span><span class="n">keyspace_meta</span><span class="p">,</span> <span class="s">"typename"</span><span class="p">);</span>
 
 <span class="nc">CassUserType</span><span class="o">*</span> <span class="n">user_type</span> <span class="o">=</span> <span class="nb">cass_user_type_new_from_data_type</span><span class="p">(</span><span class="n">data_type</span><span class="p">);</span>
 

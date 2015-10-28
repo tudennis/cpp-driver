@@ -51,7 +51,7 @@
           </ul>
           <form class="navbar-form form-search navbar-right dropdown visible-lg-block" ng-class="{open: hasResults}" role="search" ng-submit="submit()">
             <div class="form-group has-feedback">
-              <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.1')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
+              <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.2')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
             </div>
             <ul class="dropdown-menu" role="menu">
               <li ng-repeat="result in results" ng-class="{'bg-warning': $index == current}"><a ng-href="{{basePath}}{{result.path}}"><span ng-bind-html="summary(result)"></span></a></li>
@@ -70,12 +70,14 @@
               <li>
                 <div class="dropdown">
                   <button id="current-version" class="btn btn-default btn-sm" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    v2.1
+                    v2.2
                     <span class="caret"></span>
                   </button>
                   <ul class="dropdown-menu" role="menu" aria-labelledby="current-version">
                   
-                    <li class="disabled"><a href="./">v2.1</a></li>
+                    <li class="disabled"><a href="./">v2.2</a></li>
+                  
+                    <li><a href="../../v2.1/api/CassInet/">v2.1</a></li>
                   
                     <li><a href="../../v2.0/api/CassInet/">v2.0</a></li>
                   
@@ -150,6 +152,63 @@
 </h2>
 
 <div class="attributes-content">
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading function-heading">
+      <code>void</code> <h3 id="cass-custom-payload-set-n">cass_custom_payload_set_n<a class="anchor" href="#cass-custom-payload-set-n" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3> <big>(</big> <code><a href="../CassCustomPayload/">CassCustomPayload</a> *</code> payload, <code>const char *</code> name, <code>size_t</code> name_length, <code>const <a href="../cassandra.h/#cass-byte-t">cassandra.h::cass_byte_t</a> *</code> value, <code>size_t</code> value_size <big>)</big>
+    </div>
+    <div class="panel-body function-body">
+      <p>Same as <code><a href="../CassCustomPayload/#cass-custom-payload-set">CassCustomPayload::cass_custom_payload_set</a></code>, but with lengths for string parameters.</p>
+
+      <dl class="tags">
+<dt class="tag-title">Parameters:</dt>
+<dd class="tag-content"><table class="table table-striped param">
+<thead><tr>
+<th class="name">Name</th>
+<th class="type">Type</th>
+<th class="details">Details</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>
+<small>in</small> <var>payload</var>
+</td>
+<td><code><a href="../CassCustomPayload/">CassCustomPayload</a> *</code></td>
+<td></td>
+</tr>
+<tr>
+<td>
+<small>in</small> <var>name</var>
+</td>
+<td><code>const char *</code></td>
+<td></td>
+</tr>
+<tr>
+<td>
+<small>in</small> <var>name_length</var>
+</td>
+<td><code>size_t</code></td>
+<td></td>
+</tr>
+<tr>
+<td>
+<small>in</small> <var>value</var>
+</td>
+<td><code>const <a href="../cassandra.h/#cass-byte-t">cassandra.h::cass_byte_t</a> *</code></td>
+<td></td>
+</tr>
+<tr>
+<td>
+<small>in</small> <var>value_size</var>
+</td>
+<td><code>size_t</code></td>
+<td></td>
+</tr>
+</tbody>
+</table></dd>
+</dl>
+    </div>
+  </div>
   <div class="panel panel-default member-definition">
     <div class="panel-heading function-heading">
       <code><a href="./">CassInet</a></code> <h3 id="cass-inet-init-v4">cass_inet_init_v4<a class="anchor" href="#cass-inet-init-v4" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
@@ -397,6 +456,8 @@
 <li>
 <a href="#functions">Functions
 </a><ol class="nav nav-pills nav-stacked">
+<li><a href="#cass-custom-payload-set-n">cass_custom_payload_set_n
+</a></li>
 <li><a href="#cass-inet-init-v4">cass_inet_init_v4
 </a></li>
 <li><a href="#cass-inet-init-v6">cass_inet_init_v6

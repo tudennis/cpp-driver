@@ -51,7 +51,7 @@
           </ul>
           <form class="navbar-form form-search navbar-right dropdown visible-lg-block" ng-class="{open: hasResults}" role="search" ng-submit="submit()">
             <div class="form-group has-feedback">
-              <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.1')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
+              <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.2')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
             </div>
             <ul class="dropdown-menu" role="menu">
               <li ng-repeat="result in results" ng-class="{'bg-warning': $index == current}"><a ng-href="{{basePath}}{{result.path}}"><span ng-bind-html="summary(result)"></span></a></li>
@@ -70,12 +70,14 @@
               <li>
                 <div class="dropdown">
                   <button id="current-version" class="btn btn-default btn-sm" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    v2.1
+                    v2.2
                     <span class="caret"></span>
                   </button>
                   <ul class="dropdown-menu" role="menu" aria-labelledby="current-version">
                   
-                    <li class="disabled"><a href="./">v2.1</a></li>
+                    <li class="disabled"><a href="./">v2.2</a></li>
+                  
+                    <li><a href="../../v2.1/api/CassErrorResult/">v2.1</a></li>
                   
                     <li><a href="../../v2.0/">v2.0</a></li>
                   
@@ -208,6 +210,8 @@
 <ul>
 <li>CASS_ERROR_SERVER_READ_TIMEOUT</li>
 <li>CASS_ERROR_SERVER_WRITE_TIMEOUT</li>
+<li>CASS_ERROR_SERVER_READ_FAILURE</li>
+<li>CASS_ERROR_SERVER_WRITE_FAILURE</li>
 <li>CASS_ERROR_SERVER_UNAVAILABLE</li>
 </ul>
 
@@ -249,11 +253,13 @@
 </h3> <big>(</big> <code>const <a href="./">CassErrorResult</a> *</code> error_result <big>)</big>
     </div>
     <div class="panel-body function-body">
-      <p>Gets the acutal number of recieved responses, recieved acknowlegements or alive nodes for following error result types, respectively:</p>
+      <p>Gets the actual number of received responses, received acknowledgments or alive nodes for following error result types, respectively:</p>
 
 <ul>
 <li>CASS_ERROR_SERVER_READ_TIMEOUT</li>
 <li>CASS_ERROR_SERVER_WRITE_TIMEOUT</li>
+<li>CASS_ERROR_SERVER_READ_FAILURE</li>
+<li>CASS_ERROR_SERVER_WRITE_FAILURE</li>
 <li>CASS_ERROR_SERVER_UNAVAILABLE</li>
 </ul>
 
@@ -282,7 +288,7 @@
 <tbody><tr>
 <td><code><a href="../cassandra.h/#cass-int32-t">cassandra.h::cass_int32_t</a></code></td>
 <td>
-<p>The actual received responses for a read timeout, actual recieved acknowlegements for a write timeout or actual alive nodes for a unavailable error. Undefined for other error result types.</p>
+<p>The actual received responses for a read timeout, actual received acknowledgments for a write timeout or actual alive nodes for a unavailable error. Undefined for other error result types.</p>
 </td>
 </tr></tbody>
 </table></dd>
@@ -295,11 +301,13 @@
 </h3> <big>(</big> <code>const <a href="./">CassErrorResult</a> *</code> error_result <big>)</big>
     </div>
     <div class="panel-body function-body">
-      <p>Gets required responses, required acknowlegements or required alive nodes needed to successfully complete the request for following error result types, respectively:</p>
+      <p>Gets required responses, required acknowledgments or required alive nodes needed to successfully complete the request for following error result types, respectively:</p>
 
 <ul>
 <li>CASS_ERROR_SERVER_READ_TIMEOUT</li>
 <li>CASS_ERROR_SERVER_WRITE_TIMEOUT</li>
+<li>CASS_ERROR_SERVER_READ_FAILURE</li>
+<li>CASS_ERROR_SERVER_WRITE_FAILURE</li>
 <li>CASS_ERROR_SERVER_UNAVAILABLE</li>
 </ul>
 
@@ -328,7 +336,52 @@
 <tbody><tr>
 <td><code><a href="../cassandra.h/#cass-int32-t">cassandra.h::cass_int32_t</a></code></td>
 <td>
-<p>The required responses for a read time, required acknowlegements for a write timeout or required alive nodes for an unavailable error result. Undefined for other error result types.</p>
+<p>The required responses for a read time, required acknowledgments for a write timeout or required alive nodes for an unavailable error result. Undefined for other error result types.</p>
+</td>
+</tr></tbody>
+</table></dd>
+</dl>
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading function-heading">
+      <code><a href="../cassandra.h/#cass-int32-t">cassandra.h::cass_int32_t</a></code> <h3 id="cass-error-result-num-failures">cass_error_result_num_failures<a class="anchor" href="#cass-error-result-num-failures" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3> <big>(</big> <code>const <a href="./">CassErrorResult</a> *</code> error_result <big>)</big>
+    </div>
+    <div class="panel-body function-body">
+      <p>Gets the number of nodes that experienced failures for the following error types:</p>
+
+<ul>
+<li>CASS_ERROR_SERVER_READ_FAILURE</li>
+<li>CASS_ERROR_SERVER_WRITE_FAILURE</li>
+</ul>
+
+      <dl class="tags">
+<dt class="tag-title">Parameters:</dt>
+<dd class="tag-content"><table class="table table-striped param">
+<thead><tr>
+<th class="name">Name</th>
+<th class="type">Type</th>
+<th class="details">Details</th>
+</tr></thead>
+<tbody><tr>
+<td>
+<small>in</small> <var>error_result</var>
+</td>
+<td><code>const <a href="./">CassErrorResult</a> *</code></td>
+<td></td>
+</tr></tbody>
+</table></dd>
+<dt class="tag-title">Returns:</dt>
+<dd class="tag-content"><table class="table table-striped return">
+<thead><tr>
+<th class="type">Type</th>
+<th class="details">Details</th>
+</tr></thead>
+<tbody><tr>
+<td><code><a href="../cassandra.h/#cass-int32-t">cassandra.h::cass_int32_t</a></code></td>
+<td>
+<p>The number of nodes that failed during a read or write request.</p>
 </td>
 </tr></tbody>
 </table></dd>
@@ -341,7 +394,12 @@
 </h3> <big>(</big> <code>const <a href="./">CassErrorResult</a> *</code> error_result <big>)</big>
     </div>
     <div class="panel-body function-body">
-      <p>Gets if the data was actually present in the responses from the replicas when the read timed out (CASS_ERROR_SERVER_READ_TIMEOUT).</p>
+      <p>Determines whether the actual data was present in the responses from the replicas for the following error result types:</p>
+
+<ul>
+<li>CASS_ERROR_SERVER_READ_TIMEOUT</li>
+<li>CASS_ERROR_SERVER_READ_FAILURE</li>
+</ul>
 
       <dl class="tags">
 <dt class="tag-title">Parameters:</dt>
@@ -368,7 +426,7 @@
 <tbody><tr>
 <td><code><a href="../cassandra.h/#cass-bool-t">cassandra.h::cass_bool_t</a></code></td>
 <td>
-<p>cass_true if the data was present in the recieved responses when the read timeout occured. Undefined for other error result types.</p>
+<p>cass_true if the data was present in the received responses when the read timeout occurred. Undefined for other error result types.</p>
 </td>
 </tr></tbody>
 </table></dd>
@@ -381,7 +439,12 @@
 </h3> <big>(</big> <code>const <a href="./">CassErrorResult</a> *</code> error_result <big>)</big>
     </div>
     <div class="panel-body function-body">
-      <p>Gets the write type of a request when the write timed out (CASS_ERROR_SERVER_WRITE_TIMEOUT).</p>
+      <p>Gets the write type of a request for the following error result types:</p>
+
+<ul>
+<li>CASS_ERROR_SERVER_WRITE_TIMEOUT</li>
+<li>CASS_ERROR_SERVER_WRITE_FAILURE</li>
+</ul>
 
       <dl class="tags">
 <dt class="tag-title">Parameters:</dt>
@@ -409,6 +472,280 @@
 <td><code><a href="../cassandra.h/#cass-write-type">cassandra.h::CassWriteType</a></code></td>
 <td>
 <p>The type of the write that timed out. Undefined for other error result types.</p>
+</td>
+</tr></tbody>
+</table></dd>
+</dl>
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading function-heading">
+      <code><a href="../cassandra.h/#cass-error">cassandra.h::CassError</a></code> <h3 id="cass-error-result-keyspace">cass_error_result_keyspace<a class="anchor" href="#cass-error-result-keyspace" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3> <big>(</big> <code>const <a href="./">CassErrorResult</a> *</code> error_result, <code>const char **</code> keyspace, <code>size_t *</code> keyspace_length <big>)</big>
+    </div>
+    <div class="panel-body function-body">
+      <p>Gets the affected keyspace for the following error result types:</p>
+
+<ul>
+<li>CASS_ERROR_SERVER_ALREADY_EXISTS</li>
+<li>CASS_ERROR_SERVER_FUNCTION_FAILURE</li>
+</ul>
+
+      <dl class="tags">
+<dt class="tag-title">Parameters:</dt>
+<dd class="tag-content"><table class="table table-striped param">
+<thead><tr>
+<th class="name">Name</th>
+<th class="type">Type</th>
+<th class="details">Details</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>
+<small>in</small> <var>error_result</var>
+</td>
+<td><code>const <a href="./">CassErrorResult</a> *</code></td>
+<td></td>
+</tr>
+<tr>
+<td>
+<small>out</small> <var>keyspace</var>
+</td>
+<td><code>const char **</code></td>
+<td></td>
+</tr>
+<tr>
+<td>
+<small>out</small> <var>keyspace_length</var>
+</td>
+<td><code>size_t *</code></td>
+<td></td>
+</tr>
+</tbody>
+</table></dd>
+<dt class="tag-title">Returns:</dt>
+<dd class="tag-content"><table class="table table-striped return">
+<thead><tr>
+<th class="type">Type</th>
+<th class="details">Details</th>
+</tr></thead>
+<tbody><tr>
+<td><code><a href="../cassandra.h/#cass-error">cassandra.h::CassError</a></code></td>
+<td>
+<p>CASS_OK if successful, otherwise error occurred</p>
+</td>
+</tr></tbody>
+</table></dd>
+</dl>
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading function-heading">
+      <code><a href="../cassandra.h/#cass-error">cassandra.h::CassError</a></code> <h3 id="cass-error-result-table">cass_error_result_table<a class="anchor" href="#cass-error-result-table" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3> <big>(</big> <code>const <a href="./">CassErrorResult</a> *</code> error_result, <code>const char **</code> table, <code>size_t *</code> table_length <big>)</big>
+    </div>
+    <div class="panel-body function-body">
+      <p>Gets the affected table for the already exists error (CASS_ERROR_SERVER_ALREADY_EXISTS) result type.</p>
+
+      <dl class="tags">
+<dt class="tag-title">Parameters:</dt>
+<dd class="tag-content"><table class="table table-striped param">
+<thead><tr>
+<th class="name">Name</th>
+<th class="type">Type</th>
+<th class="details">Details</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>
+<small>in</small> <var>error_result</var>
+</td>
+<td><code>const <a href="./">CassErrorResult</a> *</code></td>
+<td></td>
+</tr>
+<tr>
+<td>
+<small>out</small> <var>table</var>
+</td>
+<td><code>const char **</code></td>
+<td></td>
+</tr>
+<tr>
+<td>
+<small>out</small> <var>table_length</var>
+</td>
+<td><code>size_t *</code></td>
+<td></td>
+</tr>
+</tbody>
+</table></dd>
+<dt class="tag-title">Returns:</dt>
+<dd class="tag-content"><table class="table table-striped return">
+<thead><tr>
+<th class="type">Type</th>
+<th class="details">Details</th>
+</tr></thead>
+<tbody><tr>
+<td><code><a href="../cassandra.h/#cass-error">cassandra.h::CassError</a></code></td>
+<td>
+<p>CASS_OK if successful, otherwise error occurred</p>
+</td>
+</tr></tbody>
+</table></dd>
+</dl>
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading function-heading">
+      <code><a href="../cassandra.h/#cass-error">cassandra.h::CassError</a></code> <h3 id="cass-error-result-function">cass_error_result_function<a class="anchor" href="#cass-error-result-function" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3> <big>(</big> <code>const <a href="./">CassErrorResult</a> *</code> error_result, <code>const char **</code> function, <code>size_t *</code> function_length <big>)</big>
+    </div>
+    <div class="panel-body function-body">
+      <p>Gets the affected function for the function failure error (CASS_ERROR_SERVER_FUNCTION_FAILURE) result type.</p>
+
+      <dl class="tags">
+<dt class="tag-title">Parameters:</dt>
+<dd class="tag-content"><table class="table table-striped param">
+<thead><tr>
+<th class="name">Name</th>
+<th class="type">Type</th>
+<th class="details">Details</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>
+<small>in</small> <var>error_result</var>
+</td>
+<td><code>const <a href="./">CassErrorResult</a> *</code></td>
+<td></td>
+</tr>
+<tr>
+<td>
+<small>out</small> <var>function</var>
+</td>
+<td><code>const char **</code></td>
+<td></td>
+</tr>
+<tr>
+<td>
+<small>out</small> <var>function_length</var>
+</td>
+<td><code>size_t *</code></td>
+<td></td>
+</tr>
+</tbody>
+</table></dd>
+<dt class="tag-title">Returns:</dt>
+<dd class="tag-content"><table class="table table-striped return">
+<thead><tr>
+<th class="type">Type</th>
+<th class="details">Details</th>
+</tr></thead>
+<tbody><tr>
+<td><code><a href="../cassandra.h/#cass-error">cassandra.h::CassError</a></code></td>
+<td>
+<p>CASS_OK if successful, otherwise error occurred</p>
+</td>
+</tr></tbody>
+</table></dd>
+</dl>
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading function-heading">
+      <code>size_t</code> <h3 id="cass-error-num-arg-types">cass_error_num_arg_types<a class="anchor" href="#cass-error-num-arg-types" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3> <big>(</big> <code>const <a href="./">CassErrorResult</a> *</code> error_result <big>)</big>
+    </div>
+    <div class="panel-body function-body">
+      <p>Gets the number of argument types for the function failure error (CASS_ERROR_SERVER_FUNCTION_FAILURE) result type.</p>
+
+      <dl class="tags">
+<dt class="tag-title">Parameters:</dt>
+<dd class="tag-content"><table class="table table-striped param">
+<thead><tr>
+<th class="name">Name</th>
+<th class="type">Type</th>
+<th class="details">Details</th>
+</tr></thead>
+<tbody><tr>
+<td>
+<small>in</small> <var>error_result</var>
+</td>
+<td><code>const <a href="./">CassErrorResult</a> *</code></td>
+<td></td>
+</tr></tbody>
+</table></dd>
+<dt class="tag-title">Returns:</dt>
+<dd class="tag-content"><table class="table table-striped return">
+<thead><tr>
+<th class="type">Type</th>
+<th class="details">Details</th>
+</tr></thead>
+<tbody><tr>
+<td><code>size_t</code></td>
+<td>
+<p>The number of arguments for the affected function.</p>
+</td>
+</tr></tbody>
+</table></dd>
+</dl>
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading function-heading">
+      <code><a href="../cassandra.h/#cass-error">cassandra.h::CassError</a></code> <h3 id="cass-error-result-arg-type">cass_error_result_arg_type<a class="anchor" href="#cass-error-result-arg-type" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3> <big>(</big> <code>const <a href="./">CassErrorResult</a> *</code> error_result, <code>size_t</code> index, <code>const char **</code> arg_type, <code>size_t *</code> arg_type_length <big>)</big>
+    </div>
+    <div class="panel-body function-body">
+      <p>Gets the argument type at the specified index for the function failure error (CASS_ERROR_SERVER_FUNCTION_FAILURE) result type.</p>
+
+      <dl class="tags">
+<dt class="tag-title">Parameters:</dt>
+<dd class="tag-content"><table class="table table-striped param">
+<thead><tr>
+<th class="name">Name</th>
+<th class="type">Type</th>
+<th class="details">Details</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>
+<small>in</small> <var>error_result</var>
+</td>
+<td><code>const <a href="./">CassErrorResult</a> *</code></td>
+<td></td>
+</tr>
+<tr>
+<td><var>index</var></td>
+<td><code>size_t</code></td>
+<td></td>
+</tr>
+<tr>
+<td>
+<small>out</small> <var>arg_type</var>
+</td>
+<td><code>const char **</code></td>
+<td></td>
+</tr>
+<tr>
+<td>
+<small>out</small> <var>arg_type_length</var>
+</td>
+<td><code>size_t *</code></td>
+<td></td>
+</tr>
+</tbody>
+</table></dd>
+<dt class="tag-title">Returns:</dt>
+<dd class="tag-content"><table class="table table-striped return">
+<thead><tr>
+<th class="type">Type</th>
+<th class="details">Details</th>
+</tr></thead>
+<tbody><tr>
+<td><code><a href="../cassandra.h/#cass-error">cassandra.h::CassError</a></code></td>
+<td>
+<p>CASS_OK if successful, otherwise error occurred</p>
 </td>
 </tr></tbody>
 </table></dd>
@@ -444,9 +781,21 @@
 </a></li>
 <li><a href="#cass-error-result-responses-required">cass_error_result_responses_required
 </a></li>
+<li><a href="#cass-error-result-num-failures">cass_error_result_num_failures
+</a></li>
 <li><a href="#cass-error-result-data-present">cass_error_result_data_present
 </a></li>
 <li><a href="#cass-error-result-write-type">cass_error_result_write_type
+</a></li>
+<li><a href="#cass-error-result-keyspace">cass_error_result_keyspace
+</a></li>
+<li><a href="#cass-error-result-table">cass_error_result_table
+</a></li>
+<li><a href="#cass-error-result-function">cass_error_result_function
+</a></li>
+<li><a href="#cass-error-num-arg-types">cass_error_num_arg_types
+</a></li>
+<li><a href="#cass-error-result-arg-type">cass_error_result_arg_type
 </a></li>
 </ol>
 </li></ol>

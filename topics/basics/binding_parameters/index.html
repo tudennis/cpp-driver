@@ -51,7 +51,7 @@
           </ul>
           <form class="navbar-form form-search navbar-right dropdown visible-lg-block" ng-class="{open: hasResults}" role="search" ng-submit="submit()">
             <div class="form-group has-feedback">
-              <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.1')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
+              <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.2')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
             </div>
             <ul class="dropdown-menu" role="menu">
               <li ng-repeat="result in results" ng-class="{'bg-warning': $index == current}"><a ng-href="{{basePath}}{{result.path}}"><span ng-bind-html="summary(result)"></span></a></li>
@@ -70,12 +70,14 @@
               <li>
                 <div class="dropdown">
                   <button id="current-version" class="btn btn-default btn-sm" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    v2.1
+                    v2.2
                     <span class="caret"></span>
                   </button>
                   <ul class="dropdown-menu" role="menu" aria-labelledby="current-version">
                   
-                    <li class="disabled"><a href="./">v2.1</a></li>
+                    <li class="disabled"><a href="./">v2.2</a></li>
+                  
+                    <li><a href="../../../v2.1/topics/basics/binding_parameters/">v2.1</a></li>
                   
                     <li><a href="../../../v2.0/topics/basics/binding_parameters/">v2.0</a></li>
                   
@@ -121,7 +123,7 @@
 <pre class="highlight"><code><span class="cm">/* Create a statement with a single parameter */</span>
 <span class="nc">CassStatement</span><span class="o">*</span> <span class="n">statement</span> <span class="o">=</span> <span class="nb">cass_statement_new</span><span class="p">(</span><span class="s">"SELECT * FROM table1 WHERE column1 = ?"</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
 
-<span class="nb">cass_statement_bind_string</span><span class="p">(</span><span class="n">statement</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">cass_string_init</span><span class="p">(</span><span class="s">"abc"</span><span class="p">));</span>
+<span class="nb">cass_statement_bind_string</span><span class="p">(</span><span class="n">statement</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">"abc"</span><span class="p">);</span>
 
 <span class="cm">/* Execute statement */</span>
 
@@ -134,30 +136,20 @@
 <span class="nc">CassStatement</span><span class="o">*</span> <span class="n">statement</span> <span class="o">=</span> <span class="nb">cass_prepared_bind</span><span class="p">(</span><span class="n">prepared</span><span class="p">);</span>
 
 <span class="cm">/* The parameter can now be bound by name */</span>
-<span class="nb">cass_statement_bind_string_by_name</span><span class="p">(</span><span class="n">statement</span><span class="p">,</span> <span class="s">"column1"</span><span class="p">,</span> <span class="nb">cass_string_init</span><span class="p">(</span><span class="s">"abc"</span><span class="p">));</span>
+<span class="nb">cass_statement_bind_string_by_name</span><span class="p">(</span><span class="n">statement</span><span class="p">,</span> <span class="s">"column1"</span><span class="p">,</span> <span class="s">"abc"</span><span class="p">);</span>
 
 <span class="cm">/* Execute statement */</span>
 
 <span class="nb">cass_statement_free</span><span class="p">(</span><span class="n">statement</span><span class="p">);</span>
 </code></pre>
-<h2 id="large-values">Large Values<a class="anchor" href="#large-values" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+<h2 id="unbound-parameters">Unbound parameters<a class="anchor" href="#unbound-parameters" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h2>
 
-<p>The data of values bound to a statement are copied into the statement. That means that values bound to statements can be freed immediately after being bound. However, this might be problematic for large values so the driver provides <code>cass_statement_bind_custom()</code> which allocates a buffer where the large values can be directly stored avoiding an extra allocation and copy.</p>
-<pre class="highlight"><code><span class="cm">/* Create a statement with two parameters */</span>
-<span class="nc">CassStatement</span><span class="o">*</span> <span class="n">statement</span>
-  <span class="o">=</span> <span class="nb">cass_statement_new</span><span class="p">(</span><span class="s">"INSERT INTO table1 (column1, column2) VALUES (?, ?)"</span><span class="p">,</span> <span class="mi">2</span><span class="p">);</span>
+<p>When using Cassandra 2.2+ the driver will send a special <code>unset</code> value for
+unbound parameters (leaving the unbound column unaffected). If using older
+versions of Cassandra (2.1 and below) the driver will return an error for
+unbound parameters.</p>
 
-<span class="nb">cass_statement_bind_string</span><span class="p">(</span><span class="n">statement</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">cass_string_init</span><span class="p">(</span><span class="s">"abc"</span><span class="p">));</span>
-
-<span class="nb">cass_byte_t</span><span class="o">*</span> <span class="n">bytes</span><span class="p">;</span>
-<span class="nb">cass_statement_bind_custom</span><span class="p">(</span><span class="n">statement</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">8</span> <span class="o">*</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">bytes</span><span class="p">);</span>
-
-<span class="cm">/* 'bytes' then can be used in the application to store a large value */</span>
-
-<span class="cm">/* Execute statment */</span>
-
-</code></pre>
 <h2 id="constructing-collections">Constructing Collections<a class="anchor" href="#constructing-collections" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h2>
 
@@ -168,9 +160,9 @@
 
 <span class="nc">CassCollection</span><span class="o">*</span> <span class="n">list</span> <span class="o">=</span> <span class="nb">cass_collection_new</span><span class="p">(</span><span class="n">CASS_COLLECTION_TYPE_LIST</span><span class="p">,</span> <span class="mi">3</span><span class="p">);</span>
 
-<span class="nb">cass_collection_append_string</span><span class="p">(</span><span class="n">list</span><span class="p">,</span> <span class="nb">cass_string_init</span><span class="p">(</span><span class="s">"123"</span><span class="p">));</span>
-<span class="nb">cass_collection_append_string</span><span class="p">(</span><span class="n">list</span><span class="p">,</span> <span class="nb">cass_string_init</span><span class="p">(</span><span class="s">"456"</span><span class="p">));</span>
-<span class="nb">cass_collection_append_string</span><span class="p">(</span><span class="n">list</span><span class="p">,</span> <span class="nb">cass_string_init</span><span class="p">(</span><span class="s">"789"</span><span class="p">));</span>
+<span class="nb">cass_collection_append_string</span><span class="p">(</span><span class="n">list</span><span class="p">,</span> <span class="s">"123"</span><span class="p">);</span>
+<span class="nb">cass_collection_append_string</span><span class="p">(</span><span class="n">list</span><span class="p">,</span> <span class="s">"456"</span><span class="p">);</span>
+<span class="nb">cass_collection_append_string</span><span class="p">(</span><span class="n">list</span><span class="p">,</span> <span class="s">"789"</span><span class="p">);</span>
 
 <span class="nb">cass_statement_bind_collection</span><span class="p">(</span><span class="n">statement</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">list</span><span class="p">);</span>
 
@@ -183,11 +175,11 @@
 <span class="nc">CassCollection</span><span class="o">*</span> <span class="n">map</span> <span class="o">=</span> <span class="nb">cass_collection_new</span><span class="p">(</span><span class="n">CASS_COLLECTION_TYPE_MAP</span><span class="p">,</span> <span class="mi">2</span><span class="p">);</span>
 
 <span class="cm">/* map["abc"] = 123 */</span>
-<span class="nb">cass_collection_append_string</span><span class="p">(</span><span class="n">map</span><span class="p">,</span> <span class="nb">cass_string_init</span><span class="p">(</span><span class="s">"abc"</span><span class="p">));</span>
+<span class="nb">cass_collection_append_string</span><span class="p">(</span><span class="n">map</span><span class="p">,</span> <span class="s">"abc"</span><span class="p">);</span>
 <span class="nb">cass_collection_append_int32</span><span class="p">(</span><span class="n">map</span><span class="p">,</span> <span class="mi">123</span><span class="p">);</span>
 
 <span class="cm">/* map["def"] = 456 */</span>
-<span class="nb">cass_collection_append_string</span><span class="p">(</span><span class="n">map</span><span class="p">,</span> <span class="nb">cass_string_init</span><span class="p">(</span><span class="s">"def"</span><span class="p">));</span>
+<span class="nb">cass_collection_append_string</span><span class="p">(</span><span class="n">map</span><span class="p">,</span> <span class="s">"def"</span><span class="p">);</span>
 <span class="nb">cass_collection_append_int32</span><span class="p">(</span><span class="n">map</span><span class="p">,</span> <span class="mi">456</span><span class="p">);</span>
 
 <span class="nb">cass_statement_bind_collection</span><span class="p">(</span><span class="n">statement</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">map</span><span class="p">);</span>
@@ -216,7 +208,7 @@ be added to another collection using <a href="../../../api/CassCollection/#cass-
               <div id="table-of-contents" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="table-of-contents-heading">
                 <div class="panel-body">
                   <ol class="nav nav-pills nav-stacked toc">
-<li><a href="#large-values">Large Values
+<li><a href="#unbound-parameters">Unbound parameters
 </a></li>
 <li><a href="#constructing-collections">Constructing Collections
 </a></li>

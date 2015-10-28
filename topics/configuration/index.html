@@ -51,7 +51,7 @@
           </ul>
           <form class="navbar-form form-search navbar-right dropdown visible-lg-block" ng-class="{open: hasResults}" role="search" ng-submit="submit()">
             <div class="form-group has-feedback">
-              <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.1')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
+              <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.2')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
             </div>
             <ul class="dropdown-menu" role="menu">
               <li ng-repeat="result in results" ng-class="{'bg-warning': $index == current}"><a ng-href="{{basePath}}{{result.path}}"><span ng-bind-html="summary(result)"></span></a></li>
@@ -70,12 +70,14 @@
               <li>
                 <div class="dropdown">
                   <button id="current-version" class="btn btn-default btn-sm" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    v2.1
+                    v2.2
                     <span class="caret"></span>
                   </button>
                   <ul class="dropdown-menu" role="menu" aria-labelledby="current-version">
                   
-                    <li class="disabled"><a href="./">v2.1</a></li>
+                    <li class="disabled"><a href="./">v2.2</a></li>
+                  
+                    <li><a href="../../v2.1/topics/configuration/">v2.1</a></li>
                   
                     <li><a href="../../v2.0/topics/configuration/">v2.0</a></li>
                   
@@ -203,6 +205,25 @@ load balancing and routing policies.</p>
                                                 <span class="n">update_rate_ms</span><span class="p">,</span>
                                                 <span class="n">min_measured</span><span class="p">);</span>
 </code></pre>
+<h3 id="whitelist-filtering">Whitelist Filtering<a class="anchor" href="#whitelist-filtering" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3>
+
+<p>This policy ensures that only hosts from the provided whitelist filter will
+ever be used. Any host that is not contained within the whitelist will be
+considered ignored and a connection will not be established.  It can be used in
+conjunction with other load balancing and routing policies.</p>
+
+<p>NOTE: Using this policy to limit the connections of the driver to a predefined
+      set of hosts will defeat the auto-detection features of the driver. If
+      the goal is to limit connections to hosts in a local datacenter use
+      DC aware in conjunction with the round robin load balancing policy.</p>
+<pre class="highlight"><code><span class="cm">/* Set the list of predefined hosts the driver is allowed to connect to */</span>
+<span class="nb">cass_cluster_set_whitelist_filtering</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span>
+                                     <span class="s">"127.0.0.1, 127.0.0.3, 127.0.0.5"</span><span class="p">);</span>
+
+<span class="cm">/* The whitelist can be cleared (and disabled) by using an empty string */</span>
+<span class="nb">cass_cluster_set_whitelist_filtering</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="s">""</span><span class="p">);</span>
+</code></pre>
 <h3 id="connection-heartbeats">Connection Heartbeats<a class="anchor" href="#connection-heartbeats" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h3>
 
@@ -251,6 +272,8 @@ heartbeats.</p>
 <li><a href="#token-aware-routing">Token-aware Routing
 </a></li>
 <li><a href="#latency-aware-routing">Latency-aware Routing
+</a></li>
+<li><a href="#whitelist-filtering">Whitelist Filtering
 </a></li>
 <li><a href="#connection-heartbeats">Connection Heartbeats
 </a></li>
