@@ -22,60 +22,55 @@
       <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
   </head>
-  <body ng-app="docs" data-spy="scroll" data-target=".side-nav">
-    <header class="navbar navbar-default navbar-static-top" role="navigation">
-      <div class="container">
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-            <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a class="navbar-brand" href="./">DataStax C/C++ Driver</a>
+  <body ng-app="docs" data-spy="scroll" data-target="#table-of-contents" data-offset="69">
+    <header class="container-fluid navbar">
+      <div class="row">
+        <div class="col-sm-4">
+          <a class="navbar-brand" href="./"><img alt="Brand" src="img/logo.png">DataStax C/C++ Driver</a>
         </div>
-        <div class="collapse navbar-collapse" ng-controller="search">
-          <ul class="nav navbar-nav">
-            
-            
-            
-            <li>
-              <a href="topics/">Topics</a>
-            </li>
-            
-            
-            <li>
-              <a href="api/">API docs</a>
-            </li>
-            
-          </ul>
-          <form class="navbar-form form-search navbar-right dropdown visible-lg-block" ng-class="{open: hasResults}" role="search" ng-submit="submit()">
-            <div class="form-group has-feedback">
-              <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.2')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
+        <div class="col-md-4 col-md-offset-4">
+          <div class="row">
+            <div class="col-md-12">
+              <ul class="list-inline" role="nav">
+                <li><a href="https://academy.datastax.com/" class="navbar-link">DataStax Academy</a></li>
+                <li><a href="http://www.datastax.com/dev/blog" class="navbar-link">Tech Blog</a></li>
+                <li><a href="http://www.datastax.com/what-we-offer/products-services/support" class="navbar-link">Support</a></li>
+              </ul>
             </div>
-            <ul class="dropdown-menu" role="menu">
-              <li ng-repeat="result in results" ng-class="{'bg-warning': $index == current}"><a ng-href="{{basePath}}{{result.path}}"><span ng-bind-html="summary(result)"></span></a></li>
-            </ul>
-          </form>
+          </div>
+          <div class="row">
+            <div class="col-md-8">
+              <form id="search" class="form-search dropdown visible-lg-block" ng-controller="search" ng-class="{open: hasResults}" role="search" ng-submit="submit()" data-spy="affix" data-offset-top="130">
+                <div class="form-group has-feedback">
+                  <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.3')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
+                </div>
+                <ul class="dropdown-menu search-results" role="menu">
+                  <li ng-repeat="result in results" ng-class="{'bg-warning': $index == current}"><a ng-href="{{basePath}}{{result.path}}"><span ng-bind-html="summary(result)"></span></a></li>
+                </ul>
+              </form>
+            </div>
+            <div class="col-md-4">
+              <a href="http://www.datastax.com/download" class="btn btn-primary btn-sm">Download</a>
+            </div>
+          </div>
         </div>
       </div>
-    </header>
-
-    <div class="container" id="content">
-      <div class="row">
-        <div class="col-md-9 content">
-          <nav class="crumbs">
+      <div class="row crumbs-wrapper">
+        <div class="col-md-12">
+          <nav id="crumbs" data-spy="affix" data-offset-top="130">
             <ol class="breadcrumb">
               
               <li>
-                <div class="dropdown">
-                  <button id="current-version" class="btn btn-default btn-sm" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    v2.2
+                <div class="btn-group">
+                  <button id="current-version" class="btn btn-default btn-sm dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    v2.3
                     <span class="caret"></span>
                   </button>
                   <ul class="dropdown-menu" role="menu" aria-labelledby="current-version">
                   
-                    <li class="disabled"><a href="./">v2.2</a></li>
+                    <li class="disabled"><a href="./">v2.3</a></li>
+                  
+                    <li><a href="v2.2/">v2.2</a></li>
                   
                     <li><a href="v2.1/">v2.1</a></li>
                   
@@ -91,14 +86,74 @@
               
               
               <li class="active">Home</li>
+              <li class="dropdown" id="table-of-contents">
+                <div class="btn-group">
+                  <button id="current-section" type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">
+                    Jump to&#8230; <span class="caret"></span><span class="sr-only">Table of Contents</span>
+                  </button>
+                  <ul class="dropdown-menu nav nav-pills nav-stacked">
+                    <li><a href="#data-stax-c-c-driver-for-apache-cassandra">Page Top <span class="glyphicon glyphicon-chevron-up" aria-hidden="true"></span></a></li>
+<li><a href="#what-s-new-in-2-3">What’s New in 2.3
+</a></li>
+<li><a href="#upgrading-from-2-0-or-2-1-to-2-2">Upgrading from 2.0 or 2.1 to 2.2+
+</a></li>
+<li><a href="#upgrading-from-1-0-to-2-0">Upgrading from 1.0 to 2.0+
+</a></li>
+<li><a href="#features">Features
+</a></li>
+<li><a href="#compatibility">Compatibility
+</a></li>
+<li><a href="#installation">Installation
+</a></li>
+<li><a href="#feedback-requested">Feedback Requested
+</a></li>
+<li><a href="#examples">Examples
+</a></li>
+<li><a href="#a-simple-example">A Simple Example
+</a></li>
+<li><a href="#license">License
+</a></li>
+                  </ul>
+                </div>
+              </li>
               
               
               
             </ol>
           </nav>
+        </div>
+      </div>
+    </header>
+
+    <div class="container-fluid" id="content">
+      <div class="row">
+        <div class="col-md-3">
+          <div id="navigation" class="side-nav" role="tablist" aria-multiselectable="true">
+            <h3>Contents</h3>
+            <ul class="nav nav-pills nav-stacked">
+  
+  
+  
+  <li>
+    <a href="api/">API docs <small>index</small></a>
+  </li>
+  
+  
+  
+  
+  <li>
+    <a href="topics/">Getting Started <small>page</small></a>
+  </li>
+  
+  
+</ul>
+
+          </div>
+        </div>
+        <div class="col-md-9 content">
           
 
-<h1 id="data-stax-c-c-driver-for-apache-cassandra">DataStax C/C++ Driver for Apache Cassandra<a class="anchor" href="#data-stax-c-c-driver-for-apache-cassandra" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+<h1 id="data-stax-c-c-driver-for-apache-cassandra" class="target">DataStax C/C++ Driver for Apache Cassandra<a class="anchor" href="#data-stax-c-c-driver-for-apache-cassandra" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h1>
 
 <p><a href="https://travis-ci.org/datastax/cpp-driver"><img src="https://travis-ci.org/datastax/cpp-driver.svg?branch=master" alt="Build Status"></a></p>
@@ -122,22 +177,34 @@ Cassandra’s native protocol and Cassandra Query Language v3.</p>
 </li>
 </ul>
 
-<h2 id="what-s-new-in-2-2">What’s New in 2.2<a class="anchor" href="#what-s-new-in-2-2" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+<h2 id="what-s-new-in-2-3" class="target">What’s New in 2.3<a class="anchor" href="#what-s-new-in-2-3" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h2>
 
 <ul>
-<li>Support for new Cassandra 2.2 datatypes: <code>tinyint</code>, <code>smallint</code>, <code>date</code> and
-<code>time</code>
-</li>
-<li>Support for custom payloads</li>
-<li>Support for server-side warnings</li>
-<li>UDF/UDA metadata</li>
-<li>Whitelist load balancing policy</li>
-<li>Default consistency has been changed from <code>ONE</code> to <code>LOCAL_QUORUM</code>
-</li>
+<li>Support for materialized view and secondary index metadata</li>
+<li>Support for clustering key order, <code>frozen&lt;&gt;</code> and Cassandra version metadata</li>
+<li>Blacklist, whitelist DC, and blacklist DC load balancing policies</li>
 </ul>
 
-<h2 id="features">Features<a class="anchor" href="#features" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+<p>More information about features included in 2.3 can be found in this <a href="http://www.datastax.com/dev/blog/datastax-c-driver-2-3-ga-released">blog
+post</a>.</p>
+
+<h2 id="upgrading-from-2-0-or-2-1-to-2-2" class="target">Upgrading from 2.0 or 2.1 to 2.2+<a class="anchor" href="#upgrading-from-2-0-or-2-1-to-2-2" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h2>
+
+<p>The new schema metadata API in 2.2 required some breaking API changes.
+Applications that used the previous schema metadata API from 2.0 and 2.1 will
+require some small modifications to use the new API. More information about the
+new schema metadata API can be found in this
+<a href="http://www.datastax.com/dev/blog/datastax-c-driver-2-2-ga-released">blog post</a>.</p>
+
+<h2 id="upgrading-from-1-0-to-2-0" class="target">Upgrading from 1.0 to 2.0+<a class="anchor" href="#upgrading-from-1-0-to-2-0" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h2>
+
+<p>There were a couple breaking API changes between 1.0 and 2.0 that are documented
+<a href="http://www.datastax.com/dev/blog/datastax-c-driver-2-0-released">here</a>.</p>
+
+<h2 id="features" class="target">Features<a class="anchor" href="#features" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h2>
 
 <ul>
@@ -152,7 +219,6 @@ Cassandra’s native protocol and Cassandra Query Language v3.</p>
 <li>Configurable <a href="topics/configuration/#load-balancing">load balancing</a>
 </li>
 <li>Works with any cluster size</li>
-<li>Compatibility with binary protocol version 1 and 2</li>
 <li><a href="topics/security/#authentication">Authentication</a></li>
 <li><a href="topics/security/ssl/">SSL</a></li>
 <li><a href="topics/configuration/#latency-aware-routing">Latency-aware routing</a></li>
@@ -167,12 +233,42 @@ Cassandra’s native protocol and Cassandra Query Language v3.</p>
 <li><a href="topics/configuration/#connection-heartbeats">Idle connection heartbeats</a></li>
 </ul>
 
-<h2 id="examples">Examples<a class="anchor" href="#examples" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+<h2 id="compatibility" class="target">Compatibility<a class="anchor" href="#compatibility" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h2>
+
+<p>This release is compatible with Apache Cassandra 1.2, 2.0, 2.1, and 2.2 and 3.0.</p>
+
+<p>A complete compatibility matrix for both Apache Cassandra and DataStax
+Enterprise can be found
+<a href="https://docs.datastax.com/en/developer/driver-matrix/doc/common/driverMatrix.html?scroll=driverMatrix__cpp-driver-matrix">here</a>.</p>
+
+<h2 id="installation" class="target">Installation<a class="anchor" href="#installation" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h2>
+
+<p>Binary packages are <a href="http://downloads.datastax.com/cpp-driver/">available</a> for
+CentOS, Ubuntu and Windows. Packages for the dependencies, libuv (1.x) and OpenSSL, are also
+provided and can be found under the “dependencies” directory for each
+platform e.g. <a href="http://downloads.datastax.com/cpp-driver/centos/7/dependencies/">CentOS 7</a>,
+<a href="http://downloads.datastax.com/cpp-driver/ubuntu/14.04/dependencies/">Ubuntu 14.04</a>,
+<a href="http://downloads.datastax.com/cpp-driver/windows/dependencies/">Windows</a>.</p>
+
+<p><em>Note</em>: CentOS and Ubuntu use the version of OpenSSL provided with the
+distribution.</p>
+
+<p>The driver can also be <a href="topics/building/">built from
+source</a>.</p>
+
+<h2 id="feedback-requested" class="target">Feedback Requested<a class="anchor" href="#feedback-requested" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h2>
+
+<p><strong>Help us focus our efforts!</strong> <a href="http://goo.gl/forms/ihKC5uEQr6">Provide your input</a> on the C/C++ Driver Platform and Runtime Survey (we kept it short).</p>
+
+<h2 id="examples" class="target">Examples<a class="anchor" href="#examples" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h2>
 
 <p>There are several examples provided here: <a href="https://github.com/datastax/cpp-driver/tree/1.0/examples">examples</a>.</p>
 
-<h2 id="a-simple-example">A Simple Example<a class="anchor" href="#a-simple-example" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+<h2 id="a-simple-example" class="target">A Simple Example<a class="anchor" href="#a-simple-example" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h2>
 <pre class="highlight"><code><span class="cp">#include &lt;cassandra.h&gt;
 #include &lt;stdio.h&gt;
@@ -249,10 +345,10 @@ Cassandra’s native protocol and Cassandra Query Language v3.</p>
   <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
 <span class="p">}</span>
 </code></pre>
-<h2 id="license">License<a class="anchor" href="#license" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+<h2 id="license" class="target">License<a class="anchor" href="#license" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h2>
 
-<p>Copyright © 2014-2015 DataStax</p>
+<p>Copyright © 2014-2016 DataStax</p>
 
 <p>Licensed under the Apache License, Version 2.0 (the “License”);
 you may not use this file except in compliance with the License.
@@ -267,62 +363,6 @@ See the License for the specific language governing permissions and
 limitations under the License.</p>
 
 
-        </div>
-        <div class="col-md-3">
-          <div id="navigation" class="panel-group side-nav" data-spy="affix" data-offset-top="60" data-offset-bottom="80" role="tablist" aria-multiselectable="true">
-            <div id="table-of-contents-panel" class="panel panel-default">
-              <div id="table-of-contents-heading" class="panel-heading" role="tab">
-                <h4 class="panel-title">
-                  <a data-toggle="collapse" href="#table-of-contents" aria-expanded="true" aria-controls="table-of-contents">
-                    Contents<i class="pull-right glyphicon glyphicon-chevron-up"></i>
-                  </a>
-                </h4>
-              </div>
-              <div id="table-of-contents" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="table-of-contents-heading">
-                <div class="panel-body">
-                  <ol class="nav nav-pills nav-stacked toc">
-<li><a href="#what-s-new-in-2-2">What’s New in 2.2
-</a></li>
-<li><a href="#features">Features
-</a></li>
-<li><a href="#examples">Examples
-</a></li>
-<li><a href="#a-simple-example">A Simple Example
-</a></li>
-<li><a href="#license">License
-</a></li>
-</ol>
-                </div>
-              </div>
-            </div>
-
-            
-            <div id="read-more-panel" class="panel panel-default">
-              <div id="read-more-heading" class="panel-heading" role="tab">
-                <h4 class="panel-title">
-                  <a data-toggle="collapse" href="#read-more" aria-expanded="true" aria-controls="read-more">
-                    Read More<i class="pull-right glyphicon glyphicon-chevron-up"></i>
-                  </a>
-                </h4>
-              </div>
-              <div id="read-more" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="read-more-heading">
-                <div class="panel-body">
-                  <ol class="nav nav-pills nav-stacked">
-                  
-                    <li>
-                      <a href="api/">API docs</a>
-                    </li>
-                  
-                    <li>
-                      <a href="topics/">Getting Started</a>
-                    </li>
-                  
-                  </ol>
-                </div>
-              </div>
-            </div>
-            
-          </div>
         </div>
       </div>
     </div>

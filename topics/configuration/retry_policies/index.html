@@ -22,60 +22,55 @@
       <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
   </head>
-  <body ng-app="docs" data-spy="scroll" data-target=".side-nav">
-    <header class="navbar navbar-default navbar-static-top" role="navigation">
-      <div class="container">
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-            <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a class="navbar-brand" href="../../../">DataStax C/C++ Driver</a>
+  <body ng-app="docs" data-spy="scroll" data-target="#table-of-contents" data-offset="69">
+    <header class="container-fluid navbar">
+      <div class="row">
+        <div class="col-sm-4">
+          <a class="navbar-brand" href="../../../"><img alt="Brand" src="../../../img/logo.png">DataStax C/C++ Driver</a>
         </div>
-        <div class="collapse navbar-collapse" ng-controller="search">
-          <ul class="nav navbar-nav">
-            
-            
-            
-            <li class="active">
-              <a href="../../">Topics</a>
-            </li>
-            
-            
-            <li>
-              <a href="../../../api/">API docs</a>
-            </li>
-            
-          </ul>
-          <form class="navbar-form form-search navbar-right dropdown visible-lg-block" ng-class="{open: hasResults}" role="search" ng-submit="submit()">
-            <div class="form-group has-feedback">
-              <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.2')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
+        <div class="col-md-4 col-md-offset-4">
+          <div class="row">
+            <div class="col-md-12">
+              <ul class="list-inline" role="nav">
+                <li><a href="https://academy.datastax.com/" class="navbar-link">DataStax Academy</a></li>
+                <li><a href="http://www.datastax.com/dev/blog" class="navbar-link">Tech Blog</a></li>
+                <li><a href="http://www.datastax.com/what-we-offer/products-services/support" class="navbar-link">Support</a></li>
+              </ul>
             </div>
-            <ul class="dropdown-menu" role="menu">
-              <li ng-repeat="result in results" ng-class="{'bg-warning': $index == current}"><a ng-href="{{basePath}}{{result.path}}"><span ng-bind-html="summary(result)"></span></a></li>
-            </ul>
-          </form>
+          </div>
+          <div class="row">
+            <div class="col-md-8">
+              <form id="search" class="form-search dropdown visible-lg-block" ng-controller="search" ng-class="{open: hasResults}" role="search" ng-submit="submit()" data-spy="affix" data-offset-top="130">
+                <div class="form-group has-feedback">
+                  <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.3')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
+                </div>
+                <ul class="dropdown-menu search-results" role="menu">
+                  <li ng-repeat="result in results" ng-class="{'bg-warning': $index == current}"><a ng-href="{{basePath}}{{result.path}}"><span ng-bind-html="summary(result)"></span></a></li>
+                </ul>
+              </form>
+            </div>
+            <div class="col-md-4">
+              <a href="http://www.datastax.com/download" class="btn btn-primary btn-sm">Download</a>
+            </div>
+          </div>
         </div>
       </div>
-    </header>
-
-    <div class="container" id="content">
-      <div class="row">
-        <div class="col-md-9 content">
-          <nav class="crumbs">
+      <div class="row crumbs-wrapper">
+        <div class="col-md-12">
+          <nav id="crumbs" data-spy="affix" data-offset-top="130">
             <ol class="breadcrumb">
               
               <li>
-                <div class="dropdown">
-                  <button id="current-version" class="btn btn-default btn-sm" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    v2.2
+                <div class="btn-group">
+                  <button id="current-version" class="btn btn-default btn-sm dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    v2.3
                     <span class="caret"></span>
                   </button>
                   <ul class="dropdown-menu" role="menu" aria-labelledby="current-version">
                   
-                    <li class="disabled"><a href="./">v2.2</a></li>
+                    <li class="disabled"><a href="./">v2.3</a></li>
+                  
+                    <li><a href="../../../v2.2/topics/configuration/retry_policies/">v2.2</a></li>
                   
                     <li><a href="../../../v2.1/topics/configuration/retry_policies/">v2.1</a></li>
                   
@@ -109,14 +104,136 @@
               
               
               <li class="active">Retry policies</li>
+              <li class="dropdown" id="table-of-contents">
+                <div class="btn-group">
+                  <button id="current-section" type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">
+                    Jump to&#8230; <span class="caret"></span><span class="sr-only">Table of Contents</span>
+                  </button>
+                  <ul class="dropdown-menu nav nav-pills nav-stacked">
+                    <li><a href="#retry-policies">Page Top <span class="glyphicon glyphicon-chevron-up" aria-hidden="true"></span></a></li>
+<li><a href="#setting-retry-policy">Setting Retry Policy
+</a></li>
+<li><a href="#default-retry-policy">Default Retry Policy
+</a></li>
+<li><a href="#downgrading-consistency-retry-policy">Downgrading Consistency Retry Policy
+</a></li>
+<li><a href="#fallthrough-retry-policy">Fallthrough Retry Policy
+</a></li>
+<li><a href="#logging">Logging
+</a></li>
+                  </ul>
+                </div>
+              </li>
               
               
               
             </ol>
           </nav>
+        </div>
+      </div>
+    </header>
+
+    <div class="container-fluid" id="content">
+      <div class="row">
+        <div class="col-md-3">
+          <div id="navigation" class="side-nav" role="tablist" aria-multiselectable="true">
+            <h3>Contents</h3>
+            <ul class="nav nav-pills nav-stacked">
+  
+  
+  
+  <li>
+    <a href="../../../api/">API docs <small>index</small></a>
+  </li>
+  
+  
+  
+  
+  <li class="active">
+    <a href="../../">Getting Started <small>page</small></a>
+    <ul class="nav nav-pills nav-stacked">
+  
+  
+  
+  <li>
+    <a href="../../building/">Building <small>page</small></a>
+  </li>
+  
+  
+  
+  
+  <li>
+    <a href="../../basics/">Basics <small>page</small></a>
+  </li>
+  
+  
+  
+  
+  <li>
+    <a href="../../security/">Security <small>page</small></a>
+  </li>
+  
+  
+  
+  
+  <li>
+    <a href="../../logging/">Logging <small>page</small></a>
+  </li>
+  
+  
+  
+  
+  <li>
+    <a href="../../faq/">FAQ <small>page</small></a>
+  </li>
+  
+  
+  
+  
+  <li>
+    <a href="../../metrics/">Metrics <small>page</small></a>
+  </li>
+  
+  
+  
+  
+  <li class="active">
+    <a href="../">Configuration <small>page</small></a>
+    <ul class="nav nav-pills nav-stacked">
+  
+  
+  
+  <li class="active">
+    <a href="./" class="current">Retry policies <small>page</small></a>
+    
+  </li>
+  
+  
+</ul>
+
+  </li>
+  
+  
+  
+  
+  <li>
+    <a href="../../testing/">Testing <small>page</small></a>
+  </li>
+  
+  
+</ul>
+
+  </li>
+  
+  
+</ul>
+
+          </div>
+        </div>
+        <div class="col-md-9 content">
           
 
-<h1 id="retry-policies">Retry policies<a class="anchor" href="#retry-policies" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+<h1 id="retry-policies" class="target">Retry policies<a class="anchor" href="#retry-policies" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h1>
 
 <p>Retry polices allow the driver to automatically handle server-side failures when
@@ -131,16 +248,16 @@ to automatically recover. This is done because not all operations are idempotent
 and the driver is unable to distinguish which requests can automatically retried
 without side effect. It’s up to application code to make this distinction.</p>
 
-<h2 id="setting-retry-policy">Setting Retry Policy<a class="anchor" href="#setting-retry-policy" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+<h2 id="setting-retry-policy" class="target">Setting Retry Policy<a class="anchor" href="#setting-retry-policy" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h2>
 
 <p>By default, the driver uses the <code>default retry policy</code> for all requests unless
 it is overridden. The retry policy can be set globally using
-<a href="../../../api/CassCluster/#cass-cluster-set-retry-policy"><code>cass_cluster_set_retry_policy()</code></a> or it can be set per statement or batch
-using <a href="../../../api/CassStatement/#cass-statement-set-retry-policy"><code>cass_statement_set_retry_policy()</code></a> or
-<a href="../../../api/CassBatch/#cass-batch-set-retry-policy"><code>cass_batch_set_retry_policy()</code></a>, respectively.</p>
+<a href="http://datastax.github.io/cpp-driver/api/CassCluster/#cass-cluster-set-retry-policy"><code>cass_cluster_set_retry_policy()</code></a> or it can be set per statement or batch
+using <a href="http://datastax.github.io/cpp-driver/api/CassStatement/#cass-statement-set-retry-policy"><code>cass_statement_set_retry_policy()</code></a> or
+<a href="http://datastax.github.io/cpp-driver/api/CassBatch/#cass-batch-set-retry-policy"><code>cass_batch_set_retry_policy()</code></a>, respectively.</p>
 
-<h2 id="default-retry-policy">Default Retry Policy<a class="anchor" href="#default-retry-policy" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+<h2 id="default-retry-policy" class="target">Default Retry Policy<a class="anchor" href="#default-retry-policy" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h2>
 
 <p>The default retry policy will only retry a request when it is safe to do so
@@ -179,7 +296,7 @@ succeed. In all other cases, this policy will return an error.</p>
 <span class="cm">/* Retry policies must be freed */</span>
 <span class="nb">cass_retry_policy_free</span><span class="p">(</span><span class="n">default_policy</span><span class="p">);</span>
 </code></pre>
-<h2 id="downgrading-consistency-retry-policy">Downgrading Consistency Retry Policy<a class="anchor" href="#downgrading-consistency-retry-policy" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+<h2 id="downgrading-consistency-retry-policy" class="target">Downgrading Consistency Retry Policy<a class="anchor" href="#downgrading-consistency-retry-policy" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h2>
 
 <p>This policy will retry in all the same scenarios as the default policy, and it
@@ -224,7 +341,7 @@ used in application that required strong consistency.</p>
 <span class="cm">/* Retry policies must be freed */</span>
 <span class="nb">cass_retry_policy_free</span><span class="p">(</span><span class="n">downgrading_policy</span><span class="p">);</span>
 </code></pre>
-<h2 id="fallthrough-retry-policy">Fallthrough Retry Policy<a class="anchor" href="#fallthrough-retry-policy" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+<h2 id="fallthrough-retry-policy" class="target">Fallthrough Retry Policy<a class="anchor" href="#fallthrough-retry-policy" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h2>
 
 <p>This policy never retries or ignores a server-side failures. Errors are always
@@ -261,7 +378,7 @@ directly.</p>
 <span class="cm">/* Retry policies must be freed */</span>
 <span class="nb">cass_retry_policy_free</span><span class="p">(</span><span class="n">fallthrough_policy</span><span class="p">);</span>
 </code></pre>
-<h2 id="logging">Logging<a class="anchor" href="#logging" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+<h2 id="logging" class="target">Logging<a class="anchor" href="#logging" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h2>
 
 <p>This policy can be added as a parent policy to all the other polices. It logs
@@ -280,37 +397,6 @@ are done using the <a href="../../../api/cassandra.h/#cass-log-level"><code>CASS
 </code></pre>
 
 
-        </div>
-        <div class="col-md-3">
-          <div id="navigation" class="panel-group side-nav" data-spy="affix" data-offset-top="60" data-offset-bottom="80" role="tablist" aria-multiselectable="true">
-            <div id="table-of-contents-panel" class="panel panel-default">
-              <div id="table-of-contents-heading" class="panel-heading" role="tab">
-                <h4 class="panel-title">
-                  <a data-toggle="collapse" href="#table-of-contents" aria-expanded="true" aria-controls="table-of-contents">
-                    Contents<i class="pull-right glyphicon glyphicon-chevron-up"></i>
-                  </a>
-                </h4>
-              </div>
-              <div id="table-of-contents" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="table-of-contents-heading">
-                <div class="panel-body">
-                  <ol class="nav nav-pills nav-stacked toc">
-<li><a href="#setting-retry-policy">Setting Retry Policy
-</a></li>
-<li><a href="#default-retry-policy">Default Retry Policy
-</a></li>
-<li><a href="#downgrading-consistency-retry-policy">Downgrading Consistency Retry Policy
-</a></li>
-<li><a href="#fallthrough-retry-policy">Fallthrough Retry Policy
-</a></li>
-<li><a href="#logging">Logging
-</a></li>
-</ol>
-                </div>
-              </div>
-            </div>
-
-            
-          </div>
         </div>
       </div>
     </div>

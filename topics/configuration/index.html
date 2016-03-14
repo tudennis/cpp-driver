@@ -22,60 +22,55 @@
       <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
   </head>
-  <body ng-app="docs" data-spy="scroll" data-target=".side-nav">
-    <header class="navbar navbar-default navbar-static-top" role="navigation">
-      <div class="container">
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-            <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a class="navbar-brand" href="../../">DataStax C/C++ Driver</a>
+  <body ng-app="docs" data-spy="scroll" data-target="#table-of-contents" data-offset="69">
+    <header class="container-fluid navbar">
+      <div class="row">
+        <div class="col-sm-4">
+          <a class="navbar-brand" href="../../"><img alt="Brand" src="../../img/logo.png">DataStax C/C++ Driver</a>
         </div>
-        <div class="collapse navbar-collapse" ng-controller="search">
-          <ul class="nav navbar-nav">
-            
-            
-            
-            <li class="active">
-              <a href="../">Topics</a>
-            </li>
-            
-            
-            <li>
-              <a href="../../api/">API docs</a>
-            </li>
-            
-          </ul>
-          <form class="navbar-form form-search navbar-right dropdown visible-lg-block" ng-class="{open: hasResults}" role="search" ng-submit="submit()">
-            <div class="form-group has-feedback">
-              <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.2')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
+        <div class="col-md-4 col-md-offset-4">
+          <div class="row">
+            <div class="col-md-12">
+              <ul class="list-inline" role="nav">
+                <li><a href="https://academy.datastax.com/" class="navbar-link">DataStax Academy</a></li>
+                <li><a href="http://www.datastax.com/dev/blog" class="navbar-link">Tech Blog</a></li>
+                <li><a href="http://www.datastax.com/what-we-offer/products-services/support" class="navbar-link">Support</a></li>
+              </ul>
             </div>
-            <ul class="dropdown-menu" role="menu">
-              <li ng-repeat="result in results" ng-class="{'bg-warning': $index == current}"><a ng-href="{{basePath}}{{result.path}}"><span ng-bind-html="summary(result)"></span></a></li>
-            </ul>
-          </form>
+          </div>
+          <div class="row">
+            <div class="col-md-8">
+              <form id="search" class="form-search dropdown visible-lg-block" ng-controller="search" ng-class="{open: hasResults}" role="search" ng-submit="submit()" data-spy="affix" data-offset-top="130">
+                <div class="form-group has-feedback">
+                  <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.3')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
+                </div>
+                <ul class="dropdown-menu search-results" role="menu">
+                  <li ng-repeat="result in results" ng-class="{'bg-warning': $index == current}"><a ng-href="{{basePath}}{{result.path}}"><span ng-bind-html="summary(result)"></span></a></li>
+                </ul>
+              </form>
+            </div>
+            <div class="col-md-4">
+              <a href="http://www.datastax.com/download" class="btn btn-primary btn-sm">Download</a>
+            </div>
+          </div>
         </div>
       </div>
-    </header>
-
-    <div class="container" id="content">
-      <div class="row">
-        <div class="col-md-9 content">
-          <nav class="crumbs">
+      <div class="row crumbs-wrapper">
+        <div class="col-md-12">
+          <nav id="crumbs" data-spy="affix" data-offset-top="130">
             <ol class="breadcrumb">
               
               <li>
-                <div class="dropdown">
-                  <button id="current-version" class="btn btn-default btn-sm" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    v2.2
+                <div class="btn-group">
+                  <button id="current-version" class="btn btn-default btn-sm dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    v2.3
                     <span class="caret"></span>
                   </button>
                   <ul class="dropdown-menu" role="menu" aria-labelledby="current-version">
                   
-                    <li class="disabled"><a href="./">v2.2</a></li>
+                    <li class="disabled"><a href="./">v2.3</a></li>
+                  
+                    <li><a href="../../v2.2/topics/configuration/">v2.2</a></li>
                   
                     <li><a href="../../v2.1/topics/configuration/">v2.1</a></li>
                   
@@ -103,17 +98,154 @@
               
               
               <li class="active">Configuration</li>
+              <li class="dropdown" id="table-of-contents">
+                <div class="btn-group">
+                  <button id="current-section" type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">
+                    Jump to&#8230; <span class="caret"></span><span class="sr-only">Table of Contents</span>
+                  </button>
+                  <ul class="dropdown-menu nav nav-pills nav-stacked">
+                    <li><a href="#configuration">Page Top <span class="glyphicon glyphicon-chevron-up" aria-hidden="true"></span></a></li>
+<li>
+<a href="#load-balancing">Load balancing
+</a><ul class="nav nav-pills nav-stacked">
+<li><a href="#round-robin-load-balancing">Round-robin Load Balancing
+</a></li>
+<li><a href="#datacenter-aware-load-balancing">Datacenter-aware Load Balancing
+</a></li>
+<li><a href="#token-aware-routing">Token-aware Routing
+</a></li>
+<li><a href="#latency-aware-routing">Latency-aware Routing
+</a></li>
+<li>
+<a href="#filtering">Filtering
+</a><ul class="nav nav-pills nav-stacked">
+<li><a href="#whitelist">Whitelist
+</a></li>
+<li><a href="#blacklist">Blacklist
+</a></li>
+<li><a href="#datacenter">Datacenter
+</a></li>
+</ul>
+</li>
+<li><a href="#connection-heartbeats">Connection Heartbeats
+</a></li>
+</ul>
+</li>
+                  </ul>
+                </div>
+              </li>
               
               
               
             </ol>
           </nav>
+        </div>
+      </div>
+    </header>
+
+    <div class="container-fluid" id="content">
+      <div class="row">
+        <div class="col-md-3">
+          <div id="navigation" class="side-nav" role="tablist" aria-multiselectable="true">
+            <h3>Contents</h3>
+            <ul class="nav nav-pills nav-stacked">
+  
+  
+  
+  <li>
+    <a href="../../api/">API docs <small>index</small></a>
+  </li>
+  
+  
+  
+  
+  <li class="active">
+    <a href="../">Getting Started <small>page</small></a>
+    <ul class="nav nav-pills nav-stacked">
+  
+  
+  
+  <li>
+    <a href="../building/">Building <small>page</small></a>
+  </li>
+  
+  
+  
+  
+  <li>
+    <a href="../basics/">Basics <small>page</small></a>
+  </li>
+  
+  
+  
+  
+  <li>
+    <a href="../security/">Security <small>page</small></a>
+  </li>
+  
+  
+  
+  
+  <li>
+    <a href="../logging/">Logging <small>page</small></a>
+  </li>
+  
+  
+  
+  
+  <li>
+    <a href="../faq/">FAQ <small>page</small></a>
+  </li>
+  
+  
+  
+  
+  <li>
+    <a href="../metrics/">Metrics <small>page</small></a>
+  </li>
+  
+  
+  
+  
+  <li class="active">
+    <a href="./" class="current">Configuration <small>page</small></a>
+    <ul class="nav nav-pills nav-stacked">
+  
+  
+  
+  <li>
+    <a href="retry_policies/">Retry policies <small>page</small></a>
+  </li>
+  
+  
+</ul>
+
+  </li>
+  
+  
+  
+  
+  <li>
+    <a href="../testing/">Testing <small>page</small></a>
+  </li>
+  
+  
+</ul>
+
+  </li>
+  
+  
+</ul>
+
+          </div>
+        </div>
+        <div class="col-md-9 content">
           
 
-<h1 id="configuration">Configuration<a class="anchor" href="#configuration" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+<h1 id="configuration" class="target">Configuration<a class="anchor" href="#configuration" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h1>
 
-<h2 id="load-balancing">Load balancing<a class="anchor" href="#load-balancing" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+<h2 id="load-balancing" class="target">Load balancing<a class="anchor" href="#load-balancing" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h2>
 
 <p>Load balancing controls how queries are distributed to nodes in a Cassandra
@@ -125,21 +257,21 @@ queries to nodes in the local datacenter (for local consistency levels) and
 it will use the primary key of queries to route them directly to the nodes where the
 corresponding data is located.</p>
 
-<h3 id="round-robin-load-balancing">Round-robin Load Balancing<a class="anchor" href="#round-robin-load-balancing" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+<h3 id="round-robin-load-balancing" class="target">Round-robin Load Balancing<a class="anchor" href="#round-robin-load-balancing" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h3>
 
 <p>This load balancing policy equally distributes queries across cluster without
 consideration of datacenter locality. This should only be used with
 Cassandra clusters where all nodes are located in the same datacenter.</p>
 
-<h3 id="datacenter-aware-load-balancing">Datacenter-aware Load Balancing<a class="anchor" href="#datacenter-aware-load-balancing" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+<h3 id="datacenter-aware-load-balancing" class="target">Datacenter-aware Load Balancing<a class="anchor" href="#datacenter-aware-load-balancing" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h3>
 
 <p>This load balancing policy equally distributes queries to nodes in the local
 datacenter. Nodes in remote datacenters are only used when all local nodes are
 unavailable. Additionally, remote nodes are only considered when non-local
 consistency levels are used or if the driver is configured to use remote nodes
-with the <a href="../../api/CassCluster/#1a46b9816129aaa5ab61a1363489dccfd0"><code>allow_remote_dcs_for_local_cl</code></a> setting.</p>
+with the <a href="http://datastax.github.io/cpp-driver/api/CassCluster/#1a46b9816129aaa5ab61a1363489dccfd0"><code>allow_remote_dcs_for_local_cl</code></a> setting.</p>
 <pre class="highlight"><code><span class="cm">/*
  * Use up to 2 remote datacenter nodes for remote consistency levels
  * or when `allow_remote_dcs_for_local_cl` is enabled.
@@ -153,7 +285,7 @@ with the <a href="../../api/CassCluster/#1a46b9816129aaa5ab61a1363489dccfd0"><co
                                        <span class="n">used_hosts_per_remote_dc</span><span class="p">,</span>
                                        <span class="n">allow_remote_dcs_for_local_cl</span><span class="p">);</span>
 </code></pre>
-<h3 id="token-aware-routing">Token-aware Routing<a class="anchor" href="#token-aware-routing" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+<h3 id="token-aware-routing" class="target">Token-aware Routing<a class="anchor" href="#token-aware-routing" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h3>
 
 <p>Token-aware routing uses the primary key of queries to route requests directly to
@@ -167,7 +299,7 @@ in conjunction with other load balancing and routing policies.</p>
 <span class="cm">/* Disable token-aware routing */</span>
 <span class="nb">cass_cluster_set_token_aware_routing</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="nb">cass_true</span><span class="p">);</span>
 </code></pre>
-<h3 id="latency-aware-routing">Latency-aware Routing<a class="anchor" href="#latency-aware-routing" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+<h3 id="latency-aware-routing" class="target">Latency-aware Routing<a class="anchor" href="#latency-aware-routing" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h3>
 
 <p>Latency-aware routing tracks the latency of queries to avoid sending new queries
@@ -205,8 +337,11 @@ load balancing and routing policies.</p>
                                                 <span class="n">update_rate_ms</span><span class="p">,</span>
                                                 <span class="n">min_measured</span><span class="p">);</span>
 </code></pre>
-<h3 id="whitelist-filtering">Whitelist Filtering<a class="anchor" href="#whitelist-filtering" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+<h3 id="filtering" class="target">Filtering<a class="anchor" href="#filtering" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h3>
+
+<h4 id="whitelist" class="target">Whitelist<a class="anchor" href="#whitelist" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h4>
 
 <p>This policy ensures that only hosts from the provided whitelist filter will
 ever be used. Any host that is not contained within the whitelist will be
@@ -224,7 +359,36 @@ conjunction with other load balancing and routing policies.</p>
 <span class="cm">/* The whitelist can be cleared (and disabled) by using an empty string */</span>
 <span class="nb">cass_cluster_set_whitelist_filtering</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="s">""</span><span class="p">);</span>
 </code></pre>
-<h3 id="connection-heartbeats">Connection Heartbeats<a class="anchor" href="#connection-heartbeats" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+<h4 id="blacklist" class="target">Blacklist<a class="anchor" href="#blacklist" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h4>
+
+<p>This policy is the inverse of the whitelist policy where hosts provided in the
+blacklist filter will be ignored and a connection will not be established.</p>
+<pre class="highlight"><code><span class="cm">/* Set the list of predefined hosts the driver is NOT allowed to connect to */</span>
+<span class="nb">cass_cluster_set_blacklist_filtering</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span>
+                                     <span class="s">"127.0.0.1, 127.0.0.3, 127.0.0.5"</span><span class="p">);</span>
+
+<span class="cm">/* The blacklist can be cleared (and disabled) by using an empty string */</span>
+<span class="nb">cass_cluster_set_blacklist_filtering</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="s">""</span><span class="p">);</span>
+</code></pre>
+<h4 id="datacenter" class="target">Datacenter<a class="anchor" href="#datacenter" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h4>
+
+<p>Filtering can also be performed on all hosts in a datacenter or multiple
+datacenters when using the whitelist/blacklist datacenter filtering polices.</p>
+<pre class="highlight"><code><span class="cm">/* Set the list of predefined datacenters the driver is allowed to connect to */</span>
+<span class="nb">cass_cluster_set_whitelist_filtering</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="s">"dc2, dc4"</span><span class="p">);</span>
+
+<span class="cm">/* The datacenter whitelist can be cleared/disabled by using an empty string */</span>
+<span class="nb">cass_cluster_set_whitelist_filtering</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="s">""</span><span class="p">);</span>
+</code></pre>
+<pre class="highlight"><code><span class="cm">/* Set the list of predefined datacenters the driver is NOT allowed to connect to */</span>
+<span class="nb">cass_cluster_set_blacklist_dc_filtering</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="s">"dc2, dc4"</span><span class="p">);</span>
+
+<span class="cm">/* The datacenter blacklist can be cleared/disabled by using an empty string */</span>
+<span class="nb">cass_cluster_set_blacklist_dc_filtering</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="s">""</span><span class="p">);</span>
+</code></pre>
+<h3 id="connection-heartbeats" class="target">Connection Heartbeats<a class="anchor" href="#connection-heartbeats" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h3>
 
 <p>To prevent intermediate network devices (routers, switches, etc.) from
@@ -249,63 +413,6 @@ interval can be changed from the default of 60 seconds:</p>
 heartbeats.</p>
 
 
-        </div>
-        <div class="col-md-3">
-          <div id="navigation" class="panel-group side-nav" data-spy="affix" data-offset-top="60" data-offset-bottom="80" role="tablist" aria-multiselectable="true">
-            <div id="table-of-contents-panel" class="panel panel-default">
-              <div id="table-of-contents-heading" class="panel-heading" role="tab">
-                <h4 class="panel-title">
-                  <a data-toggle="collapse" href="#table-of-contents" aria-expanded="true" aria-controls="table-of-contents">
-                    Contents<i class="pull-right glyphicon glyphicon-chevron-up"></i>
-                  </a>
-                </h4>
-              </div>
-              <div id="table-of-contents" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="table-of-contents-heading">
-                <div class="panel-body">
-                  <ol class="nav nav-pills nav-stacked toc"><li>
-<a href="#load-balancing">Load balancing
-</a><ol class="nav nav-pills nav-stacked">
-<li><a href="#round-robin-load-balancing">Round-robin Load Balancing
-</a></li>
-<li><a href="#datacenter-aware-load-balancing">Datacenter-aware Load Balancing
-</a></li>
-<li><a href="#token-aware-routing">Token-aware Routing
-</a></li>
-<li><a href="#latency-aware-routing">Latency-aware Routing
-</a></li>
-<li><a href="#whitelist-filtering">Whitelist Filtering
-</a></li>
-<li><a href="#connection-heartbeats">Connection Heartbeats
-</a></li>
-</ol>
-</li></ol>
-                </div>
-              </div>
-            </div>
-
-            
-            <div id="read-more-panel" class="panel panel-default">
-              <div id="read-more-heading" class="panel-heading" role="tab">
-                <h4 class="panel-title">
-                  <a data-toggle="collapse" href="#read-more" aria-expanded="true" aria-controls="read-more">
-                    Read More<i class="pull-right glyphicon glyphicon-chevron-up"></i>
-                  </a>
-                </h4>
-              </div>
-              <div id="read-more" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="read-more-heading">
-                <div class="panel-body">
-                  <ol class="nav nav-pills nav-stacked">
-                  
-                    <li>
-                      <a href="retry_policies/">Retry policies</a>
-                    </li>
-                  
-                  </ol>
-                </div>
-              </div>
-            </div>
-            
-          </div>
         </div>
       </div>
     </div>

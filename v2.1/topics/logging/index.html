@@ -22,60 +22,55 @@
       <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
   </head>
-  <body ng-app="docs" data-spy="scroll" data-target=".side-nav">
-    <header class="navbar navbar-default navbar-static-top" role="navigation">
-      <div class="container">
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-            <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a class="navbar-brand" href="../../">DataStax C/C++ Driver</a>
+  <body ng-app="docs" data-spy="scroll" data-target="#table-of-contents" data-offset="69">
+    <header class="container-fluid navbar">
+      <div class="row">
+        <div class="col-sm-4">
+          <a class="navbar-brand" href="../../"><img alt="Brand" src="../../../img/logo.png">DataStax C/C++ Driver</a>
         </div>
-        <div class="collapse navbar-collapse" ng-controller="search">
-          <ul class="nav navbar-nav">
-            
-            
-            
-            <li class="active">
-              <a href="../">Topics</a>
-            </li>
-            
-            
-            <li>
-              <a href="../../api/">API docs</a>
-            </li>
-            
-          </ul>
-          <form class="navbar-form form-search navbar-right dropdown visible-lg-block" ng-class="{open: hasResults}" role="search" ng-submit="submit()">
-            <div class="form-group has-feedback">
-              <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.1')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
+        <div class="col-md-4 col-md-offset-4">
+          <div class="row">
+            <div class="col-md-12">
+              <ul class="list-inline" role="nav">
+                <li><a href="https://academy.datastax.com/" class="navbar-link">DataStax Academy</a></li>
+                <li><a href="http://www.datastax.com/dev/blog" class="navbar-link">Tech Blog</a></li>
+                <li><a href="http://www.datastax.com/what-we-offer/products-services/support" class="navbar-link">Support</a></li>
+              </ul>
             </div>
-            <ul class="dropdown-menu" role="menu">
-              <li ng-repeat="result in results" ng-class="{'bg-warning': $index == current}"><a ng-href="{{basePath}}{{result.path}}"><span ng-bind-html="summary(result)"></span></a></li>
-            </ul>
-          </form>
+          </div>
+          <div class="row">
+            <div class="col-md-8">
+              <form id="search" class="form-search dropdown visible-lg-block" ng-controller="search" ng-class="{open: hasResults}" role="search" ng-submit="submit()" data-spy="affix" data-offset-top="130">
+                <div class="form-group has-feedback">
+                  <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.1')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
+                </div>
+                <ul class="dropdown-menu search-results" role="menu">
+                  <li ng-repeat="result in results" ng-class="{'bg-warning': $index == current}"><a ng-href="{{basePath}}{{result.path}}"><span ng-bind-html="summary(result)"></span></a></li>
+                </ul>
+              </form>
+            </div>
+            <div class="col-md-4">
+              <a href="http://www.datastax.com/download" class="btn btn-primary btn-sm">Download</a>
+            </div>
+          </div>
         </div>
       </div>
-    </header>
-
-    <div class="container" id="content">
-      <div class="row">
-        <div class="col-md-9 content">
-          <nav class="crumbs">
+      <div class="row crumbs-wrapper">
+        <div class="col-md-12">
+          <nav id="crumbs" data-spy="affix" data-offset-top="130">
             <ol class="breadcrumb">
               
               <li>
-                <div class="dropdown">
-                  <button id="current-version" class="btn btn-default btn-sm" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <div class="btn-group">
+                  <button id="current-version" class="btn btn-default btn-sm dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     v2.1
                     <span class="caret"></span>
                   </button>
                   <ul class="dropdown-menu" role="menu" aria-labelledby="current-version">
                   
-                    <li><a href="../../../topics/logging/">v2.2</a></li>
+                    <li><a href="../../../topics/logging/">v2.3</a></li>
+                  
+                    <li><a href="../../../v2.2/topics/logging/">v2.2</a></li>
                   
                     <li class="disabled"><a href="./">v2.1</a></li>
                   
@@ -103,21 +98,128 @@
               
               
               <li class="active">Logging</li>
+              <li class="dropdown" id="table-of-contents">
+                <div class="btn-group">
+                  <button id="current-section" type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">
+                    Jump to&#8230; <span class="caret"></span><span class="sr-only">Table of Contents</span>
+                  </button>
+                  <ul class="dropdown-menu nav nav-pills nav-stacked">
+                    <li><a href="#logging">Page Top <span class="glyphicon glyphicon-chevron-up" aria-hidden="true"></span></a></li>
+<li><a href="#log-level">Log Level
+</a></li>
+<li><a href="#custom-logging-callback">Custom Logging Callback
+</a></li>
+<li><a href="#logging-cleanup">Logging Cleanup
+</a></li>
+                  </ul>
+                </div>
+              </li>
               
               
               
             </ol>
           </nav>
+        </div>
+      </div>
+    </header>
+
+    <div class="container-fluid" id="content">
+      <div class="row">
+        <div class="col-md-3">
+          <div id="navigation" class="side-nav" role="tablist" aria-multiselectable="true">
+            <h3>Contents</h3>
+            <ul class="nav nav-pills nav-stacked">
+  
+  
+  
+  <li>
+    <a href="../../api/">API docs <small>index</small></a>
+  </li>
+  
+  
+  
+  
+  <li class="active">
+    <a href="../">Getting Started <small>page</small></a>
+    <ul class="nav nav-pills nav-stacked">
+  
+  
+  
+  <li>
+    <a href="../building/">Building <small>page</small></a>
+  </li>
+  
+  
+  
+  
+  <li>
+    <a href="../basics/">Basics <small>page</small></a>
+  </li>
+  
+  
+  
+  
+  <li>
+    <a href="../security/">Security <small>page</small></a>
+  </li>
+  
+  
+  
+  
+  <li class="active">
+    <a href="./" class="current">Logging <small>page</small></a>
+    
+  </li>
+  
+  
+  
+  
+  <li>
+    <a href="../faq/">FAQ <small>page</small></a>
+  </li>
+  
+  
+  
+  
+  <li>
+    <a href="../metrics/">Metrics <small>page</small></a>
+  </li>
+  
+  
+  
+  
+  <li>
+    <a href="../configuration/">Configuration <small>page</small></a>
+  </li>
+  
+  
+  
+  
+  <li>
+    <a href="../testing/">Testing <small>page</small></a>
+  </li>
+  
+  
+</ul>
+
+  </li>
+  
+  
+</ul>
+
+          </div>
+        </div>
+        <div class="col-md-9 content">
           
 
-<h1 id="logging">Logging<a class="anchor" href="#logging" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+<h1 id="logging" class="target">Logging<a class="anchor" href="#logging" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h1>
 
 <p>The driver’s logging system uses <code>stderr</code> by default and the log level <code>CASS_LOG_WARN</code>. Both of these settings can be changed using the driver’s <code>cass_log_*()</code> configuration functions.</p>
 
 <p><strong>Important</strong>: Logging configuration must be done before calling any other driver function.</p>
 
-<h2 id="log-level">Log Level<a class="anchor" href="#log-level" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+<h2 id="log-level" class="target">Log Level<a class="anchor" href="#log-level" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h2>
 
 <p>To update the log level use <code>cass_log_set_level()</code>.</p>
@@ -125,7 +227,7 @@
 
 <span class="cm">/* Create cluster and connect session */</span>
 </code></pre>
-<h2 id="custom-logging-callback">Custom Logging Callback<a class="anchor" href="#custom-logging-callback" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+<h2 id="custom-logging-callback" class="target">Custom Logging Callback<a class="anchor" href="#custom-logging-callback" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h2>
 
 <p>The use of a logging callback allows an application to log messages to a file, syslog, or any other logging mechanism. This callback must be thread-safe because it is possible for it to be called from multiple threads concurrently. The <code>data</code> parameter allows custom resources to be passed to the logging callback.</p>
@@ -142,7 +244,7 @@
 <span class="cm">/* Create cluster and connect session */</span>
 
 </code></pre>
-<h2 id="logging-cleanup">Logging Cleanup<a class="anchor" href="#logging-cleanup" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+<h2 id="logging-cleanup" class="target">Logging Cleanup<a class="anchor" href="#logging-cleanup" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h2>
 
 <p>Resources passed to a custom logging callback should be cleaned up after a call to <code>cass_log_cleanup()</code>. This shuts down the logging system and ensures that the custom callback will no longer be called.</p>
@@ -154,33 +256,6 @@
 </code></pre>
 
 
-        </div>
-        <div class="col-md-3">
-          <div id="navigation" class="panel-group side-nav" data-spy="affix" data-offset-top="60" data-offset-bottom="80" role="tablist" aria-multiselectable="true">
-            <div id="table-of-contents-panel" class="panel panel-default">
-              <div id="table-of-contents-heading" class="panel-heading" role="tab">
-                <h4 class="panel-title">
-                  <a data-toggle="collapse" href="#table-of-contents" aria-expanded="true" aria-controls="table-of-contents">
-                    Contents<i class="pull-right glyphicon glyphicon-chevron-up"></i>
-                  </a>
-                </h4>
-              </div>
-              <div id="table-of-contents" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="table-of-contents-heading">
-                <div class="panel-body">
-                  <ol class="nav nav-pills nav-stacked toc">
-<li><a href="#log-level">Log Level
-</a></li>
-<li><a href="#custom-logging-callback">Custom Logging Callback
-</a></li>
-<li><a href="#logging-cleanup">Logging Cleanup
-</a></li>
-</ol>
-                </div>
-              </div>
-            </div>
-
-            
-          </div>
         </div>
       </div>
     </div>

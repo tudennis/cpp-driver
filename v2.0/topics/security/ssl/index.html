@@ -22,60 +22,55 @@
       <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
   </head>
-  <body ng-app="docs" data-spy="scroll" data-target=".side-nav">
-    <header class="navbar navbar-default navbar-static-top" role="navigation">
-      <div class="container">
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-            <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a class="navbar-brand" href="../../../">DataStax C/C++ Driver</a>
+  <body ng-app="docs" data-spy="scroll" data-target="#table-of-contents" data-offset="69">
+    <header class="container-fluid navbar">
+      <div class="row">
+        <div class="col-sm-4">
+          <a class="navbar-brand" href="../../../"><img alt="Brand" src="../../../../img/logo.png">DataStax C/C++ Driver</a>
         </div>
-        <div class="collapse navbar-collapse" ng-controller="search">
-          <ul class="nav navbar-nav">
-            
-            
-            
-            <li class="active">
-              <a href="../../">Topics</a>
-            </li>
-            
-            
-            <li>
-              <a href="../../../api/">API docs</a>
-            </li>
-            
-          </ul>
-          <form class="navbar-form form-search navbar-right dropdown visible-lg-block" ng-class="{open: hasResults}" role="search" ng-submit="submit()">
-            <div class="form-group has-feedback">
-              <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.0')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
+        <div class="col-md-4 col-md-offset-4">
+          <div class="row">
+            <div class="col-md-12">
+              <ul class="list-inline" role="nav">
+                <li><a href="https://academy.datastax.com/" class="navbar-link">DataStax Academy</a></li>
+                <li><a href="http://www.datastax.com/dev/blog" class="navbar-link">Tech Blog</a></li>
+                <li><a href="http://www.datastax.com/what-we-offer/products-services/support" class="navbar-link">Support</a></li>
+              </ul>
             </div>
-            <ul class="dropdown-menu" role="menu">
-              <li ng-repeat="result in results" ng-class="{'bg-warning': $index == current}"><a ng-href="{{basePath}}{{result.path}}"><span ng-bind-html="summary(result)"></span></a></li>
-            </ul>
-          </form>
+          </div>
+          <div class="row">
+            <div class="col-md-8">
+              <form id="search" class="form-search dropdown visible-lg-block" ng-controller="search" ng-class="{open: hasResults}" role="search" ng-submit="submit()" data-spy="affix" data-offset-top="130">
+                <div class="form-group has-feedback">
+                  <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.0')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
+                </div>
+                <ul class="dropdown-menu search-results" role="menu">
+                  <li ng-repeat="result in results" ng-class="{'bg-warning': $index == current}"><a ng-href="{{basePath}}{{result.path}}"><span ng-bind-html="summary(result)"></span></a></li>
+                </ul>
+              </form>
+            </div>
+            <div class="col-md-4">
+              <a href="http://www.datastax.com/download" class="btn btn-primary btn-sm">Download</a>
+            </div>
+          </div>
         </div>
       </div>
-    </header>
-
-    <div class="container" id="content">
-      <div class="row">
-        <div class="col-md-9 content">
-          <nav class="crumbs">
+      <div class="row crumbs-wrapper">
+        <div class="col-md-12">
+          <nav id="crumbs" data-spy="affix" data-offset-top="130">
             <ol class="breadcrumb">
               
               <li>
-                <div class="dropdown">
-                  <button id="current-version" class="btn btn-default btn-sm" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <div class="btn-group">
+                  <button id="current-version" class="btn btn-default btn-sm dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     v2.0
                     <span class="caret"></span>
                   </button>
                   <ul class="dropdown-menu" role="menu" aria-labelledby="current-version">
                   
-                    <li><a href="../../../../topics/security/ssl/">v2.2</a></li>
+                    <li><a href="../../../../topics/security/ssl/">v2.3</a></li>
+                  
+                    <li><a href="../../../../v2.2/topics/security/ssl/">v2.2</a></li>
                   
                     <li><a href="../../../../v2.1/topics/security/ssl/">v2.1</a></li>
                   
@@ -109,14 +104,138 @@
               
               
               <li class="active">SSL</li>
+              <li class="dropdown" id="table-of-contents">
+                <div class="btn-group">
+                  <button id="current-section" type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">
+                    Jump to&#8230; <span class="caret"></span><span class="sr-only">Table of Contents</span>
+                  </button>
+                  <ul class="dropdown-menu nav nav-pills nav-stacked">
+                    <li><a href="#ssl">Page Top <span class="glyphicon glyphicon-chevron-up" aria-hidden="true"></span></a></li>
+<li>
+<a href="#setting-up-the-c-c-driver-to-use-ssl">Setting up the C/C++ Driver to Use SSL
+</a><ul class="nav nav-pills nav-stacked"><li>
+<a href="#using-cassandra-and-the-c-c-driver-with-client-side-certifcates">Using Cassandra and the C/C++ driver with client-side certifcates
+</a><ul class="nav nav-pills nav-stacked">
+<li><a href="#genterating-and-loading-the-client-side-certficate">Genterating and loading the client-side certficate
+</a></li>
+<li><a href="#setting-up-client-authentication-with-cassandra">Setting up client authentication with Cassandra
+</a></li>
+</ul>
+</li></ul>
+</li>
+                  </ul>
+                </div>
+              </li>
               
               
               
             </ol>
           </nav>
+        </div>
+      </div>
+    </header>
+
+    <div class="container-fluid" id="content">
+      <div class="row">
+        <div class="col-md-3">
+          <div id="navigation" class="side-nav" role="tablist" aria-multiselectable="true">
+            <h3>Contents</h3>
+            <ul class="nav nav-pills nav-stacked">
+  
+  
+  
+  <li>
+    <a href="../../../api/">API docs <small>index</small></a>
+  </li>
+  
+  
+  
+  
+  <li class="active">
+    <a href="../../">Getting Started <small>page</small></a>
+    <ul class="nav nav-pills nav-stacked">
+  
+  
+  
+  <li>
+    <a href="../../building/">Building <small>page</small></a>
+  </li>
+  
+  
+  
+  
+  <li>
+    <a href="../../basics/">Basics <small>page</small></a>
+  </li>
+  
+  
+  
+  
+  <li class="active">
+    <a href="../">Security <small>page</small></a>
+    <ul class="nav nav-pills nav-stacked">
+  
+  
+  
+  <li class="active">
+    <a href="./" class="current">SSL <small>page</small></a>
+    
+  </li>
+  
+  
+</ul>
+
+  </li>
+  
+  
+  
+  
+  <li>
+    <a href="../../logging/">Logging <small>page</small></a>
+  </li>
+  
+  
+  
+  
+  <li>
+    <a href="../../faq/">FAQ <small>page</small></a>
+  </li>
+  
+  
+  
+  
+  <li>
+    <a href="../../metrics/">Metrics <small>page</small></a>
+  </li>
+  
+  
+  
+  
+  <li>
+    <a href="../../configuration/">Configuration <small>page</small></a>
+  </li>
+  
+  
+  
+  
+  <li>
+    <a href="../../testing/">Testing <small>page</small></a>
+  </li>
+  
+  
+</ul>
+
+  </li>
+  
+  
+</ul>
+
+          </div>
+        </div>
+        <div class="col-md-9 content">
           
 
-<h1 id="ssl">SSL<a class="anchor" href="#ssl" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+<h1 id="ssl" class="target">SSL<a class="anchor" href="#ssl" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h1>
 
 <p>This is a guide to setting up SSL using the C/C++ driver. This guide will use self-signed certificates, but most steps will be similar for certficates generated by a certificate authority (CA). The first step is to generate a public and private key pair for all Cassandra nodes and configure them to use the generated certificate.</p>
@@ -128,7 +247,7 @@
 
 <p>SSL can be rather cumbersome to setup; if assistance is required please use the <a href="https://groups.google.com/a/lists.datastax.com/forum/#!forum/cpp-driver-user">mailing list</a> or <a href="http://webchat.freenode.net/?channels=datastax-drivers">#datastax-drivers on <code>irc.freenode.net &lt;http://freenode.net&gt;</code></a> for help.</p>
 
-<h3 id="generating-the-cassandra-public-and-private-keys">Generating the Cassandra Public and Private Keys<a class="anchor" href="#generating-the-cassandra-public-and-private-keys" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+<h3 id="generating-the-cassandra-public-and-private-keys" class="target">Generating the Cassandra Public and Private Keys<a class="anchor" href="#generating-the-cassandra-public-and-private-keys" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h3>
 
 <p>The most secure method of setting up SSL is to verify that DNS or IP address used to connect to the server matches identity information found in the SSL certificate. This helps to prevent man-in-the-middle attacks. Cassandra uses IP addresses internally so that’s the only supported information for identity verification. That means that the IP address of the Cassandra server where the certficate is installed needs to be present in either the certficate’s common name (CN) or one of its subject alternative names (SANs). It’s possible to create the certficate without either, but then it will not be possible to verify the server’s identity. Although this is not as secure, it eases the deployment of SSL by allowing the same certficate to be deployed across the entire Cassandra cluster.</p>
@@ -152,7 +271,7 @@
 </code></pre>
 <p><strong>NOTE:</strong> If an IP address SAN is present then it overrides checking the CN.</p>
 
-<h3 id="enabling-client-to-node-encryption-on-cassandra">Enabling <code>client-to-node</code> Encryption on Cassandra<a class="anchor" href="#enabling-client-to-node-encryption-on-cassandra" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+<h3 id="enabling-client-to-node-encryption-on-cassandra" class="target">Enabling <code>client-to-node</code> Encryption on Cassandra<a class="anchor" href="#enabling-client-to-node-encryption-on-cassandra" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h3>
 
 <p>The generated keystore from the previous step will need to be copied to all Cassandra node(s) and an update of the cassandra.yaml configuration file will need to be performed.</p>
@@ -168,10 +287,10 @@
 
 <p>The following <a href="http://www.datastax.com/documentation/cassandra/2.1/cassandra/security/secureSSLClientToNode_t.html">guide</a> has more information related to configuring SSL on Cassandra.</p>
 
-<h2 id="setting-up-the-c-c-driver-to-use-ssl">Setting up the C/C++ Driver to Use SSL<a class="anchor" href="#setting-up-the-c-c-driver-to-use-ssl" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+<h2 id="setting-up-the-c-c-driver-to-use-ssl" class="target">Setting up the C/C++ Driver to Use SSL<a class="anchor" href="#setting-up-the-c-c-driver-to-use-ssl" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h2>
 
-<p>A <a href="../../../api/CassSsl/"><code>CassSsl</code></a> object is required and must be configured:</p>
+<p>A <a href="http://datastax.github.io/cpp-driver/api/CassSsl/"><code>CassSsl</code></a> object is required and must be configured:</p>
 <pre class="highlight"><code><span class="cp">#include &lt;cassandra.h&gt;
 </span>
 <span class="kt">void</span> <span class="nf">setup_ssl</span><span class="p">(</span><span class="nc">CassCluster</span><span class="o">*</span> <span class="n">cluster</span><span class="p">)</span> <span class="p">{</span>
@@ -187,7 +306,7 @@
 </span>  <span class="nb">cass_ssl_free</span><span class="p">(</span><span class="n">ssl</span><span class="p">);</span>
 <span class="p">}</span>
 </code></pre>
-<h4 id="exporting-and-loading-the-cassandra-public-key">Exporting and Loading the Cassandra Public Key<a class="anchor" href="#exporting-and-loading-the-cassandra-public-key" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+<h4 id="exporting-and-loading-the-cassandra-public-key" class="target">Exporting and Loading the Cassandra Public Key<a class="anchor" href="#exporting-and-loading-the-cassandra-public-key" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h4>
 
 <p>The default setting of the driver is to verify the certifcate sent during the SSL handshake. For the driver to properly verify the Cassandra certifcate the driver needs either the public key from the self-signed public key or the CA certificate chain used to sign the public key. To have this work, extract the public key from the Cassandra keystore generated in the previous steps. This exports a <a href="https://www.openssl.org/docs/crypto/pem.html#PEM_ENCRYPTION_FORMAT">PEM formatted</a> certficate which is required by the C/C++ driver.</p>
@@ -235,7 +354,7 @@ int load_trusted_cert_file(const char* file, CassSsl* ssl) {
 <pre class="highlight"><code><span class="c1">// Disable certifcate verifcation
 </span><span class="nb">cass_ssl_set_verify_flags</span><span class="p">(</span><span class="n">ssl</span><span class="p">,</span> <span class="n">CASS_SSL_VERIFY_NONE</span><span class="p">);</span>
 </code></pre>
-<h4 id="enabling-cassandra-identity-verification">Enabling Cassandra identity verification<a class="anchor" href="#enabling-cassandra-identity-verification" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+<h4 id="enabling-cassandra-identity-verification" class="target">Enabling Cassandra identity verification<a class="anchor" href="#enabling-cassandra-identity-verification" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h4>
 
 <p>If a unique certifcate has been generated for each Cassandra node with the IP address in the CN or SAN fields, identity verification will also need to be enabled.</p>
@@ -244,12 +363,12 @@ int load_trusted_cert_file(const char* file, CassSsl* ssl) {
 <pre class="highlight"><code><span class="c1">// Add identity verification flag: CASS_SSL_VERIFY_PEER_IDENTITY
 </span><span class="nb">cass_ssl_set_verify_flags</span><span class="p">(</span><span class="n">ssl</span><span class="p">,</span> <span class="n">CASS_SSL_VERIFY_PEER_CERT</span> <span class="o">|</span> <span class="n">CASS_SSL_VERIFY_PEER_IDENTITY</span><span class="p">);</span>
 </code></pre>
-<h3 id="using-cassandra-and-the-c-c-driver-with-client-side-certifcates">Using Cassandra and the C/C++ driver with client-side certifcates<a class="anchor" href="#using-cassandra-and-the-c-c-driver-with-client-side-certifcates" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+<h3 id="using-cassandra-and-the-c-c-driver-with-client-side-certifcates" class="target">Using Cassandra and the C/C++ driver with client-side certifcates<a class="anchor" href="#using-cassandra-and-the-c-c-driver-with-client-side-certifcates" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h3>
 
 <p>Client-side certificates allow Cassandra to authenticate the client using public key cryptography and chains of trust. This is same process as above but in reverse. The client has a public and private key and the Cassandra node has a copy of the private key or the CA chain used to generate the pair.</p>
 
-<h4 id="genterating-and-loading-the-client-side-certficate">Genterating and loading the client-side certficate<a class="anchor" href="#genterating-and-loading-the-client-side-certficate" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+<h4 id="genterating-and-loading-the-client-side-certficate" class="target">Genterating and loading the client-side certficate<a class="anchor" href="#genterating-and-loading-the-client-side-certficate" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h4>
 
 <p>A new public/private key pair needs to be generated for client authentication.</p>
@@ -309,7 +428,7 @@ openssl pkcs12 -nomacver -nocerts <span class="se">\</span>
   <span class="c1">// Handle error
 </span><span class="p">}</span>
 </code></pre>
-<h4 id="setting-up-client-authentication-with-cassandra">Setting up client authentication with Cassandra<a class="anchor" href="#setting-up-client-authentication-with-cassandra" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+<h4 id="setting-up-client-authentication-with-cassandra" class="target">Setting up client authentication with Cassandra<a class="anchor" href="#setting-up-client-authentication-with-cassandra" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h4>
 
 <p>The driver’s public key or the CA chain used to sign the driver’s certificate will need to be added to Cassandra’s truststore. If using self-signed certificate then the public key will need to be extrated from the driver’s keystore generated in the previous steps.</p>
@@ -332,37 +451,6 @@ keytool -import -noprompt <span class="se">\</span>
 </code></pre>
 
 
-        </div>
-        <div class="col-md-3">
-          <div id="navigation" class="panel-group side-nav" data-spy="affix" data-offset-top="60" data-offset-bottom="80" role="tablist" aria-multiselectable="true">
-            <div id="table-of-contents-panel" class="panel panel-default">
-              <div id="table-of-contents-heading" class="panel-heading" role="tab">
-                <h4 class="panel-title">
-                  <a data-toggle="collapse" href="#table-of-contents" aria-expanded="true" aria-controls="table-of-contents">
-                    Contents<i class="pull-right glyphicon glyphicon-chevron-up"></i>
-                  </a>
-                </h4>
-              </div>
-              <div id="table-of-contents" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="table-of-contents-heading">
-                <div class="panel-body">
-                  <ol class="nav nav-pills nav-stacked toc"><li>
-<a href="#setting-up-the-c-c-driver-to-use-ssl">Setting up the C/C++ Driver to Use SSL
-</a><ol class="nav nav-pills nav-stacked"><li>
-<a href="#using-cassandra-and-the-c-c-driver-with-client-side-certifcates">Using Cassandra and the C/C++ driver with client-side certifcates
-</a><ol class="nav nav-pills nav-stacked">
-<li><a href="#genterating-and-loading-the-client-side-certficate">Genterating and loading the client-side certficate
-</a></li>
-<li><a href="#setting-up-client-authentication-with-cassandra">Setting up client authentication with Cassandra
-</a></li>
-</ol>
-</li></ol>
-</li></ol>
-                </div>
-              </div>
-            </div>
-
-            
-          </div>
         </div>
       </div>
     </div>
