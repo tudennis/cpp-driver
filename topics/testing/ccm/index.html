@@ -42,7 +42,7 @@
             <div class="col-md-8">
               <form id="search" class="form-search dropdown visible-lg-block" ng-controller="search" ng-class="{open: hasResults}" role="search" ng-submit="submit()" data-spy="affix" data-offset-top="130">
                 <div class="form-group has-feedback">
-                  <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.3')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
+                  <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.4')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
                 </div>
                 <ul class="dropdown-menu search-results" role="menu">
                   <li ng-repeat="result in results" ng-class="{'bg-warning': $index == current}"><a ng-href="{{basePath}}{{result.path}}"><span ng-bind-html="summary(result)"></span></a></li>
@@ -63,12 +63,14 @@
               <li>
                 <div class="btn-group">
                   <button id="current-version" class="btn btn-default btn-sm dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    v2.3
+                    v2.4
                     <span class="caret"></span>
                   </button>
                   <ul class="dropdown-menu" role="menu" aria-labelledby="current-version">
                   
-                    <li class="disabled"><a href="./">v2.3</a></li>
+                    <li class="disabled"><a href="./">v2.4</a></li>
+                  
+                    <li><a href="../../../v2.3/topics/testing/ccm/">v2.3</a></li>
                   
                     <li><a href="../../../v2.2/topics/testing/ccm/">v2.2</a></li>
                   
@@ -259,9 +261,9 @@ a repeatable testing environment <a href="https://www.vagrantup.com/downloads.ht
 <h2 id="ccm-cluster-by-way-of-vagrant-and-virtual-box" class="target">CCM Cluster by way of Vagrant and Virtual Box<a class="anchor" href="#ccm-cluster-by-way-of-vagrant-and-virtual-box" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h2>
 
-<p>CCM Cluster is a 64-bit Ubuntu 12.04 VM. This VM comes configured with ant,
-git, maven, python, CCM, JDK v1.7 Update (Latest), and Java Cryptography
-Extension (JCE) Unlimited Strength Jurisdiction Policy Files v7</p>
+<p>CCM Cluster is a 64-bit Ubuntu 14.04 VM. This VM comes configured with ant,
+git, maven, python, CCM, JDK v1.8 Update (Latest), and Java Cryptography
+Extension (JCE) Unlimited Strength Jurisdiction Policy Files v8</p>
 
 <p><strong>NOTE:</strong> The JCE is required for Secure Sockets Layer (SSL) testing.</p>
 
@@ -274,7 +276,7 @@ Extension (JCE) Unlimited Strength Jurisdiction Policy Files v7</p>
 <li>Hostname: ccm-cluster</li>
 <li>Username: vagrant</li>
 <li>Password: vagrant</li>
-<li>6 NICs
+<li>6 Network Interfaces Cards (NICs)
 
 <ul>
 <li>Node 1: 192.168.33.11</li>
@@ -300,14 +302,14 @@ Extension (JCE) Unlimited Strength Jurisdiction Policy Files v7</p>
 printf "Installing System Packages ...</span><span class="se">\n</span><span class="sh">"
 #Add JDK repository and update packages
 add-apt-repository ppa:webupd8team/java -y &gt; /dev/null 2&gt;&amp;1
-apt-get update -y -qq
+apt-get update -qq
 
 #Auto accept the the Java license aggreement
 echo debconf shared/accepted-oracle-license-v1-1 select true | sudo debconf-set-selections
 echo debconf shared/accepted-oracle-license-v1-1 seen true | sudo debconf-set-selections
 
 #Install the packages
-apt-get install ant git maven oracle-java7-installer oracle-java7-unlimited-jce-policy python-dev python-pip -y -qq
+apt-get install ant git maven oracle-java8-installer oracle-java8-unlimited-jce-policy python-dev python-pip -qq
 
 #Install CCM and its dependencies
 printf "Installing CCM and its dependencies ...</span><span class="se">\n</span><span class="sh">"
@@ -333,8 +335,8 @@ pip install -q ccm psutil pyyaml six &gt; /dev/null 2&gt;&amp;1
 <span class="c1">#     - Node 6: 192.168.33.16</span>
 <span class="c1">##</span>
 <span class="no">Vagrant</span><span class="p">.</span><span class="nf">configure</span><span class="p">(</span><span class="no">VAGRANTFILE_API_VERSION</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">config</span><span class="o">|</span>
-  <span class="c1"># Create Ubuntu 12.04 LTS VM</span>
-  <span class="n">config</span><span class="p">.</span><span class="nf">vm</span><span class="p">.</span><span class="nf">box</span> <span class="o">=</span> <span class="s2">"ubuntu/precise64"</span>
+  <span class="c1"># Create Ubuntu 14.04 LTS VM</span>
+  <span class="n">config</span><span class="p">.</span><span class="nf">vm</span><span class="p">.</span><span class="nf">box</span> <span class="o">=</span> <span class="s2">"ubuntu/trusty64"</span>
 
   <span class="c1"># Define the hostname and IP addresses (6 node cluster)</span>
   <span class="n">config</span><span class="p">.</span><span class="nf">vm</span><span class="p">.</span><span class="nf">define</span> <span class="s2">"ccm-cluster"</span> <span class="k">do</span> <span class="o">|</span><span class="n">ccm_cluster</span><span class="o">|</span>

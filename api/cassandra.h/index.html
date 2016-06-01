@@ -42,7 +42,7 @@
             <div class="col-md-8">
               <form id="search" class="form-search dropdown visible-lg-block" ng-controller="search" ng-class="{open: hasResults}" role="search" ng-submit="submit()" data-spy="affix" data-offset-top="130">
                 <div class="form-group has-feedback">
-                  <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.3')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
+                  <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.4')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
                 </div>
                 <ul class="dropdown-menu search-results" role="menu">
                   <li ng-repeat="result in results" ng-class="{'bg-warning': $index == current}"><a ng-href="{{basePath}}{{result.path}}"><span ng-bind-html="summary(result)"></span></a></li>
@@ -63,12 +63,14 @@
               <li>
                 <div class="btn-group">
                   <button id="current-version" class="btn btn-default btn-sm dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    v2.3
+                    v2.4
                     <span class="caret"></span>
                   </button>
                   <ul class="dropdown-menu" role="menu" aria-labelledby="current-version">
                   
-                    <li class="disabled"><a href="./">v2.3</a></li>
+                    <li class="disabled"><a href="./">v2.4</a></li>
+                  
+                    <li><a href="../../v2.3/api/cassandra.h/">v2.3</a></li>
                   
                     <li><a href="../../v2.2/api/cassandra.h/">v2.2</a></li>
                   
@@ -219,6 +221,18 @@
 </a></li>
 <li><a href="#type-CassLogCallback">CassLogCallback
 </a></li>
+<li><a href="#type-CassAuthenticator">CassAuthenticator
+</a></li>
+<li><a href="#type-CassAuthenticatorInitalCallback">CassAuthenticatorInitalCallback
+</a></li>
+<li><a href="#type-CassAuthenticatorChallengeCallback">CassAuthenticatorChallengeCallback
+</a></li>
+<li><a href="#type-CassAuthenticatorSuccessCallback">CassAuthenticatorSuccessCallback
+</a></li>
+<li><a href="#type-CassAuthenticatorCleanupCallback">CassAuthenticatorCleanupCallback
+</a></li>
+<li><a href="#type-CassAuthenticatorDataCleanupCallback">CassAuthenticatorDataCleanupCallback
+</a></li>
 </ul>
 </li>
 <li>
@@ -354,6 +368,20 @@
   
   <li>
     <a href="../struct.CassAggregateMeta/">CassAggregateMeta <small>struct</small></a>
+  </li>
+  
+  
+  
+  
+  <li>
+    <a href="../struct.CassAuthenticator/">CassAuthenticator <small>struct</small></a>
+  </li>
+  
+  
+  
+  
+  <li>
+    <a href="../struct.CassAuthenticatorCallbacks/">CassAuthenticatorCallbacks <small>struct</small></a>
   </li>
   
   
@@ -638,7 +666,7 @@
     <div class="panel-heading macro-heading">
       <h3 id="macro-CASS_VERSION_MINOR" class="target">CASS_VERSION_MINOR<a class="anchor" href="#macro-CASS_VERSION_MINOR" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h3>
-<big>=</big> <code>3</code>
+<big>=</big> <code>4</code>
     </div>
     <div class="panel-body macro-body">
       
@@ -757,7 +785,7 @@
     <div class="panel-heading macro-heading">
       <h3 id="macro-CASS_LOG_MAX_MESSAGE_SIZE" class="target">CASS_LOG_MAX_MESSAGE_SIZE<a class="anchor" href="#macro-CASS_LOG_MAX_MESSAGE_SIZE" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h3>
-<big>=</big> <code>256</code>
+<big>=</big> <code>1024</code>
     </div>
     <div class="panel-body macro-body">
       <p>Maximum size of a log message</p>
@@ -1242,6 +1270,87 @@
 </dl>
     </div>
   </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading type-heading">
+      <h3 id="type-CassAuthenticator" class="target">CassAuthenticator<a class="anchor" href="#type-CassAuthenticator" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3>
+    </div>
+    <div class="panel-body type-body">
+      <pre>typedef struct CassAuthenticator_ CassAuthenticator</pre>
+      
+      
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading type-heading">
+      <h3 id="type-CassAuthenticatorInitalCallback" class="target">CassAuthenticatorInitalCallback<a class="anchor" href="#type-CassAuthenticatorInitalCallback" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3>
+    </div>
+    <div class="panel-body type-body">
+      <pre>typedef void(* CassAuthenticatorInitalCallback) (CassAuthenticator *auth, void *data)</pre>
+      <p>A callback used to initiate an authentication exchange.</p>
+
+<p>Use <code><a href="../struct.CassAuthenticator/#function-cass_authenticator_set_response">CassAuthenticator::cass_authenticator_set_response</a></code> to set the response token.</p>
+
+<p>Use <code><a href="../struct.CassAuthenticator/#function-cass_authenticator_set_error">CassAuthenticator::cass_authenticator_set_error</a></code> if an error occured during initialization.</p>
+
+      
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading type-heading">
+      <h3 id="type-CassAuthenticatorChallengeCallback" class="target">CassAuthenticatorChallengeCallback<a class="anchor" href="#type-CassAuthenticatorChallengeCallback" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3>
+    </div>
+    <div class="panel-body type-body">
+      <pre>typedef void(* CassAuthenticatorChallengeCallback) (CassAuthenticator *auth, void *data, const char *token, size_t token_size)</pre>
+      <p>A callback used when an authentication challenge initiated by the server.</p>
+
+<p>Use <code><a href="../struct.CassAuthenticator/#function-cass_authenticator_set_response">CassAuthenticator::cass_authenticator_set_response</a></code> to set the response token.</p>
+
+<p>Use <code><a href="../struct.CassAuthenticator/#function-cass_authenticator_set_error">CassAuthenticator::cass_authenticator_set_error</a></code> if an error occured during the challenge.</p>
+
+      
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading type-heading">
+      <h3 id="type-CassAuthenticatorSuccessCallback" class="target">CassAuthenticatorSuccessCallback<a class="anchor" href="#type-CassAuthenticatorSuccessCallback" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3>
+    </div>
+    <div class="panel-body type-body">
+      <pre>typedef void(* CassAuthenticatorSuccessCallback) (CassAuthenticator *auth, void *data, const char *token, size_t token_size)</pre>
+      <p>A callback used to indicate the success of the authentication exchange.</p>
+
+<p>Use <code><a href="../struct.CassAuthenticator/#function-cass_authenticator_set_error">CassAuthenticator::cass_authenticator_set_error</a></code> if an error occured while evaluating the success token.</p>
+
+      
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading type-heading">
+      <h3 id="type-CassAuthenticatorCleanupCallback" class="target">CassAuthenticatorCleanupCallback<a class="anchor" href="#type-CassAuthenticatorCleanupCallback" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3>
+    </div>
+    <div class="panel-body type-body">
+      <pre>typedef void(* CassAuthenticatorCleanupCallback) (CassAuthenticator *auth, void *data)</pre>
+      <p>A callback used to cleanup resources that were acquired during the process of the authentication exchange. This is called after the termination of the exchange regardless of the outcome.</p>
+
+      
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading type-heading">
+      <h3 id="type-CassAuthenticatorDataCleanupCallback" class="target">CassAuthenticatorDataCleanupCallback<a class="anchor" href="#type-CassAuthenticatorDataCleanupCallback" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3>
+    </div>
+    <div class="panel-body type-body">
+      <pre>typedef void(* CassAuthenticatorDataCleanupCallback) (void *data)</pre>
+      <p>A callback used to cleanup resources.</p>
+
+      
+    </div>
+  </div>
 </div>
 
 <h2 id="enums" class="target">Enums<a class="anchor" href="#enums" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
@@ -1669,11 +1778,21 @@
     <div class="panel-body enum-body">
       <dl class="values">
         
-        <dt><code>CASS_SSL_VERIFY_NONE</code></dt>
+        <dt>
+<code>CASS_SSL_VERIFY_NONE</code> <big>=</big> <var>0x00</var>
+</dt>
         
-        <dt><code>CASS_SSL_VERIFY_PEER_CERT</code></dt>
+        <dt>
+<code>CASS_SSL_VERIFY_PEER_CERT</code> <big>=</big> <var>0x01</var>
+</dt>
         
-        <dt><code>CASS_SSL_VERIFY_PEER_IDENTITY</code></dt>
+        <dt>
+<code>CASS_SSL_VERIFY_PEER_IDENTITY</code> <big>=</big> <var>0x02</var>
+</dt>
+        
+        <dt>
+<code>CASS_SSL_VERIFY_PEER_IDENTITY_DNS</code> <big>=</big> <var>0x04</var>
+</dt>
         
       </dl>
       
@@ -1821,6 +1940,26 @@
         
         <dt>
 <code>CASS_ERROR_LIB_INVALID_FUTURE_TYPE</code> <big>=</big> <var>(( CASS_ERROR_SOURCE_LIB  &lt;&lt; 24) |  27 )</var>
+</dt>
+        
+        <dt>
+<code>CASS_ERROR_LIB_INTERNAL_ERROR</code> <big>=</big> <var>(( CASS_ERROR_SOURCE_LIB  &lt;&lt; 24) |  28 )</var>
+</dt>
+        
+        <dt>
+<code>CASS_ERROR_LIB_INVALID_CUSTOM_TYPE</code> <big>=</big> <var>(( CASS_ERROR_SOURCE_LIB  &lt;&lt; 24) |  29 )</var>
+</dt>
+        
+        <dt>
+<code>CASS_ERROR_LIB_INVALID_DATA</code> <big>=</big> <var>(( CASS_ERROR_SOURCE_LIB  &lt;&lt; 24) |  30 )</var>
+</dt>
+        
+        <dt>
+<code>CASS_ERROR_LIB_NOT_ENOUGH_DATA</code> <big>=</big> <var>(( CASS_ERROR_SOURCE_LIB  &lt;&lt; 24) |  31 )</var>
+</dt>
+        
+        <dt>
+<code>CASS_ERROR_LIB_INVALID_STATE</code> <big>=</big> <var>(( CASS_ERROR_SOURCE_LIB  &lt;&lt; 24) |  32 )</var>
 </dt>
         
         <dt>
@@ -2238,7 +2377,7 @@
   <div class="panel panel-default member-definition">
     <div class="panel-heading function-heading">
       <code><a href="#enum-CassError">CassError</a></code> <h3 id="function-cass_data_type_class_name" class="target">cass_data_type_class_name<a class="anchor" href="#function-cass_data_type_class_name" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
-</h3> <big>(</big> <code><a href="../struct.CassDataType/">CassDataType</a> *</code> data_type, <code>const char **</code> class_name, <code>size_t *</code> class_name_length <big>)</big>
+</h3> <big>(</big> <code>const <a href="../struct.CassDataType/">CassDataType</a> *</code> data_type, <code>const char **</code> class_name, <code>size_t *</code> class_name_length <big>)</big>
     </div>
     <div class="panel-body function-body">
       <p>Gets the class name of a custom data type.</p>
@@ -2258,7 +2397,7 @@
 <td>
 <small>in</small> <var>data_type</var>
 </td>
-<td><code><a href="../struct.CassDataType/">CassDataType</a> *</code></td>
+<td><code>const <a href="../struct.CassDataType/">CassDataType</a> *</code></td>
 <td></td>
 </tr>
 <tr>

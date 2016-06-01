@@ -42,7 +42,7 @@
             <div class="col-md-8">
               <form id="search" class="form-search dropdown visible-lg-block" ng-controller="search" ng-class="{open: hasResults}" role="search" ng-submit="submit()" data-spy="affix" data-offset-top="130">
                 <div class="form-group has-feedback">
-                  <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.3')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
+                  <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.4')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
                 </div>
                 <ul class="dropdown-menu search-results" role="menu">
                   <li ng-repeat="result in results" ng-class="{'bg-warning': $index == current}"><a ng-href="{{basePath}}{{result.path}}"><span ng-bind-html="summary(result)"></span></a></li>
@@ -63,12 +63,14 @@
               <li>
                 <div class="btn-group">
                   <button id="current-version" class="btn btn-default btn-sm dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    v2.3
+                    v2.4
                     <span class="caret"></span>
                   </button>
                   <ul class="dropdown-menu" role="menu" aria-labelledby="current-version">
                   
-                    <li class="disabled"><a href="./">v2.3</a></li>
+                    <li class="disabled"><a href="./">v2.4</a></li>
+                  
+                    <li><a href="../../v2.3/api/struct.CassCluster/">v2.3</a></li>
                   
                     <li><a href="../../v2.2/api/struct.CassCluster/">v2.2</a></li>
                   
@@ -120,6 +122,8 @@
 </a></li>
 <li><a href="#function-cass_cluster_set_ssl">cass_cluster_set_ssl
 </a></li>
+<li><a href="#function-cass_cluster_set_authenticator_callbacks">cass_cluster_set_authenticator_callbacks
+</a></li>
 <li><a href="#function-cass_cluster_set_protocol_version">cass_cluster_set_protocol_version
 </a></li>
 <li><a href="#function-cass_cluster_set_num_threads_io">cass_cluster_set_num_threads_io
@@ -153,6 +157,8 @@
 <li><a href="#function-cass_cluster_set_connect_timeout">cass_cluster_set_connect_timeout
 </a></li>
 <li><a href="#function-cass_cluster_set_request_timeout">cass_cluster_set_request_timeout
+</a></li>
+<li><a href="#function-cass_cluster_set_resolve_timeout">cass_cluster_set_resolve_timeout
 </a></li>
 <li><a href="#function-cass_cluster_set_credentials">cass_cluster_set_credentials
 </a></li>
@@ -200,6 +206,8 @@
 </a></li>
 <li><a href="#function-cass_cluster_set_use_schema">cass_cluster_set_use_schema
 </a></li>
+<li><a href="#function-cass_cluster_set_use_hostname_resolution">cass_cluster_set_use_hostname_resolution
+</a></li>
 </ul>
 </li>
                   </ul>
@@ -231,6 +239,20 @@
   
   <li>
     <a href="../struct.CassAggregateMeta/">CassAggregateMeta <small>struct</small></a>
+  </li>
+  
+  
+  
+  
+  <li>
+    <a href="../struct.CassAuthenticator/">CassAuthenticator <small>struct</small></a>
+  </li>
+  
+  
+  
+  
+  <li>
+    <a href="../struct.CassAuthenticatorCallbacks/">CassAuthenticatorCallbacks <small>struct</small></a>
   </li>
   
   
@@ -751,6 +773,69 @@
 </table></dd>
 <dt class="tag-title">See Also:</dt>
 <dd class="tag-content"><ul class="see"><li><code><a href="../struct.CassSsl/#function-cass_ssl_new">CassSsl::cass_ssl_new</a></code></li></ul></dd>
+</dl>
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading function-heading">
+      <code><a href="../cassandra.h/#enum-CassError">CassError</a></code> <h3 id="function-cass_cluster_set_authenticator_callbacks" class="target">cass_cluster_set_authenticator_callbacks<a class="anchor" href="#function-cass_cluster_set_authenticator_callbacks" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3> <big>(</big> <code><a href="./">CassCluster</a> *</code> cluster, <code>const <a href="../struct.CassAuthenticatorCallbacks/">CassAuthenticatorCallbacks</a> *</code> exchange_callbacks, <code><a href="../cassandra.h/#type-CassAuthenticatorDataCleanupCallback">CassAuthenticatorDataCleanupCallback</a></code> cleanup_callback, <code>void *</code> data <big>)</big>
+    </div>
+    <div class="panel-body function-body">
+      <p>Sets custom authenticator</p>
+
+      <dl class="tags">
+<dt class="tag-title">Parameters:</dt>
+<dd class="tag-content"><table class="table table-striped param">
+<thead><tr>
+<th class="name">Name</th>
+<th class="type">Type</th>
+<th class="details">Details</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>
+<small>in</small> <var>cluster</var>
+</td>
+<td><code><a href="./">CassCluster</a> *</code></td>
+<td></td>
+</tr>
+<tr>
+<td>
+<small>in</small> <var>exchange_callbacks</var>
+</td>
+<td><code>const <a href="../struct.CassAuthenticatorCallbacks/">CassAuthenticatorCallbacks</a> *</code></td>
+<td></td>
+</tr>
+<tr>
+<td>
+<small>in</small> <var>cleanup_callback</var>
+</td>
+<td><code><a href="../cassandra.h/#type-CassAuthenticatorDataCleanupCallback">CassAuthenticatorDataCleanupCallback</a></code></td>
+<td></td>
+</tr>
+<tr>
+<td>
+<small>in</small> <var>data</var>
+</td>
+<td><code>void *</code></td>
+<td></td>
+</tr>
+</tbody>
+</table></dd>
+<dt class="tag-title">Returns:</dt>
+<dd class="tag-content"><table class="table table-striped return">
+<thead><tr>
+<th class="type">Type</th>
+<th class="details">Details</th>
+</tr></thead>
+<tbody><tr>
+<td><code><a href="../cassandra.h/#enum-CassError">CassError</a></code></td>
+<td>
+<p>CASS_OK if successful, otherwise an error occurred.</p>
+</td>
+</tr></tbody>
+</table></dd>
 </dl>
     </div>
   </div>
@@ -1555,6 +1640,46 @@
       <p>Sets the timeout for waiting for a response from a node.</p>
 
 <p><strong>Default:</strong> 12000 milliseconds</p>
+
+      <dl class="tags">
+<dt class="tag-title">Parameters:</dt>
+<dd class="tag-content"><table class="table table-striped param">
+<thead><tr>
+<th class="name">Name</th>
+<th class="type">Type</th>
+<th class="details">Details</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>
+<small>in</small> <var>cluster</var>
+</td>
+<td><code><a href="./">CassCluster</a> *</code></td>
+<td></td>
+</tr>
+<tr>
+<td>
+<small>in</small> <var>timeout_ms</var>
+</td>
+<td><code>unsigned</code></td>
+<td>
+<p>Request timeout in milliseconds</p>
+</td>
+</tr>
+</tbody>
+</table></dd>
+</dl>
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading function-heading">
+      <code>void</code> <h3 id="function-cass_cluster_set_resolve_timeout" class="target">cass_cluster_set_resolve_timeout<a class="anchor" href="#function-cass_cluster_set_resolve_timeout" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3> <big>(</big> <code><a href="./">CassCluster</a> *</code> cluster, <code>unsigned</code> timeout_ms <big>)</big>
+    </div>
+    <div class="panel-body function-body">
+      <p>Sets the timeout for waiting for DNS name resolution.</p>
+
+<p><strong>Default:</strong> 2000 milliseconds</p>
 
       <dl class="tags">
 <dt class="tag-title">Parameters:</dt>
@@ -2729,9 +2854,65 @@
 <dt class="tag-title">See Also:</dt>
 <dd class="tag-content"><ul class="see">
 <li><code><a href="../struct.CassSession/#function-cass_session_get_schema_meta">CassSession::cass_session_get_schema_meta</a></code></li>
-<li>
-<code><a href="#function-cass_cluster_set_token_aware_routing">CassCluster::cass_cluster_set_token_aware_routing</a></code>;</li>
+<li><code><a href="#function-cass_cluster_set_token_aware_routing">CassCluster::cass_cluster_set_token_aware_routing</a></code></li>
 </ul></dd>
+</dl>
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading function-heading">
+      <code><a href="../cassandra.h/#enum-CassError">CassError</a></code> <h3 id="function-cass_cluster_set_use_hostname_resolution" class="target">cass_cluster_set_use_hostname_resolution<a class="anchor" href="#function-cass_cluster_set_use_hostname_resolution" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3> <big>(</big> <code><a href="./">CassCluster</a> *</code> cluster, <code><a href="../cassandra.h/#enum-cass_bool_t">cass_bool_t</a></code> enabled <big>)</big>
+    </div>
+    <div class="panel-body function-body">
+      <p>Enable/Disable retrieving hostnames for IP addresses using reverse IP lookup.</p>
+
+<p>This is useful for authentication (Kerberos) or encryption (SSL) services that require a valid hostname for verification.</p>
+
+<p><strong>Default:</strong> cass_false (disabled).</p>
+
+<p><strong>Important:</strong> Not implemented if using libuv 0.1x or earlier</p>
+
+      <dl class="tags">
+<dt class="tag-title">Parameters:</dt>
+<dd class="tag-content"><table class="table table-striped param">
+<thead><tr>
+<th class="name">Name</th>
+<th class="type">Type</th>
+<th class="details">Details</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>
+<small>in</small> <var>cluster</var>
+</td>
+<td><code><a href="./">CassCluster</a> *</code></td>
+<td></td>
+</tr>
+<tr>
+<td>
+<small>in</small> <var>enabled</var>
+</td>
+<td><code><a href="../cassandra.h/#enum-cass_bool_t">cass_bool_t</a></code></td>
+<td></td>
+</tr>
+</tbody>
+</table></dd>
+<dt class="tag-title">Returns:</dt>
+<dd class="tag-content"><table class="table table-striped return">
+<thead><tr>
+<th class="type">Type</th>
+<th class="details">Details</th>
+</tr></thead>
+<tbody><tr>
+<td><code><a href="../cassandra.h/#enum-CassError">CassError</a></code></td>
+<td>
+<p>CASS_OK if successful, otherwise an error occurred</p>
+</td>
+</tr></tbody>
+</table></dd>
+<dt class="tag-title">See Also:</dt>
+<dd class="tag-content"><ul class="see"><li><code><a href="#function-cass_cluster_set_resolve_timeout">CassCluster::cass_cluster_set_resolve_timeout</a></code></li></ul></dd>
 </dl>
     </div>
   </div>

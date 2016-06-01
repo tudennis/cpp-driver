@@ -42,7 +42,7 @@
             <div class="col-md-8">
               <form id="search" class="form-search dropdown visible-lg-block" ng-controller="search" ng-class="{open: hasResults}" role="search" ng-submit="submit()" data-spy="affix" data-offset-top="130">
                 <div class="form-group has-feedback">
-                  <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.3')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
+                  <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.4')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
                 </div>
                 <ul class="dropdown-menu search-results" role="menu">
                   <li ng-repeat="result in results" ng-class="{'bg-warning': $index == current}"><a ng-href="{{basePath}}{{result.path}}"><span ng-bind-html="summary(result)"></span></a></li>
@@ -63,12 +63,14 @@
               <li>
                 <div class="btn-group">
                   <button id="current-version" class="btn btn-default btn-sm dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    v2.3
+                    v2.4
                     <span class="caret"></span>
                   </button>
                   <ul class="dropdown-menu" role="menu" aria-labelledby="current-version">
                   
-                    <li class="disabled"><a href="./">v2.3</a></li>
+                    <li class="disabled"><a href="./">v2.4</a></li>
+                  
+                    <li><a href="../../v2.3/api/struct.CassCollection/">v2.3</a></li>
                   
                     <li><a href="../../v2.2/api/struct.CassCollection/">v2.2</a></li>
                   
@@ -136,6 +138,10 @@
 </a></li>
 <li><a href="#function-cass_collection_append_bytes">cass_collection_append_bytes
 </a></li>
+<li><a href="#function-cass_collection_append_custom">cass_collection_append_custom
+</a></li>
+<li><a href="#function-cass_collection_append_custom_n">cass_collection_append_custom_n
+</a></li>
 <li><a href="#function-cass_collection_append_uuid">cass_collection_append_uuid
 </a></li>
 <li><a href="#function-cass_collection_append_inet">cass_collection_append_inet
@@ -179,6 +185,20 @@
   
   <li>
     <a href="../struct.CassAggregateMeta/">CassAggregateMeta <small>struct</small></a>
+  </li>
+  
+  
+  
+  
+  <li>
+    <a href="../struct.CassAuthenticator/">CassAuthenticator <small>struct</small></a>
+  </li>
+  
+  
+  
+  
+  <li>
+    <a href="../struct.CassAuthenticatorCallbacks/">CassAuthenticatorCallbacks <small>struct</small></a>
   </li>
   
   
@@ -1145,6 +1165,143 @@
 </td>
 </tr></tbody>
 </table></dd>
+</dl>
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading function-heading">
+      <code><a href="../cassandra.h/#enum-CassError">CassError</a></code> <h3 id="function-cass_collection_append_custom" class="target">cass_collection_append_custom<a class="anchor" href="#function-cass_collection_append_custom" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3> <big>(</big> <code><a href="./">CassCollection</a> *</code> collection, <code>const char *</code> class_name, <code>const <a href="../cassandra.h/#type-cass_byte_t">cass_byte_t</a> *</code> value, <code>size_t</code> value_size <big>)</big>
+    </div>
+    <div class="panel-body function-body">
+      <p>Appends a “custom” to the collection.</p>
+
+      <dl class="tags">
+<dt class="tag-title">Parameters:</dt>
+<dd class="tag-content"><table class="table table-striped param">
+<thead><tr>
+<th class="name">Name</th>
+<th class="type">Type</th>
+<th class="details">Details</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>
+<small>in</small> <var>collection</var>
+</td>
+<td><code><a href="./">CassCollection</a> *</code></td>
+<td></td>
+</tr>
+<tr>
+<td>
+<small>in</small> <var>class_name</var>
+</td>
+<td><code>const char *</code></td>
+<td></td>
+</tr>
+<tr>
+<td>
+<small>in</small> <var>value</var>
+</td>
+<td><code>const <a href="../cassandra.h/#type-cass_byte_t">cass_byte_t</a> *</code></td>
+<td>
+<p>The value is copied into the collection object; the memory pointed to by this parameter can be freed after this call.</p>
+</td>
+</tr>
+<tr>
+<td>
+<small>in</small> <var>value_size</var>
+</td>
+<td><code>size_t</code></td>
+<td></td>
+</tr>
+</tbody>
+</table></dd>
+<dt class="tag-title">Returns:</dt>
+<dd class="tag-content"><table class="table table-striped return">
+<thead><tr>
+<th class="type">Type</th>
+<th class="details">Details</th>
+</tr></thead>
+<tbody><tr>
+<td><code><a href="../cassandra.h/#enum-CassError">CassError</a></code></td>
+<td>
+<p>CASS_OK if successful, otherwise an error occurred.</p>
+</td>
+</tr></tbody>
+</table></dd>
+</dl>
+    </div>
+  </div>
+  <div class="panel panel-default member-definition">
+    <div class="panel-heading function-heading">
+      <code><a href="../cassandra.h/#enum-CassError">CassError</a></code> <h3 id="function-cass_collection_append_custom_n" class="target">cass_collection_append_custom_n<a class="anchor" href="#function-cass_collection_append_custom_n" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h3> <big>(</big> <code><a href="./">CassCollection</a> *</code> collection, <code>const char *</code> class_name, <code>size_t</code> class_name_length, <code>const <a href="../cassandra.h/#type-cass_byte_t">cass_byte_t</a> *</code> value, <code>size_t</code> value_size <big>)</big>
+    </div>
+    <div class="panel-body function-body">
+      <p>Same as <code><a href="#function-cass_collection_append_custom">CassCollection::cass_collection_append_custom</a></code>, but with lengths for string parameters.</p>
+
+      <dl class="tags">
+<dt class="tag-title">Parameters:</dt>
+<dd class="tag-content"><table class="table table-striped param">
+<thead><tr>
+<th class="name">Name</th>
+<th class="type">Type</th>
+<th class="details">Details</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>
+<small>in</small> <var>collection</var>
+</td>
+<td><code><a href="./">CassCollection</a> *</code></td>
+<td></td>
+</tr>
+<tr>
+<td>
+<small>in</small> <var>class_name</var>
+</td>
+<td><code>const char *</code></td>
+<td></td>
+</tr>
+<tr>
+<td>
+<small>in</small> <var>class_name_length</var>
+</td>
+<td><code>size_t</code></td>
+<td></td>
+</tr>
+<tr>
+<td>
+<small>in</small> <var>value</var>
+</td>
+<td><code>const <a href="../cassandra.h/#type-cass_byte_t">cass_byte_t</a> *</code></td>
+<td></td>
+</tr>
+<tr>
+<td>
+<small>in</small> <var>value_size</var>
+</td>
+<td><code>size_t</code></td>
+<td></td>
+</tr>
+</tbody>
+</table></dd>
+<dt class="tag-title">Returns:</dt>
+<dd class="tag-content"><table class="table table-striped return">
+<thead><tr>
+<th class="type">Type</th>
+<th class="details">Details</th>
+</tr></thead>
+<tbody><tr>
+<td><code><a href="../cassandra.h/#enum-CassError">CassError</a></code></td>
+<td>
+<p>same as <code><a href="#function-cass_collection_append_custom">CassCollection::cass_collection_append_custom</a></code></p>
+</td>
+</tr></tbody>
+</table></dd>
+<dt class="tag-title">See Also:</dt>
+<dd class="tag-content"><ul class="see"><li><code><a href="#function-cass_collection_append_custom">CassCollection::cass_collection_append_custom</a></code></li></ul></dd>
 </dl>
     </div>
   </div>

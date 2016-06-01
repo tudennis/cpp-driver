@@ -42,7 +42,7 @@
             <div class="col-md-8">
               <form id="search" class="form-search dropdown visible-lg-block" ng-controller="search" ng-class="{open: hasResults}" role="search" ng-submit="submit()" data-spy="affix" data-offset-top="130">
                 <div class="form-group has-feedback">
-                  <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.3')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
+                  <input type="search" class="form-control input-sm mousetrap" placeholder="Search..." ng-model="q" ng-change="search('v2.4')" ng-disabled="!searchReady" disabled data-hotkey="{down: moveDown, up: moveUp, esc: reset}" data-search>
                 </div>
                 <ul class="dropdown-menu search-results" role="menu">
                   <li ng-repeat="result in results" ng-class="{'bg-warning': $index == current}"><a ng-href="{{basePath}}{{result.path}}"><span ng-bind-html="summary(result)"></span></a></li>
@@ -63,12 +63,14 @@
               <li>
                 <div class="btn-group">
                   <button id="current-version" class="btn btn-default btn-sm dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    v2.3
+                    v2.4
                     <span class="caret"></span>
                   </button>
                   <ul class="dropdown-menu" role="menu" aria-labelledby="current-version">
                   
-                    <li class="disabled"><a href="./">v2.3</a></li>
+                    <li class="disabled"><a href="./">v2.4</a></li>
+                  
+                    <li><a href="../../../v2.3/topics/basics/binding_parameters/">v2.3</a></li>
                   
                     <li><a href="../../../v2.2/topics/basics/binding_parameters/">v2.2</a></li>
                   
@@ -116,6 +118,8 @@
 <li><a href="#constructing-collections">Constructing Collections
 </a></li>
 <li><a href="#nested-collections">Nested Collections
+</a></li>
+<li><a href="#custom-types">Custom types
 </a></li>
                   </ul>
                 </div>
@@ -352,7 +356,8 @@
 <p>When using Cassandra 2.2+ the driver will send a special <code>unset</code> value for
 unbound parameters (leaving the unbound column unaffected). If using older
 versions of Cassandra (2.1 and below) the driver will return an error for
-unbound parameters.</p>
+unbound parameters. Calling <code>cass_statement_reset_parameters()</code> will unbind (or
+resize) a statement’s parameters.</p>
 
 <h2 id="constructing-collections" class="target">Constructing Collections<a class="anchor" href="#constructing-collections" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
 </h2>
@@ -396,6 +401,13 @@ unbound parameters.</p>
 
 <p>When using Cassandra 2.1+ it is possible to nest collections. A collection can
 be added to another collection using <a href="http://datastax.github.io/cpp-driver/api/CassCollection/#cass-collection-append-collection"><code>cass_collection_append_collection()</code></a>.</p>
+
+<h2 id="custom-types" class="target">Custom types<a class="anchor" href="#custom-types" aria-hidden="true"><span class="glyphicon glyphicon-link"></span></a>
+</h2>
+
+<p>Custom types can be bound using either the <code>cass_statement_bind_bytes[_by_name]()</code> or the
+<code>cass_statement_bind_custom[by_name]()</code> functions. The latter validates the class
+name of the custom type matches the class name of the type being bound.</p>
 
 
         </div>
