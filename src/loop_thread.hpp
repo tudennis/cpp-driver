@@ -18,6 +18,7 @@
 #define __CASS_LOOP_THREAD_HPP_INCLUDED__
 
 #include "cassconfig.hpp"
+#include "logger.hpp"
 #include "macros.hpp"
 
 #include <assert.h>
