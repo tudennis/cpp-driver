@@ -17,6 +17,7 @@
 #ifndef __CASS_STREAM_MANAGER_HPP_INCLUDED__
 #define __CASS_STREAM_MANAGER_HPP_INCLUDED__
 
+#include "cassconfig.hpp"
 #include "macros.hpp"
 #include "scoped_ptr.hpp"
 
@@ -24,7 +25,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#ifdef CASS_USE_SPARSEHASH
+#ifdef HAVE_SPARSEHASH
 #include <google/dense_hash_map>
 #else
 #include <map>
@@ -44,7 +45,7 @@ public:
       , num_words_(max_streams_ / NUM_BITS_PER_WORD)
       , offset_(0)
       , words_(new word_t[num_words_]) {
-#ifdef CASS_USE_SPARSEHASH
+#ifdef HAVE_SPARSEHASH
     // Client request stream IDs are always positive values so it's
     // safe to use negative values for the empty and deleted keys.
     pending_.set_empty_key(-1);
@@ -82,7 +83,7 @@ public:
   size_t max_streams() const { return max_streams_; }
 
 private:
-#ifdef CASS_USE_SPARSEHASH
+#ifdef HAVE_SPARSEHASH
   typedef google::dense_hash_map<int, T> PendingMap;
 #else
   typedef std::map<int, T> PendingMap;
