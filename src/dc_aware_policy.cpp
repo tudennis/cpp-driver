@@ -25,7 +25,9 @@ namespace cass {
 
 static const CopyOnWriteHostVec NO_HOSTS(new HostVec());
 
-void DCAwarePolicy::init(const SharedRefPtr<Host>& connected_host, const HostMap& hosts) {
+void DCAwarePolicy::init(const SharedRefPtr<Host>& connected_host,
+                         const HostMap& hosts,
+                         Random* random) {
   if (local_dc_.empty() && connected_host && !connected_host->dc().empty()) {
     LOG_INFO("Using '%s' for the local data center "
              "(if this is incorrect, please provide the correct data center)",
@@ -36,6 +38,9 @@ void DCAwarePolicy::init(const SharedRefPtr<Host>& connected_host, const HostMap
   for (HostMap::const_iterator i = hosts.begin(),
        end = hosts.end(); i != end; ++i) {
     on_add(i->second);
+  }
+  if (random != NULL) {
+    index_ = random->next(std::max(1UL, hosts.size()));
   }
 }
 
