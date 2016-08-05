@@ -152,6 +152,8 @@ public:
 };
 
 struct Datacenter {
+  Datacenter()
+    : num_nodes(0) { }
   size_t num_nodes;
   RackSet racks;
 };
@@ -165,6 +167,8 @@ public:
 };
 
 struct ReplicationFactor {
+  ReplicationFactor()
+    : count(0) { }
   size_t count;
   std::string name; // Used for logging the datacenter name
   bool operator==(const ReplicationFactor& other) const {
@@ -207,6 +211,10 @@ public:
   typedef std::deque<typename TokenHostVec::const_iterator> TokenHostQueue;
 
   struct DatacenterRackInfo {
+    DatacenterRackInfo()
+      : replica_count(0)
+      , replication_factor(0)
+      , rack_count(0) { }
     size_t replica_count;
     size_t replication_factor;
     RackSet racks_observed;
