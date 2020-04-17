@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014-2016 DataStax
+  Copyright (c) DataStax, Inc.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -14,40 +14,39 @@
   limitations under the License.
 */
 
-#ifndef __CASS_SSL_HPP_INCLUDED__
-#define __CASS_SSL_HPP_INCLUDED__
+#ifndef DATASTAX_INTERNAL_SSL_HPP
+#define DATASTAX_INTERNAL_SSL_HPP
 
+#include "address.hpp"
+#include "allocated.hpp"
 #include "cassandra.h"
-#include "host.hpp"
+#include "driver_config.hpp"
+#include "external.hpp"
 #include "ref_counted.hpp"
 #include "ring_buffer.hpp"
+#include "string.hpp"
 
-#include <string>
 #include <uv.h>
 
-namespace cass {
+namespace datastax { namespace internal { namespace core {
 
-class SslSession {
+class SslSession : public Allocated {
 public:
-  SslSession(const Host::ConstPtr& host,
+  SslSession(const Address& address, const String& hostname, const String& sni_server_name,
              int flags)
-    : host_(host)
-    , verify_flags_(flags)
-    , error_code_(CASS_OK) {}
+      : address_(address)
+      , hostname_(hostname)
+      , sni_server_name_(sni_server_name)
+      , verify_flags_(flags)
+      , error_code_(CASS_OK) {}
 
   virtual ~SslSession() {}
 
-  bool has_error() const {
-    return error_code() != CASS_OK;
-  }
+  bool has_error() const { return error_code() != CASS_OK; }
 
-  CassError error_code() const {
-    return error_code_;
-  }
+  CassError error_code() const { return error_code_; }
 
-  std::string error_message() const {
-    return error_message_;
-  }
+  String error_message() const { return error_message_; }
 
   virtual bool is_handshake_done() const = 0;
   virtual void do_handshake() = 0;
@@ -60,31 +59,33 @@ public:
   rb::RingBuffer& outgoing() { return outgoing_; }
 
 protected:
-  Host::ConstPtr host_;
+  Address address_;
+  String hostname_;
+  String sni_server_name_;
   int verify_flags_;
   rb::RingBuffer incoming_;
   rb::RingBuffer outgoing_;
   CassError error_code_;
-  std::string error_message_;
+  String error_message_;
 };
 
 class SslContext : public RefCounted<SslContext> {
 public:
+  typedef SharedRefPtr<SslContext> Ptr;
+
   SslContext()
-    : verify_flags_(CASS_SSL_VERIFY_PEER_CERT) {}
+      : verify_flags_(CASS_SSL_VERIFY_PEER_CERT) {}
 
   virtual ~SslContext() {}
 
-  void set_verify_flags(int flags) {
-    verify_flags_ = flags;
-  }
+  void set_verify_flags(int flags) { verify_flags_ = flags; }
+  bool is_cert_validation_enabled() { return verify_flags_ != CASS_SSL_VERIFY_NONE; }
 
-  virtual SslSession* create_session(const Host::ConstPtr& host) = 0;
+  virtual SslSession* create_session(const Address& address, const String& hostname,
+                                     const String& sni_server_name) = 0;
   virtual CassError add_trusted_cert(const char* cert, size_t cert_length) = 0;
   virtual CassError set_cert(const char* cert, size_t cert_length) = 0;
-  virtual CassError set_private_key(const char* key,
-                                    size_t key_length,
-                                    const char* password,
+  virtual CassError set_private_key(const char* key, size_t key_length, const char* password,
                                     size_t password_length) = 0;
 
 protected:
@@ -94,16 +95,50 @@ protected:
 template <class T>
 class SslContextFactoryBase {
 public:
-  static SslContext* create();
-  static void init();
+  static SslContext::Ptr create();
+  static void init_once();
+  static void thread_cleanup();
+
+  static void init();    // Tests only
+  static void cleanup(); // Tests only
+
+private:
+  static uv_once_t ssl_init_guard;
 };
 
-} // namespace cass
+template <class T>
+SslContext::Ptr SslContextFactoryBase<T>::create() {
+  return T::create();
+}
 
-#ifdef CASS_USE_OPENSSL
+template <class T>
+void SslContextFactoryBase<T>::init_once() {
+  uv_once(&ssl_init_guard, T::init);
+}
+
+template <class T>
+void SslContextFactoryBase<T>::thread_cleanup() {
+  T::internal_thread_cleanup();
+}
+
+template <class T>
+void SslContextFactoryBase<T>::init() {
+  T::internal_init();
+}
+
+template <class T>
+void SslContextFactoryBase<T>::cleanup() {
+  T::internal_cleanup();
+}
+
+}}} // namespace datastax::internal::core
+
+#ifdef HAVE_OPENSSL
 #include "ssl/ssl_openssl_impl.hpp"
 #else
 #include "ssl/ssl_no_impl.hpp"
 #endif
+
+EXTERNAL_TYPE(datastax::internal::core::SslContext, CassSsl)
 
 #endif

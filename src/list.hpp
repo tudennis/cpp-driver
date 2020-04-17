@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014-2016 DataStax
+  Copyright (c) DataStax, Inc.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -14,14 +14,14 @@
   limitations under the License.
 */
 
-#ifndef __CASS_LIST_HPP_INCLUDED__
-#define __CASS_LIST_HPP_INCLUDED__
+#ifndef DATASTAX_INTERNAL_LIST_HPP
+#define DATASTAX_INTERNAL_LIST_HPP
 
 #include "macros.hpp"
 
 #include <stddef.h>
 
-namespace cass {
+namespace datastax { namespace internal {
 
 template <class T>
 class List {
@@ -80,6 +80,12 @@ public:
     return static_cast<T*>(data_.prev_);
   }
 
+  T* pop_front() {
+    T* first = front();
+    if (first != NULL) remove(first);
+    return first;
+  }
+
   size_t size() const { return size_; }
   bool is_empty() { return data_.next_ == &data_; }
   Iterator<T> iterator() { return Iterator<T>(data_.next_, &data_); }
@@ -132,6 +138,6 @@ void List<T>::insert_before(Node* pos, Node* node) {
   pos->prev_ = node;
 }
 
-} // namespace cass
+}} // namespace datastax::internal
 
 #endif

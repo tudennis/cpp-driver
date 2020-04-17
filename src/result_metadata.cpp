@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014-2016 DataStax
+  Copyright (c) DataStax, Inc.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -24,17 +24,16 @@
 
 #include <iterator>
 
-namespace cass {
+using namespace datastax;
+using namespace datastax::internal;
+using namespace datastax::internal::core;
 
-ResultMetadata::ResultMetadata(size_t column_count)
-  : defs_(column_count) { }
+ResultMetadata::ResultMetadata(size_t column_count, const RefBuffer::Ptr& buffer)
+    : defs_(column_count)
+    , buffer_(buffer) {}
 
-size_t ResultMetadata::get_indices(StringRef name, IndexVec* result) const{
+size_t ResultMetadata::get_indices(StringRef name, IndexVec* result) const {
   return defs_.get_indices(name, result);
 }
 
-void ResultMetadata::add(const ColumnDefinition& def) {
-  defs_.add(def);
-}
-
-} // namespace cass
+void ResultMetadata::add(const ColumnDefinition& def) { defs_.add(def); }

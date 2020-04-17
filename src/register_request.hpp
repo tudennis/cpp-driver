@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014-2016 DataStax
+  Copyright (c) DataStax, Inc.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -14,13 +14,13 @@
   limitations under the License.
 */
 
-#ifndef __CASS_REGISTER_REQUEST_HPP_INCLUDED__
-#define __CASS_REGISTER_REQUEST_HPP_INCLUDED__
+#ifndef DATASTAX_INTERNAL_REGISTER_REQUEST_HPP
+#define DATASTAX_INTERNAL_REGISTER_REQUEST_HPP
 
-#include "request.hpp"
 #include "constants.hpp"
+#include "request.hpp"
 
-namespace cass {
+namespace datastax { namespace internal { namespace core {
 
 class RegisterRequest : public Request {
 public:
@@ -29,10 +29,10 @@ public:
       , event_types_(event_types) {}
 
 private:
-  int encode(int version, Handler* handler, BufferVec* bufs) const;
+  int encode(ProtocolVersion version, RequestCallback* callback, BufferVec* bufs) const;
 
   int event_types_;
 };
 
-} // namespace cass
+}}} // namespace datastax::internal::core
 #endif

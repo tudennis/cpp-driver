@@ -26,9 +26,9 @@
 */
 
 #include <assert.h>
-#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "cassandra.h"
 
@@ -40,7 +40,6 @@ void print_error(CassFuture* future) {
   cass_future_error_message(future, &message, &message_length);
   fprintf(stderr, "Error: %.*s\n", (int)message_length, message);
 }
-
 
 CassCluster* create_cluster(const char* hosts) {
   CassCluster* cluster = cass_cluster_new();
@@ -90,7 +89,7 @@ void insert_into_async(CassSession* session, const char* key) {
 
   size_t i;
   for (i = 0; i < NUM_CONCURRENT_REQUESTS; ++i) {
-     char key_buffer[64];
+    char key_buffer[64];
     statement = cass_statement_new(query, 6);
 
     sprintf(key_buffer, "%s%u", key, (unsigned int)i);
@@ -123,7 +122,6 @@ void insert_into_async(CassSession* session, const char* key) {
 int main(int argc, char* argv[]) {
   CassCluster* cluster = NULL;
   CassSession* session = cass_session_new();
-  CassFuture* close_future = NULL;
   char* hosts = "127.0.0.1";
   if (argc > 1) {
     hosts = argv[1];
@@ -136,13 +134,10 @@ int main(int argc, char* argv[]) {
     return -1;
   }
 
-  execute_query(session,
-                "CREATE KEYSPACE examples WITH replication = { \
+  execute_query(session, "CREATE KEYSPACE examples WITH replication = { \
                            'class': 'SimpleStrategy', 'replication_factor': '3' };");
 
-
-  execute_query(session,
-                "CREATE TABLE examples.async (key text, \
+  execute_query(session, "CREATE TABLE examples.async (key text, \
                                               bln boolean, \
                                               flt float, dbl double,\
                                               i32 int, i64 bigint, \
@@ -151,10 +146,6 @@ int main(int argc, char* argv[]) {
   execute_query(session, "USE examples");
 
   insert_into_async(session, "test");
-
-  close_future = cass_session_close(session);
-  cass_future_wait(close_future);
-  cass_future_free(close_future);
 
   cass_cluster_free(cluster);
   cass_session_free(session);

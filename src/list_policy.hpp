@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014-2016 DataStax
+  Copyright (c) DataStax, Inc.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -14,44 +14,39 @@
   limitations under the License.
 */
 
-#ifndef __CASS_LIST_POLICY_HPP_INCLUDED__
-#define __CASS_LIST_POLICY_HPP_INCLUDED__
+#ifndef DATASTAX_INTERNAL_LIST_POLICY_HPP
+#define DATASTAX_INTERNAL_LIST_POLICY_HPP
 
-#include "load_balancing.hpp"
 #include "host.hpp"
+#include "load_balancing.hpp"
 #include "scoped_ptr.hpp"
 
-namespace cass {
+namespace datastax { namespace internal { namespace core {
 
 class ListPolicy : public ChainedLoadBalancingPolicy {
 public:
   ListPolicy(LoadBalancingPolicy* child_policy)
-    : ChainedLoadBalancingPolicy(child_policy) {}
+      : ChainedLoadBalancingPolicy(child_policy) {}
 
   virtual ~ListPolicy() {}
 
-  virtual void init(const SharedRefPtr<Host>& connected_host, const HostMap& hosts);
+  virtual void init(const Host::Ptr& connected_host, const HostMap& hosts, Random* random,
+                    const String& local_dc);
 
-  virtual CassHostDistance distance(const SharedRefPtr<Host>& host) const;
+  virtual CassHostDistance distance(const Host::Ptr& host) const;
 
-  virtual QueryPlan* new_query_plan(const std::string& connected_keyspace,
-                                    const Request* request,
-                                    const TokenMap& token_map,
-                                    Request::EncodingCache* cache);
+  virtual QueryPlan* new_query_plan(const String& keyspace, RequestHandler* request_handler,
+                                    const TokenMap* token_map);
 
-  virtual void on_add(const SharedRefPtr<Host>& host);
-  virtual void on_remove(const SharedRefPtr<Host>& host);
-  virtual void on_up(const SharedRefPtr<Host>& host);
-  virtual void on_down(const SharedRefPtr<Host>& host);
+  virtual void on_host_added(const Host::Ptr& host);
+  virtual void on_host_up(const Host::Ptr& host);
 
   virtual ListPolicy* new_instance() = 0;
 
 private:
-  virtual bool is_valid_host(const SharedRefPtr<Host>& host) const = 0;
-
+  virtual bool is_valid_host(const Host::Ptr& host) const = 0;
 };
 
-} // namespace cass
+}}} // namespace datastax::internal::core
 
 #endif
-

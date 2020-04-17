@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014-2016 DataStax
+  Copyright (c) DataStax, Inc.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -39,26 +39,28 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef __CASS_RING_BUFFER_HPP_INCLUDED__
-#define __CASS_RING_BUFFER_HPP_INCLUDED__
+#ifndef DATASTAX_INTERNAL_RING_BUFFER_HPP
+#define DATASTAX_INTERNAL_RING_BUFFER_HPP
 
-#include "fixed_vector.hpp"
+#include "allocated.hpp"
+#include "small_vector.hpp"
 
 #include <uv.h>
 
-namespace cass {
-namespace rb {
+namespace datastax { namespace internal { namespace rb {
 
 class RingBuffer {
- private:
+private:
   // NOTE: Size is maximum TLS frame length, this is required if we want
   // to fit whole ClientHello into one Buffer of RingBuffer.
   static const size_t BUFFER_LENGTH = 16 * 1024 + 5;
 
-  class Buffer {
-   public:
-    Buffer() : read_pos_(0), write_pos_(0), next_(NULL) {
-    }
+  class Buffer : public Allocated {
+  public:
+    Buffer()
+        : read_pos_(0)
+        , write_pos_(0)
+        , next_(NULL) {}
 
     size_t read_pos_;
     size_t write_pos_;
@@ -66,27 +68,26 @@ class RingBuffer {
     char data_[BUFFER_LENGTH];
   };
 
- public:
+public:
   struct Position {
     Position(Buffer* buf, size_t pos)
-      : buf(buf) , pos(pos) {}
+        : buf(buf)
+        , pos(pos) {}
     Buffer* buf;
     size_t pos;
   };
 
   RingBuffer()
-    : length_(0)
-    , read_head_(&head_)
-    , write_head_(&head_) {
+      : length_(0)
+      , read_head_(&head_)
+      , write_head_(&head_) {
     // Loop head
     head_.next_ = &head_;
   }
 
   ~RingBuffer();
 
-  Position write_position() {
-    return Position(write_head_, write_head_->write_pos_);
-  }
+  Position write_position() { return Position(write_head_, write_head_->write_pos_); }
 
   // Move read head to next buffer if needed
   void try_move_read_head();
@@ -104,7 +105,7 @@ class RingBuffer {
   // Return pointers and sizes of multiple internal data chunks available for
   // reading from position
   template <size_t N>
-  size_t peek_multiple(Position pos, FixedVector<uv_buf_t, N>* bufs);
+  size_t peek_multiple(Position pos, SmallVector<uv_buf_t, N>* bufs);
 
   // Find first appearance of `delim` in buffer or `limit` if `delim`
   // wasn't found.
@@ -124,11 +125,9 @@ class RingBuffer {
   void commit(size_t size);
 
   // Return size of buffer in bytes
-  size_t inline length() {
-    return length_;
-  }
+  size_t inline length() { return length_; }
 
- private:
+private:
   size_t length_;
   Buffer head_;
   Buffer* read_head_;
@@ -136,7 +135,7 @@ class RingBuffer {
 };
 
 template <size_t N>
-size_t RingBuffer::peek_multiple(Position pos, FixedVector<uv_buf_t, N>* bufs) {
+size_t RingBuffer::peek_multiple(Position pos, SmallVector<uv_buf_t, N>* bufs) {
   Buffer* buf = pos.buf;
   size_t offset = pos.pos;
   size_t total = 0;
@@ -159,7 +158,6 @@ size_t RingBuffer::peek_multiple(Position pos, FixedVector<uv_buf_t, N>* bufs) {
   return total;
 }
 
-} // namespace rb
-} // namespace cass
+}}} // namespace datastax::internal::rb
 
 #endif

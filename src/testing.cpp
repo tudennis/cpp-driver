@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014-2016 DataStax
+  Copyright (c) DataStax, Inc.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -17,78 +17,108 @@
 #include "testing.hpp"
 
 #include "address.hpp"
+#include "cluster_config.hpp"
+#include "external.hpp"
+#include "future.hpp"
 #include "get_time.hpp"
 #include "logger.hpp"
 #include "metadata.hpp"
 #include "murmur3.hpp"
+#include "request_handler.hpp"
 #include "result_response.hpp"
-#include "external_types.hpp"
+#include "session.hpp"
+#include "statement.hpp"
 
-namespace cass {
+namespace datastax { namespace internal { namespace testing {
 
-std::string get_host_from_future(CassFuture* future) {
-  if (future->type() != cass::CASS_FUTURE_TYPE_RESPONSE) {
+using namespace core;
+
+String get_host_from_future(CassFuture* future) {
+  if (future->type() != Future::FUTURE_TYPE_RESPONSE) {
     return "";
   }
-  cass::ResponseFuture* response_future =
-      static_cast<cass::ResponseFuture*>(future->from());
-  return response_future->get_host_address().to_string();
+  ResponseFuture* response_future = static_cast<ResponseFuture*>(future->from());
+  return response_future->address().hostname_or_address();
+}
+
+StringVec get_attempted_hosts_from_future(CassFuture* future) {
+  if (future->type() != Future::FUTURE_TYPE_RESPONSE) {
+    return StringVec();
+  }
+  StringVec attempted_hosts;
+  ResponseFuture* response_future = static_cast<ResponseFuture*>(future->from());
+
+  AddressVec attempted_addresses = response_future->attempted_addresses();
+  for (AddressVec::iterator it = attempted_addresses.begin(); it != attempted_addresses.end();
+       ++it) {
+    attempted_hosts.push_back(it->to_string());
+  }
+  std::sort(attempted_hosts.begin(), attempted_hosts.end());
+  return attempted_hosts;
 }
 
 unsigned get_connect_timeout_from_cluster(CassCluster* cluster) {
   return cluster->config().connect_timeout_ms();
 }
 
-int get_port_from_cluster(CassCluster* cluster) {
-  return cluster->config().port();
-}
+int get_port_from_cluster(CassCluster* cluster) { return cluster->config().port(); }
 
-std::string get_contact_points_from_cluster(CassCluster* cluster) {
-  std::string str;
+String get_contact_points_from_cluster(CassCluster* cluster) {
+  String str;
 
-  const ContactPointList& contact_points
-      = cluster->config().contact_points();
+  const AddressVec& contact_points = cluster->config().contact_points();
 
-  for (ContactPointList::const_iterator it = contact_points.begin(),
-       end = contact_points.end();
+  for (AddressVec::const_iterator it = contact_points.begin(), end = contact_points.end();
        it != end; ++it) {
     if (str.size() > 0) {
       str.push_back(',');
     }
-    str.append(*it);
+    str.append(it->hostname_or_address());
   }
 
   return str;
 }
 
-std::vector<std::string> get_user_data_type_field_names(const CassSchemaMeta* schema_meta, const std::string& keyspace, const std::string& udt_name) {
-  std::vector<std::string> udt_field_names;
-  if (schema_meta) {
-    const cass::UserType* udt = schema_meta->get_user_type(keyspace, udt_name);
-    if (udt) {
-      for (cass::UserType::FieldVec::const_iterator it = udt->fields().begin(); it != udt->fields().end(); ++it) {
-        udt_field_names.push_back((*it).name);
-      }
-    }
-  }
-
-  return udt_field_names;
-}
-
-int64_t create_murmur3_hash_from_string(const std::string &value) {
+int64_t create_murmur3_hash_from_string(const String& value) {
   return MurmurHash3_x64_128(value.data(), value.size(), 0);
 }
 
-uint64_t get_time_since_epoch_in_ms() {
-  return cass::get_time_since_epoch_ms();
-}
+uint64_t get_time_since_epoch_in_ms() { return internal::get_time_since_epoch_ms(); }
 
-uint64_t get_host_latency_average(CassSession* session, std::string ip_address, int port) {
-  Address address;
-  if (Address::from_string(ip_address, port, &address)) {
-    return session->get_host(address)->get_current_average().average;
+uint64_t get_host_latency_average(CassSession* session, String ip_address, int port) {
+  Address address(ip_address, port);
+  if (address.is_valid()) {
+    Host::Ptr host(session->cluster()->find_host(address));
+    return host ? host->get_current_average().average : 0;
   }
   return 0;
 }
 
-} // namespace cass
+CassConsistency get_consistency(const CassStatement* statement) {
+  return statement->from()->consistency();
+}
+
+CassConsistency get_serial_consistency(const CassStatement* statement) {
+  return statement->from()->serial_consistency();
+}
+
+uint64_t get_request_timeout_ms(const CassStatement* statement) {
+  return statement->from()->request_timeout_ms();
+}
+
+const CassRetryPolicy* get_retry_policy(const CassStatement* statement) {
+  return CassRetryPolicy::to(statement->from()->retry_policy().get());
+}
+
+String get_server_name(CassFuture* future) {
+  if (future->type() != Future::FUTURE_TYPE_RESPONSE) {
+    return "";
+  }
+  return static_cast<ResponseFuture*>(future->from())->address().server_name();
+}
+
+void set_record_attempted_hosts(CassStatement* statement, bool enable) {
+  static_cast<Statement*>(statement->from())->set_record_attempted_addresses(enable);
+}
+
+}}} // namespace datastax::internal::testing

@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014-2016 DataStax
+  Copyright (c) DataStax, Inc.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -14,11 +14,13 @@
   limitations under the License.
 */
 
-#ifndef __CASS_HASH_INDEX_HPP_INCLUDED__
-#define __CASS_HASH_INDEX_HPP_INCLUDED__
+#ifndef DATASTAX_INTERNAL_HASH_INDEX_HPP
+#define DATASTAX_INTERNAL_HASH_INDEX_HPP
 
-#include "fixed_vector.hpp"
+#include "allocated.hpp"
+#include "hash.hpp"
 #include "macros.hpp"
+#include "small_vector.hpp"
 #include "string_ref.hpp"
 #include "utils.hpp"
 
@@ -28,56 +30,25 @@
 // additional memory.
 #define CASS_LOAD_FACTOR 0.75
 
-namespace cass {
+namespace datastax { namespace internal { namespace core {
 
-#if defined(__x86_64__) || defined(_M_X64) || defined(__aarch64__)
-#define FNV1_64_INIT 0xcbf29ce484222325ULL
-#define FNV1_64_PRIME 0x100000001b3ULL
+typedef SmallVector<size_t, 4> IndexVec;
 
-inline uint64_t fnv1a_hash_lower(StringRef s) {
-  uint64_t h = FNV1_64_INIT;
-  for(StringRef::const_iterator i = s.begin(), end = s.end(); i != end; ++i) {
-    h ^= static_cast<uint64_t>(static_cast<unsigned char>(::tolower(*i)));
-    h *= FNV1_64_PRIME;
-  }
-  return h;
-}
-
-#undef FNV1_64_INIT
-#undef FNV1_64_PRIME
-#else
-#define FNV1_32_INIT 0x811c9dc5
-#define FNV1_32_PRIME 0x01000193
-inline uint32_t fnv1a_hash_lower(StringRef s) {
-  uint32_t h = FNV1_32_INIT;
-  for(StringRef::const_iterator i = s.begin(), end = s.end(); i != end; ++i) {
-    h ^= static_cast<uint32_t>(static_cast<unsigned char>(::tolower(*i)));
-    h *= FNV1_32_PRIME;
-  }
-  return h;
-}
-#undef FNV1_32_INIT
-#undef FNV1_32_PRIME
-#endif
-
-typedef FixedVector<size_t, 4> IndexVec;
-
-template<class T>
+template <class T>
 struct HashTableEntry {
   HashTableEntry()
-    : index(0)
-    , next(NULL) { }
+      : index(0)
+      , next(NULL) {}
 
-  // Requires a "name" std::string or cass::StringRef field
+  // Requires a "name" String or datastax::StringRef field
   size_t index;
   T* next;
 };
 
-
-template<class T>
-class CaseInsensitiveHashTable {
+template <class T>
+class CaseInsensitiveHashTable : public Allocated {
 public:
-  typedef FixedVector<T, 16> EntryVec;
+  typedef SmallVector<T, 16> EntryVec;
 
   CaseInsensitiveHashTable(size_t capacity = 16);
   CaseInsensitiveHashTable(const EntryVec& entries);
@@ -85,7 +56,7 @@ public:
   T& operator[](size_t index) { return entries_[index]; }
   const T& operator[](size_t index) const { return entries_[index]; }
 
-  size_t get_indices(StringRef name, IndexVec* result) const ;
+  size_t get_indices(StringRef name, IndexVec* result) const;
   size_t add(const T& entry);
 
   const EntryVec& entries() const { return entries_; }
@@ -101,35 +72,38 @@ private:
 
 private:
   size_t index_mask_;
-  size_t count_;
-  FixedVector<T*, 32> index_;
+  SmallVector<T*, 32> index_;
   EntryVec entries_;
 
 private:
   DISALLOW_COPY_AND_ASSIGN(CaseInsensitiveHashTable);
 };
 
-template<class T>
+template <class T>
 CaseInsensitiveHashTable<T>::CaseInsensitiveHashTable(size_t capacity) {
   reset(capacity);
 }
 
-template<class T>
+template <class T>
 CaseInsensitiveHashTable<T>::CaseInsensitiveHashTable(const EntryVec& entries) {
   set_entries(entries);
 }
 
-template<class T>
+template <class T>
 size_t CaseInsensitiveHashTable<T>::get_indices(StringRef name, IndexVec* result) const {
   result->clear();
   bool is_case_sensitive = false;
+
+  if (!name.data()) {
+    return 0;
+  }
 
   if (name.size() > 0 && name.front() == '"' && name.back() == '"') {
     is_case_sensitive = true;
     name = name.substr(1, name.size() - 2);
   }
 
-  size_t h = fnv1a_hash_lower(name) & index_mask_;
+  size_t h = hash::fnv1a(name.data(), name.size(), ::tolower) & index_mask_;
 
   size_t start = h;
   while (index_[h] != NULL && !iequals(name, index_[h]->name)) {
@@ -162,7 +136,7 @@ size_t CaseInsensitiveHashTable<T>::get_indices(StringRef name, IndexVec* result
   return result->size();
 }
 
-template<class T>
+template <class T>
 size_t CaseInsensitiveHashTable<T>::add(const T& entry) {
   size_t index = entries_.size();
   size_t capacity = entries_.capacity();
@@ -176,8 +150,7 @@ size_t CaseInsensitiveHashTable<T>::add(const T& entry) {
   return index;
 }
 
-
-template<class T>
+template <class T>
 void CaseInsensitiveHashTable<T>::set_entries(const EntryVec& entries) {
   entries_.clear();
   reset(entries.size());
@@ -186,9 +159,9 @@ void CaseInsensitiveHashTable<T>::set_entries(const EntryVec& entries) {
   }
 }
 
-template<class T>
+template <class T>
 void CaseInsensitiveHashTable<T>::add_index(T* entry) {
-  size_t h = fnv1a_hash_lower(entry->name) & index_mask_;
+  size_t h = hash::fnv1a(entry->name.data(), entry->name.size(), ::tolower) & index_mask_;
 
   if (index_[h] == NULL) {
     index_[h] = entry;
@@ -213,7 +186,7 @@ void CaseInsensitiveHashTable<T>::add_index(T* entry) {
   }
 }
 
-template<class T>
+template <class T>
 void CaseInsensitiveHashTable<T>::reset(size_t capacity) {
   if (capacity < entries_.capacity()) {
     capacity = entries_.capacity();
@@ -225,13 +198,13 @@ void CaseInsensitiveHashTable<T>::reset(size_t capacity) {
   index_mask_ = index_capacity - 1;
 }
 
-template<class T>
+template <class T>
 void CaseInsensitiveHashTable<T>::resize(size_t new_capacity) {
   reset(new_capacity);
   reindex();
 }
 
-template<class T>
+template <class T>
 void CaseInsensitiveHashTable<T>::reindex() {
   for (size_t i = 0; i < entries_.size(); ++i) {
     T* entry = &entries_[i];
@@ -240,6 +213,6 @@ void CaseInsensitiveHashTable<T>::reindex() {
   }
 }
 
-} // namespace cass
+}}} // namespace datastax::internal::core
 
 #endif

@@ -26,9 +26,9 @@
 */
 
 #include <assert.h>
-#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "cassandra.h"
 
@@ -61,18 +61,14 @@ CassError connect_session(CassSession* session, const CassCluster* cluster) {
 
 void on_log(const CassLogMessage* message, void* data) {
   FILE* log_file = (FILE*)data;
-  fprintf(log_file, "%u.%03u [%s] (%s:%d:%s): %s\n",
-          (unsigned int)(message->time_ms / 1000),
-          (unsigned int)(message->time_ms % 1000),
-          cass_log_level_string(message->severity),
-          message->file, message->line, message->function,
-          message->message);
+  fprintf(log_file, "%u.%03u [%s] (%s:%d:%s): %s\n", (unsigned int)(message->time_ms / 1000),
+          (unsigned int)(message->time_ms % 1000), cass_log_level_string(message->severity),
+          message->file, message->line, message->function, message->message);
 }
 
 int main(int argc, char* argv[]) {
   CassCluster* cluster = NULL;
   CassSession* session = NULL;
-  CassFuture* close_future = NULL;
   char* hosts = "127.0.0.1";
 
   FILE* log_file = fopen("driver.log", "w+");
@@ -95,10 +91,6 @@ int main(int argc, char* argv[]) {
     cass_session_free(session);
     return -1;
   }
-
-  close_future = cass_session_close(session);
-  cass_future_wait(close_future);
-  cass_future_free(close_future);
 
   cass_cluster_free(cluster);
   cass_session_free(session);

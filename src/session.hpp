@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014-2016 DataStax
+  Copyright (c) DataStax, Inc.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -14,203 +14,102 @@
   limitations under the License.
 */
 
-#ifndef __CASS_SESSION_HPP_INCLUDED__
-#define __CASS_SESSION_HPP_INCLUDED__
+#ifndef DATASTAX_INTERNAL_SESSION_HPP
+#define DATASTAX_INTERNAL_SESSION_HPP
 
-#include "config.hpp"
-#include "control_connection.hpp"
-#include "event_thread.hpp"
-#include "future.hpp"
-#include "host.hpp"
-#include "io_worker.hpp"
-#include "load_balancing.hpp"
-#include "metadata.hpp"
+#include "allocated.hpp"
 #include "metrics.hpp"
 #include "mpmc_queue.hpp"
-#include "ref_counted.hpp"
-#include "resolver.hpp"
-#include "row.hpp"
-#include "scoped_lock.hpp"
-#include "scoped_ptr.hpp"
+#include "request_processor.hpp"
+#include "session_base.hpp"
 
-#include <list>
-#include <memory>
-#include <set>
-#include <string>
 #include <uv.h>
-#include <vector>
 
-namespace cass {
+namespace datastax { namespace internal { namespace core {
 
-class RequestHandler;
-class Future;
-class IOWorker;
-class Request;
+class RequestProcessorInitializer;
+class Statement;
 
-struct SessionEvent {
-  enum Type {
-    INVALID,
-    CONNECT,
-    NOTIFY_READY,
-    NOTIFY_KEYSPACE_ERROR,
-    NOTIFY_WORKER_CLOSED,
-    NOTIFY_UP,
-    NOTIFY_DOWN
-  };
-
-  SessionEvent()
-    : type(INVALID) { }
-
-  Type type;
-  Address address;
-};
-
-class Session : public EventThread<SessionEvent> {
+class Session
+    : public Allocated
+    , public SessionBase
+    , public RequestProcessorListener {
 public:
-  enum State {
-    SESSION_STATE_CONNECTING,
-    SESSION_STATE_CONNECTED,
-    SESSION_STATE_CLOSING,
-    SESSION_STATE_CLOSED
-  };
-
   Session();
   ~Session();
 
-  const Config& config() const { return config_; }
-  Metrics* metrics() const { return metrics_.get(); }
+  Future::Ptr prepare(const char* statement, size_t length);
 
-  void set_load_balancing_policy(LoadBalancingPolicy* policy) {
-    load_balancing_policy_.reset(policy);
-  }
+  Future::Ptr prepare(const Statement* statement);
 
-  void broadcast_keyspace_change(const std::string& keyspace,
-                                 const IOWorker* calling_io_worker);
-
-  SharedRefPtr<Host> get_host(const Address& address);
-
-  bool notify_ready_async();
-  bool notify_keyspace_error_async();
-  bool notify_worker_closed_async();
-  bool notify_up_async(const Address& address);
-  bool notify_down_async(const Address& address);
-
-  void connect_async(const Config& config, const std::string& keyspace, Future* future);
-  void close_async(Future* future, bool force = false);
-
-  Future* prepare(const char* statement, size_t length);
-  Future* execute(const RoutableRequest* statement);
-
-  const Metadata& metadata() const { return metadata_; }
-
-  int protocol_version() const {
-    return control_connection_.protocol_version();
-  }
+  Future::Ptr execute(const Request::ConstPtr& request);
 
 private:
-  void clear(const Config& config);
-  int init();
+  void execute(const RequestHandler::Ptr& request_handler);
 
-  void close_handles();
-
-  void internal_connect();
-  void internal_close();
-
-  void notify_connected();
-  void notify_connect_error(CassError code, const std::string& message);
-  void notify_closed();
-
-  void execute(RequestHandler* request_handler);
-
-  virtual void on_run();
-  virtual void on_after_run();
-  virtual void on_event(const SessionEvent& event);
-
-  static void on_resolve(MultiResolver<Session*>::Resolver* resolver);
-  static void on_resolve_done(MultiResolver<Session*>* resolver);
-
-#if UV_VERSION_MAJOR >= 1
-  struct ResolveNameData {
-    ResolveNameData(Session* session,
-                    const SharedRefPtr<Host>& host,
-                    bool is_initial_connection)
-      : session(session)
-      , host(host)
-      , is_initial_connection(is_initial_connection) { }
-    Session* session;
-    SharedRefPtr<Host> host;
-    bool is_initial_connection;
-  };
-  typedef cass::NameResolver<ResolveNameData> NameResolver;
-
-  static void on_resolve_name(MultiResolver<Session*>::NameResolver* resolver);
-  static void on_add_resolve_name(NameResolver* resolver);
-#endif
-
-#if UV_VERSION_MAJOR == 0
-  static void on_execute(uv_async_t* data, int status);
-#else
-  static void on_execute(uv_async_t* data);
-#endif
-
-  QueryPlan* new_query_plan(const Request* request = NULL, Request::EncodingCache* cache = NULL);
-
-  void on_reconnect(Timer* timer);
+  void join();
 
 private:
-  // TODO(mpenick): Consider removing friend access to session
-  friend class ControlConnection;
+  // Session base methods
 
-  SharedRefPtr<Host> add_host(const Address& address);
-  void purge_hosts(bool is_initial_connection);
+  virtual void on_connect(const Host::Ptr& connected_host, ProtocolVersion protocol_version,
+                          const HostMap& hosts, const TokenMap::Ptr& token_map,
+                          const String& local_dc);
 
-  Metadata& metadata() { return metadata_; }
+  virtual void on_close();
 
-  void on_control_connection_ready();
-  void on_control_connection_error(CassError code, const std::string& message);
-
-  void on_add(SharedRefPtr<Host> host, bool is_initial_connection);
-  void internal_on_add(SharedRefPtr<Host> host, bool is_initial_connection);
-
-  void on_remove(SharedRefPtr<Host> host);
-  void on_up(SharedRefPtr<Host> host);
-  void on_down(SharedRefPtr<Host> host);
+  using SessionBase::on_close; // Intentional overload
 
 private:
-  typedef std::vector<SharedRefPtr<IOWorker> > IOWorkerVec;
+  // Cluster listener methods
 
-  Atomic<State> state_;
-  uv_mutex_t state_mutex_;
+  virtual void on_host_up(const Host::Ptr& host);
 
-  Config config_;
-  ScopedPtr<Metrics> metrics_;
-  ScopedRefPtr<LoadBalancingPolicy> load_balancing_policy_;
-  CassError connect_error_code_;
-  std::string connect_error_message_;
-  ScopedRefPtr<Future> connect_future_;
-  ScopedRefPtr<Future> close_future_;
+  virtual void on_host_down(const Host::Ptr& host);
 
-  HostMap hosts_;
-  uv_mutex_t hosts_mutex_;
+  virtual void on_host_added(const Host::Ptr& host);
 
-  IOWorkerVec io_workers_;
-  ScopedPtr<AsyncQueue<MPMCQueue<RequestHandler*> > > request_queue_;
-  Metadata metadata_;
-  ControlConnection control_connection_;
-  bool current_host_mark_;
-  int pending_pool_count_;
-  int pending_workers_count_;
-  int current_io_worker_;
+  virtual void on_host_removed(const Host::Ptr& host);
 
-  CopyOnWritePtr<std::string> keyspace_;
+  virtual void on_token_map_updated(const TokenMap::Ptr& token_map);
+
+  virtual void on_host_maybe_up(const Host::Ptr& host);
+
+  virtual void on_host_ready(const Host::Ptr& host);
+
+private:
+  // Request processor listener methods
+
+  virtual void on_pool_up(const Address& address);
+
+  virtual void on_pool_down(const Address& address);
+
+  virtual void on_pool_critical_error(const Address& address, Connector::ConnectionError code,
+                                      const String& message);
+
+  virtual void on_keyspace_changed(const String& keyspace,
+                                   const KeyspaceChangedHandler::Ptr& handler);
+
+  virtual void on_prepared_metadata_changed(const String& id,
+                                            const PreparedMetadata::Entry::Ptr& entry);
+
+  virtual void on_close(RequestProcessor* processor);
+
+  using RequestProcessorListener::on_connect; // Intentional overload
+
+private:
+  friend class SessionInitializer;
+
+private:
+  ScopedPtr<RoundRobinEventLoopGroup> event_loop_group_;
+  uv_mutex_t mutex_;
+  RequestProcessor::Vec request_processors_;
+  size_t request_processor_count_;
+  bool is_closing_;
 };
 
-class SessionFuture : public Future {
-public:
-  SessionFuture()
-      : Future(CASS_FUTURE_TYPE_SESSION) {}
-};
+}}} // namespace datastax::internal::core
 
-} // namespace cass
+EXTERNAL_TYPE(datastax::internal::core::Session, CassSession)
 
 #endif

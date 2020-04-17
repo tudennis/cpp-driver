@@ -26,9 +26,9 @@
 */
 
 #include <assert.h>
-#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "cassandra.h"
 
@@ -150,9 +150,7 @@ CassError select_from_log(CassSession* session, const char* key) {
 
       cass_uuid_string(time, time_str);
 
-      printf("%.*s %s %.*s\n", (int)key_length, key,
-                               time_str,
-                               (int)entry_length, entry);
+      printf("%.*s %s %.*s\n", (int)key_length, key, time_str, (int)entry_length, entry);
     }
 
     cass_result_free(result);
@@ -169,7 +167,6 @@ int main(int argc, char* argv[]) {
   CassUuidGen* uuid_gen = cass_uuid_gen_new();
   CassCluster* cluster = NULL;
   CassSession* session = cass_session_new();
-  CassFuture* close_future = NULL;
   CassUuid uuid;
   char* hosts = "127.0.0.1";
   if (argc > 1) {
@@ -183,15 +180,11 @@ int main(int argc, char* argv[]) {
     return -1;
   }
 
-  execute_query(session,
-                "CREATE KEYSPACE examples WITH replication = { \
+  execute_query(session, "CREATE KEYSPACE examples WITH replication = { \
                            'class': 'SimpleStrategy', 'replication_factor': '3' };");
 
-
-  execute_query(session,
-                "CREATE TABLE examples.log (key text, time timeuuid, entry text, \
+  execute_query(session, "CREATE TABLE examples.log (key text, time timeuuid, entry text, \
                                               PRIMARY KEY (key, time));");
-
 
   cass_uuid_gen_time(uuid_gen, &uuid);
   insert_into_log(session, "test", uuid, "Log entry #1");
@@ -206,10 +199,6 @@ int main(int argc, char* argv[]) {
   insert_into_log(session, "test", uuid, "Log entry #4");
 
   select_from_log(session, "test");
-
-  close_future = cass_session_close(session);
-  cass_future_wait(close_future);
-  cass_future_free(close_future);
 
   cass_uuid_gen_free(uuid_gen);
   cass_cluster_free(cluster);

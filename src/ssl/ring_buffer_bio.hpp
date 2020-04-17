@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014-2016 DataStax
+  Copyright (c) DataStax, Inc.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -39,25 +39,46 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef __CASS_RING_BUFFER_BIO_HPP_INCLUDED__
-#define __CASS_RING_BUFFER_BIO_HPP_INCLUDED__
+#ifndef DATASTAX_INTERNAL_RING_BUFFER_BIO_HPP
+#define DATASTAX_INTERNAL_RING_BUFFER_BIO_HPP
 
 #include "ring_buffer.hpp"
 
 #include <assert.h>
 #include <openssl/bio.h>
 
-namespace cass {
-namespace rb {
+#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
+#define BIO_get_data(b) ((b)->ptr)
+#endif
+
+namespace datastax { namespace internal { namespace rb {
+
+// This wrapper is used to contain the ring buffer state kept in the BIO's
+// user data field. OpenSSL 1.1 made the BIO's structure opaque which removed access
+// to the "num" field which was used for the EOF return value. This struct's "ret"
+// is now used to track the EOF return value.
+struct RingBufferState {
+  RingBufferState(RingBuffer* ring_buffer)
+      : ring_buffer(ring_buffer)
+      , ret(-1) {}
+
+  RingBuffer* ring_buffer;
+  int ret; // Used to keep track of the EOF return value
+};
 
 class RingBufferBio {
 public:
-  static BIO* create(RingBuffer* ring_buffer);
+  static BIO* create(RingBufferState* ring_buffer);
 
-  static RingBuffer* from_bio(BIO* bio) {
-    assert(bio->ptr != NULL);
-    return static_cast<RingBuffer*>(bio->ptr);
+  static RingBufferState* from_bio(BIO* bio) {
+    assert(BIO_get_data(bio) != NULL);
+    return static_cast<RingBufferState*>(BIO_get_data(bio));
   }
+
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+  static void initialize();
+  static void cleanup();
+#endif
 
 private:
   static int create(BIO* bio);
@@ -68,10 +89,13 @@ private:
   static int gets(BIO* bio, char* out, int size);
   static long ctrl(BIO* bio, int cmd, long num, void* ptr);
 
-  static const BIO_METHOD method;
+#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
+  static const BIO_METHOD method_;
+#else
+  static BIO_METHOD* method_;
+#endif
 };
 
-} // namespace rb
-} // namespace cass
+}}} // namespace datastax::internal::rb
 
 #endif

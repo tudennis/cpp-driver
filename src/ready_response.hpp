@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014-2016 DataStax
+  Copyright (c) DataStax, Inc.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -14,21 +14,21 @@
   limitations under the License.
 */
 
-#ifndef __CASS_READY_RESPONSE_HPP_INCLUDED__
-#define __CASS_READY_RESPONSE_HPP_INCLUDED__
+#ifndef DATASTAX_INTERNAL_READY_RESPONSE_HPP
+#define DATASTAX_INTERNAL_READY_RESPONSE_HPP
 
 #include "response.hpp"
 
-namespace cass {
+namespace datastax { namespace internal { namespace core {
 
 class ReadyResponse : public Response {
 public:
   ReadyResponse()
       : Response(CQL_OPCODE_READY) {}
 
-  bool decode(int version, char* buffer, size_t size) { return true; }
+  virtual bool decode(Decoder& decoder) { return true; }
 };
 
-} // namespace cass
+}}} // namespace datastax::internal::core
 
 #endif

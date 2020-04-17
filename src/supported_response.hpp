@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014-2016 DataStax
+  Copyright (c) DataStax, Inc.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -14,29 +14,34 @@
   limitations under the License.
 */
 
-#ifndef __CASS_SUPPORTED_RESPONSE_HPP_INCLUDED__
-#define __CASS_SUPPORTED_RESPONSE_HPP_INCLUDED__
+#ifndef DATASTAX_INTERNAL_SUPPORTED_RESPONSE_HPP
+#define DATASTAX_INTERNAL_SUPPORTED_RESPONSE_HPP
 
-#include "response.hpp"
 #include "constants.hpp"
+#include "response.hpp"
+#include "string.hpp"
+#include "vector.hpp"
 
-#include <list>
-#include <string>
-
-namespace cass {
+namespace datastax { namespace internal { namespace core {
 
 class SupportedResponse : public Response {
 public:
   SupportedResponse()
       : Response(CQL_OPCODE_SUPPORTED) {}
 
-  bool decode(int version, char* buffer, size_t size);
+  virtual bool decode(Decoder& decoder);
+
+  /**
+   * Get the supported options provided by the server.
+   *
+   * @return Supported options; all keys are normalized (uppercase).
+   */
+  const StringMultimap& supported_options() const { return supported_options_; }
 
 private:
-  std::list<std::string> compression_;
-  std::list<std::string> versions_;
+  StringMultimap supported_options_;
 };
 
-} // namespace cass
+}}} // namespace datastax::internal::core
 
 #endif

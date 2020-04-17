@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014-2016 DataStax
+  Copyright (c) DataStax, Inc.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -14,17 +14,16 @@
   limitations under the License.
 */
 
-#ifndef __CASS_LOAD_BALANCING_HPP_INCLUDED__
-#define __CASS_LOAD_BALANCING_HPP_INCLUDED__
+#ifndef DATASTAX_INTERNAL_LOAD_BALANCING_HPP
+#define DATASTAX_INTERNAL_LOAD_BALANCING_HPP
 
+#include "allocated.hpp"
 #include "cassandra.h"
 #include "constants.hpp"
 #include "host.hpp"
 #include "request.hpp"
-
-#include <list>
-#include <set>
-#include <string>
+#include "string.hpp"
+#include "vector.hpp"
 
 #include <uv.h>
 
@@ -49,22 +48,26 @@ typedef enum CassHostDistance_ {
 
 } // extern "C"
 
-namespace cass {
+namespace datastax { namespace internal {
 
-class RoutableRequest;
+class Random;
+
+namespace core {
+
+class RequestHandler;
 class TokenMap;
 
 inline bool is_dc_local(CassConsistency cl) {
   return cl == CASS_CONSISTENCY_LOCAL_ONE || cl == CASS_CONSISTENCY_LOCAL_QUORUM;
 }
 
-class QueryPlan {
+class QueryPlan : public Allocated {
 public:
   virtual ~QueryPlan() {}
-  virtual SharedRefPtr<Host> compute_next() = 0;
+  virtual Host::Ptr compute_next() = 0;
 
   bool compute_next(Address* address) {
-    SharedRefPtr<Host> host = compute_next();
+    Host::Ptr host = compute_next();
     if (host) {
       *address = host->address();
       return true;
@@ -73,55 +76,78 @@ public:
   }
 };
 
-class LoadBalancingPolicy : public Host::StateListener, public RefCounted<LoadBalancingPolicy> {
+class LoadBalancingPolicy : public RefCounted<LoadBalancingPolicy> {
 public:
+  typedef SharedRefPtr<LoadBalancingPolicy> Ptr;
+  typedef Vector<Ptr> Vec;
+
   LoadBalancingPolicy()
-    : RefCounted<LoadBalancingPolicy>() {}
+      : RefCounted<LoadBalancingPolicy>() {}
 
   virtual ~LoadBalancingPolicy() {}
 
-  virtual void init(const SharedRefPtr<Host>& connected_host, const HostMap& hosts) = 0;
+  virtual void init(const Host::Ptr& connected_host, const HostMap& hosts, Random* random,
+                    const String& local_dc) = 0;
 
   virtual void register_handles(uv_loop_t* loop) {}
   virtual void close_handles() {}
 
-  virtual CassHostDistance distance(const SharedRefPtr<Host>& host) const = 0;
+  virtual CassHostDistance distance(const Host::Ptr& host) const = 0;
 
-  virtual QueryPlan* new_query_plan(const std::string& connected_keyspace,
-                                    const Request* request,
-                                    const TokenMap& token_map,
-                                    Request::EncodingCache* cache) = 0;
+  virtual bool is_host_up(const Address& address) const = 0;
+  virtual void on_host_added(const Host::Ptr& host) = 0;
+  virtual void on_host_removed(const Host::Ptr& host) = 0;
+  virtual void on_host_up(const Host::Ptr& host) = 0;
+  virtual void on_host_down(const Address& address) = 0;
+
+  virtual QueryPlan* new_query_plan(const String& keyspace, RequestHandler* request_handler,
+                                    const TokenMap* token_map) = 0;
 
   virtual LoadBalancingPolicy* new_instance() = 0;
 };
 
+inline bool is_host_ignored(const LoadBalancingPolicy::Vec& policies, const Host::Ptr& host) {
+  for (LoadBalancingPolicy::Vec::const_iterator it = policies.begin(), end = policies.end();
+       it != end; ++it) {
+    if ((*it)->distance(host) != CASS_HOST_DISTANCE_IGNORE) {
+      return false;
+    }
+  }
+  return true;
+}
 
 class ChainedLoadBalancingPolicy : public LoadBalancingPolicy {
 public:
   ChainedLoadBalancingPolicy(LoadBalancingPolicy* child_policy)
-    : child_policy_(child_policy) {}
+      : child_policy_(child_policy) {}
 
   virtual ~ChainedLoadBalancingPolicy() {}
 
-  virtual void init(const SharedRefPtr<Host>& connected_host, const HostMap& hosts) {
-    return child_policy_->init(connected_host, hosts);
+  virtual void init(const Host::Ptr& connected_host, const HostMap& hosts, Random* random,
+                    const String& local_dc) {
+    return child_policy_->init(connected_host, hosts, random, local_dc);
   }
 
-  virtual CassHostDistance distance(const SharedRefPtr<Host>& host) const { return child_policy_->distance(host); }
+  virtual const LoadBalancingPolicy::Ptr& child_policy() const { return child_policy_; }
 
-  virtual void on_add(const SharedRefPtr<Host>& host) { child_policy_->on_add(host); }
+  virtual CassHostDistance distance(const Host::Ptr& host) const {
+    return child_policy_->distance(host);
+  }
 
-  virtual void on_remove(const SharedRefPtr<Host>& host) { child_policy_->on_remove(host); }
+  virtual bool is_host_up(const Address& address) const {
+    return child_policy_->is_host_up(address);
+  }
 
-  virtual void on_up(const SharedRefPtr<Host>& host) { child_policy_->on_up(host); }
-
-  virtual void on_down(const SharedRefPtr<Host>& host) { child_policy_->on_down(host); }
+  virtual void on_host_added(const Host::Ptr& host) { child_policy_->on_host_added(host); }
+  virtual void on_host_removed(const Host::Ptr& host) { child_policy_->on_host_removed(host); }
+  virtual void on_host_up(const Host::Ptr& host) { child_policy_->on_host_up(host); }
+  virtual void on_host_down(const Address& address) { child_policy_->on_host_down(address); }
 
 protected:
-  ScopedRefPtr<LoadBalancingPolicy> child_policy_;
+  LoadBalancingPolicy::Ptr child_policy_;
 };
 
-} // namespace cass
+} // namespace core
+}} // namespace datastax::internal
 
 #endif
-

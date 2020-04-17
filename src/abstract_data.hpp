@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014-2016 DataStax
+  Copyright (c) DataStax, Inc.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -14,9 +14,10 @@
   limitations under the License.
 */
 
-#ifndef __CASS_ABSTRACT_DATA_HPP_INCLUDED__
-#define __CASS_ABSTRACT_DATA_HPP_INCLUDED__
+#ifndef DATASTAX_INTERNAL_ABSTRACT_DATA_HPP
+#define DATASTAX_INTERNAL_ABSTRACT_DATA_HPP
 
+#include "allocated.hpp"
 #include "buffer.hpp"
 #include "collection.hpp"
 #include "data_type.hpp"
@@ -25,54 +26,47 @@
 #include "request.hpp"
 #include "string_ref.hpp"
 #include "types.hpp"
+#include "vector.hpp"
 
-#define CASS_CHECK_INDEX_AND_TYPE(Index, Value) do { \
-  CassError rc = check(Index, Value);               \
-  if (rc != CASS_OK) return rc;                     \
-} while(0)
+#define CASS_CHECK_INDEX_AND_TYPE(Index, Value) \
+  do {                                          \
+    CassError rc = check(Index, Value);         \
+    if (rc != CASS_OK) return rc;               \
+  } while (0)
 
-namespace cass {
+namespace datastax { namespace internal { namespace core {
 
 class Tuple;
 class UserTypeValue;
 
-class AbstractData {
+class AbstractData : public Allocated {
 public:
   class Element {
   public:
-    enum Type {
-      UNSET,
-      NUL,
-      BUFFER,
-      COLLECTION
-    };
+    enum Type { UNSET, NUL, BUFFER, COLLECTION };
 
     Element()
-      : type_(UNSET) { }
+        : type_(UNSET) {}
 
     Element(CassNull value)
-      : type_(NUL)
-      , buf_(cass::encode_with_length(value)) { }
+        : type_(NUL)
+        , buf_(core::encode_with_length(value)) {}
 
     Element(const Buffer& buf)
-      : type_(BUFFER)
-      , buf_(buf) { }
+        : type_(BUFFER)
+        , buf_(buf) {}
 
     Element(const Collection* collection)
-      : type_(COLLECTION)
-      , collection_(collection) { }
+        : type_(COLLECTION)
+        , collection_(collection) {}
 
-    bool is_unset() const {
-      return type_ == UNSET || (type_ == BUFFER && buf_.size() == 0);
-    }
+    bool is_unset() const { return type_ == UNSET || (type_ == BUFFER && buf_.size() == 0); }
 
-    bool is_null() const {
-      return type_ == NUL;
-    }
+    bool is_null() const { return type_ == NUL; }
 
-    size_t get_size(int version) const;
-    size_t copy_buffer(int version, size_t pos, Buffer* buf) const;
-    Buffer get_buffer_cached(int version, Request::EncodingCache* cache, bool add_to_cache) const;
+    size_t get_size() const;
+    size_t copy_buffer(size_t pos, Buffer* buf) const;
+    Buffer get_buffer() const;
 
   private:
     Type type_;
@@ -80,16 +74,15 @@ public:
     SharedRefPtr<const Collection> collection_;
   };
 
-  typedef std::vector<Element> ElementVec;
+  typedef Vector<Element> ElementVec;
 
 public:
   AbstractData(size_t count)
-    : elements_(count) { }
+      : elements_(count) {}
 
-  virtual ~AbstractData() { }
+  virtual ~AbstractData() {}
 
   const ElementVec& elements() const { return elements_; }
-  size_t elements_count() const { return elements_.size(); }
 
   void reset(size_t count) {
     elements_.clear();
@@ -99,7 +92,7 @@ public:
 #define SET_TYPE(Type)                                  \
   CassError set(size_t index, const Type value) {       \
     CASS_CHECK_INDEX_AND_TYPE(index, value);            \
-    elements_[index] = cass::encode_with_length(value); \
+    elements_[index] = core::encode_with_length(value); \
     return CASS_OK;                                     \
   }
 
@@ -117,6 +110,7 @@ public:
   SET_TYPE(CassUuid)
   SET_TYPE(CassInet)
   SET_TYPE(CassDecimal)
+  SET_TYPE(CassDuration)
 
 #undef SET_TYPE
 
@@ -125,7 +119,7 @@ public:
   CassError set(size_t index, const Tuple* value);
   CassError set(size_t index, const UserTypeValue* value);
 
-  template<class T>
+  template <class T>
   CassError set(StringRef name, const T value) {
     IndexVec indices;
 
@@ -133,8 +127,7 @@ public:
       return CASS_ERROR_LIB_NAME_DOES_NOT_EXIST;
     }
 
-    for (IndexVec::const_iterator it = indices.begin(),
-         end = indices.end(); it != end; ++it) {
+    for (IndexVec::const_iterator it = indices.begin(), end = indices.end(); it != end; ++it) {
       size_t index = *it;
       CassError rc = set(index, value);
       if (rc != CASS_OK) return rc;
@@ -147,8 +140,7 @@ public:
   Buffer encode_with_length() const;
 
 protected:
-  virtual size_t get_indices(StringRef name,
-                             IndexVec* indices) = 0;
+  virtual size_t get_indices(StringRef name, IndexVec* indices) = 0;
   virtual const DataType::ConstPtr& get_type(size_t index) const = 0;
 
 private:
@@ -175,6 +167,6 @@ private:
   DISALLOW_COPY_AND_ASSIGN(AbstractData);
 };
 
-} // namespace cass
+}}} // namespace datastax::internal::core
 
 #endif

@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014-2016 DataStax
+  Copyright (c) DataStax, Inc.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -16,34 +16,26 @@
 
 #include "collection_iterator.hpp"
 
-namespace cass {
+using namespace datastax::internal::core;
 
 bool CollectionIterator::next() {
   if (index_ + 1 >= count_) {
     return false;
   }
   ++index_;
-  position_ = decode_value(position_);
-  return true;
+  return decode_value();
 }
 
-char* CollectionIterator::decode_value(char* position) {
-  int protocol_version = collection_->protocol_version();
-
-  int32_t size;
-  char* buffer = decode_size(protocol_version, position, size);
-
+bool CollectionIterator::decode_value() {
   DataType::ConstPtr data_type;
   if (collection_->value_type() == CASS_VALUE_TYPE_MAP) {
-    data_type = (index_ % 2 == 0) ? collection_->primary_data_type()
-                                  : collection_->secondary_data_type();
+    data_type =
+        (index_ % 2 == 0) ? collection_->primary_data_type() : collection_->secondary_data_type();
   } else {
     data_type = collection_->primary_data_type();
   }
 
-  value_ = Value(protocol_version, data_type, buffer, size);
-
-  return buffer + size;
+  return decoder_.decode_value(data_type, value_, true);
 }
 
 bool TupleIterator::next() {
@@ -51,17 +43,5 @@ bool TupleIterator::next() {
     return false;
   }
   current_ = next_++;
-  position_ = decode_value(position_);
-  return true;
+  return decoder_.decode_value(*current_, value_);
 }
-
-char* TupleIterator::decode_value(char* position) {
-  int32_t size;
-  char* buffer = decode_int32(position, size);
-
-  value_ = Value(tuple_->protocol_version(), *current_, buffer, size);
-
-  return size > 0 ? buffer + size : buffer;
-}
-
-} // namespace cass

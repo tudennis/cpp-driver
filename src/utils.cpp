@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014-2016 DataStax
+  Copyright (c) DataStax, Inc.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -21,11 +21,18 @@
 #include <algorithm>
 #include <assert.h>
 #include <functional>
-#include <sstream>
+#include <uv.h>
 
-namespace cass {
+#if (defined(WIN32) || defined(_WIN32))
+#include <windows.h>
+#else
+#include <sched.h>
+#include <unistd.h>
+#endif
 
-std::string opcode_to_string(int opcode) {
+namespace datastax { namespace internal {
+
+String opcode_to_string(int opcode) {
   switch (opcode) {
     case CQL_OPCODE_ERROR:
       return "CQL_OPCODE_ERROR";
@@ -66,10 +73,16 @@ std::string opcode_to_string(int opcode) {
   return "";
 }
 
-void explode(const std::string& str, std::vector<std::string>& vec, const char delimiter /* = ',' */) {
-  std::istringstream stream(str);
+String to_string(const CassUuid& uuid) {
+  char str[CASS_UUID_STRING_LENGTH];
+  cass_uuid_string(uuid, str);
+  return String(str);
+}
+
+void explode(const String& str, Vector<String>& vec, const char delimiter /* = ',' */) {
+  IStringStream stream(str);
   while (!stream.eof()) {
-    std::string token;
+    String token;
     std::getline(stream, token, delimiter);
     if (!trim(token).empty()) {
       vec.push_back(token);
@@ -77,59 +90,47 @@ void explode(const std::string& str, std::vector<std::string>& vec, const char d
   }
 }
 
-std::string& trim(std::string& str) {
-  // Trim front
-  str.erase(str.begin(),
-            std::find_if(str.begin(), str.end(),
-                         std::not1(std::ptr_fun<int, int>(::isspace))));
-  // Trim back
-  str.erase(std::find_if(str.rbegin(), str.rend(),
-                         std::not1(std::ptr_fun<int, int>(::isspace))).base(),
-            str.end());
+String implode(const Vector<String>& vec, const char delimiter /* = ' ' */) {
+  String str;
+  for (Vector<String>::const_iterator it = vec.begin(), end = vec.end(); it != end; ++it) {
+    if (!str.empty()) {
+      str.push_back(delimiter);
+    }
+    str.append(*it);
+  }
   return str;
 }
 
-static bool is_word_char(int c) {
-  return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
-         (c >= '0' && c <= '9') || c == '_';
+bool not_isspace(int c) { return !::isspace(c); }
+
+String& trim(String& str) {
+  // Trim front
+  str.erase(str.begin(), std::find_if(str.begin(), str.end(), not_isspace));
+  // Trim back
+  str.erase(std::find_if(str.rbegin(), str.rend(), not_isspace).base(), str.end());
+  return str;
 }
 
-static bool is_lower_word_char(int c) {
-  return (c >= 'a' && c <= 'z') ||
-         (c >= '0' && c <= '9') || c == '_';
-}
+static bool is_lowercase(const String& str) {
+  if (str.empty()) return true;
 
-bool is_valid_cql_id(const std::string& str) {
-  for (std::string::const_iterator i = str.begin(),
-       end = str.end(); i != end; ++i) {
-    if (!is_word_char(*i)) {
+  char c = str[0];
+  if (!(c >= 'a' && c <= 'z')) return false;
+
+  for (String::const_iterator it = str.begin() + 1, end = str.end(); it != end; ++it) {
+    char c = *it;
+    if (!((c >= '0' && c <= '9') || (c == '_') || (c >= 'a' && c <= 'z'))) {
       return false;
     }
   }
   return true;
 }
 
-bool is_valid_lower_cql_id(const std::string& str) {
-  if (str.empty() || !is_lower_word_char(str[0])) {
-    return false;
-  }
-  if (str.size() > 1) {
-    for (std::string::const_iterator i = str.begin() + 1,
-         end = str.end(); i != end; ++i) {
-      if (!is_lower_word_char(*i)) {
-        return false;
-      }
-    }
-  }
-  return true;
-}
-
-std::string& quote_id(std::string& str) {
-  std::string temp(str);
+static String& quote_id(String& str) {
+  String temp(str);
   str.clear();
   str.push_back('"');
-  for (std::string::const_iterator i = temp.begin(),
-       end = temp.end(); i != end; ++i) {
+  for (String::const_iterator i = temp.begin(), end = temp.end(); i != end; ++i) {
     if (*i == '"') {
       str.push_back('"');
       str.push_back('"');
@@ -142,19 +143,53 @@ std::string& quote_id(std::string& str) {
   return str;
 }
 
-std::string& escape_id(std::string& str) {
-  return is_valid_lower_cql_id(str) ?  str : quote_id(str);
+String& escape_id(String& str) { return is_lowercase(str) ? str : quote_id(str); }
+
+int32_t get_pid() {
+#if (defined(WIN32) || defined(_WIN32))
+  return static_cast<int32_t>(GetCurrentProcessId());
+#else
+  return static_cast<int32_t>(getpid());
+#endif
 }
 
-std::string& to_cql_id(std::string& str) {
-  if (is_valid_cql_id(str)) {
-    std::transform(str.begin(), str.end(), str.begin(), tolower);
-    return str;
-  }
-  if (str.length() > 2 && str[0] == '"' && str[str.length() - 1] == '"') {
-    return str.erase(str.length() - 1, 1).erase(0, 1);
-  }
-  return str;
+void thread_yield() {
+#if defined(WIN32) || defined(_WIN32)
+  SwitchToThread();
+#else
+  sched_yield();
+#endif
 }
 
-} // namespace cass
+// Code was taken from MSDN documentation see:
+// https://docs.microsoft.com/en-us/visualstudio/debugger/how-to-set-a-thread-name-in-native-code
+#if defined(_MSC_VER) && defined(_DEBUG)
+const DWORD MS_VC_EXCEPTION = 0x406D1388;
+#pragma pack(push, 8)
+typedef struct tagTHREADNAME_INFO {
+  DWORD dwType;     // Must be 0x1000.
+  LPCSTR szName;    // Pointer to name (in user addr space).
+  DWORD dwThreadID; // Thread ID (-1=caller thread).
+  DWORD dwFlags;    // Reserved for future use, must be zero.
+} THREADNAME_INFO;
+#pragma pack(pop)
+#endif
+void set_thread_name(const String& thread_name) {
+#if defined(_MSC_VER) && defined(_DEBUG)
+  THREADNAME_INFO info;
+  info.dwType = 0x1000;
+  info.szName = thread_name.c_str();
+  info.dwThreadID = -1;
+  info.dwFlags = 0;
+#pragma warning(push)
+#pragma warning(disable : 6320 6322)
+  __try {
+    RaiseException(MS_VC_EXCEPTION, 0, sizeof(info) / sizeof(ULONG_PTR),
+                   reinterpret_cast<ULONG_PTR*>(&info));
+  } __except (EXCEPTION_EXECUTE_HANDLER) {
+  }
+#pragma warning(pop)
+#endif
+}
+
+}} // namespace datastax::internal

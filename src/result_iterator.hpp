@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014-2016 DataStax
+  Copyright (c) DataStax, Inc.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -14,14 +14,14 @@
   limitations under the License.
 */
 
-#ifndef __CASS_RESULT_ITERATOR_HPP_INCLUDED__
-#define __CASS_RESULT_ITERATOR_HPP_INCLUDED__
+#ifndef DATASTAX_INTERNAL_RESULT_ITERATOR_HPP
+#define DATASTAX_INTERNAL_RESULT_ITERATOR_HPP
 
 #include "iterator.hpp"
 #include "result_response.hpp"
 #include "row.hpp"
 
-namespace cass {
+namespace datastax { namespace internal { namespace core {
 
 class ResultIterator : public Iterator {
 public:
@@ -29,8 +29,8 @@ public:
       : Iterator(CASS_ITERATOR_TYPE_RESULT)
       , result_(result)
       , index_(-1)
-      , position_(result->rows())
       , row_(result) {
+    decoder_ = (const_cast<ResultResponse*>(result))->row_decoder();
     row_.values.reserve(result->column_count());
   }
 
@@ -42,7 +42,7 @@ public:
     ++index_;
 
     if (index_ > 0) {
-      position_ = decode_row(position_, result_, row_.values);
+      return decode_row(decoder_, result_, row_.values);
     }
 
     return true;
@@ -59,11 +59,11 @@ public:
 
 private:
   const ResultResponse* result_;
+  Decoder decoder_;
   int32_t index_;
-  char* position_;
   Row row_;
 };
 
-} // namespace cass
+}}} // namespace datastax::internal::core
 
 #endif

@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014-2016 DataStax
+  Copyright (c) DataStax, Inc.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -14,65 +14,68 @@
   limitations under the License.
 */
 
-#ifndef __CASS_RESPONSE_HPP_INCLUDED__
-#define __CASS_RESPONSE_HPP_INCLUDED__
+#ifndef DATASTAX_INTERNAL_RESPONSE_HPP
+#define DATASTAX_INTERNAL_RESPONSE_HPP
 
-#include "utils.hpp"
+#include "allocated.hpp"
 #include "constants.hpp"
+#include "decoder.hpp"
 #include "hash_table.hpp"
 #include "macros.hpp"
 #include "ref_counted.hpp"
-#include "scoped_ptr.hpp"
+#include "utils.hpp"
 
 #include <uv.h>
 
-namespace cass {
+#define CHECK_RESULT(result) \
+  if (!(result)) return false;
+
+namespace datastax { namespace internal { namespace core {
 
 class Response : public RefCounted<Response> {
 public:
-  struct CustomPayloadItem {
-    CustomPayloadItem(StringRef name, StringRef value)
-      : name(name)
-      , value(value) { }
-    StringRef name;
-    StringRef value;
-  };
-  typedef FixedVector<CustomPayloadItem, 8> CustomPayloadVec;
-  typedef FixedVector<StringRef, 8> WarningVec;
+  typedef SharedRefPtr<Response> Ptr;
 
-  Response(uint8_t opcode)
-      : opcode_(opcode) { }
+  Response(uint8_t opcode);
 
-  virtual ~Response() { }
+  virtual ~Response() {}
 
   uint8_t opcode() const { return opcode_; }
 
   char* data() const { return buffer_->data(); }
 
-  const SharedRefPtr<RefBuffer>& buffer() const { return buffer_; }
+  const RefBuffer::Ptr& buffer() const { return buffer_; }
 
-  void set_buffer(size_t size) {
-    buffer_ = SharedRefPtr<RefBuffer>(RefBuffer::create(size));
-  }
+  void set_buffer(size_t size) { buffer_ = RefBuffer::Ptr(RefBuffer::create(size)); }
+
+  bool has_tracing_id() const;
+
+  const CassUuid& tracing_id() const { return tracing_id_; }
 
   const CustomPayloadVec& custom_payload() const { return custom_payload_; }
 
-  char* decode_custom_payload(char* buffer, size_t size);
+  const WarningVec& warnings() const { return warnings_; }
 
-  char* decode_warnings(char* buffer, size_t size);
+  bool decode_trace_id(Decoder& decoder);
 
-  virtual bool decode(int version, char* buffer, size_t size) = 0;
+  bool decode_custom_payload(Decoder& decoder);
+
+  bool decode_warnings(Decoder& decoder);
+
+  virtual bool decode(Decoder& decoder) = 0;
 
 private:
   uint8_t opcode_;
-  SharedRefPtr<RefBuffer> buffer_;
+  RefBuffer::Ptr buffer_;
+  CassUuid tracing_id_;
   CustomPayloadVec custom_payload_;
+  WarningVec warnings_;
 
 private:
   DISALLOW_COPY_AND_ASSIGN(Response);
 };
 
-class ResponseMessage {
+class ResponseMessage : public Allocated {
 public:
   ResponseMessage()
       : version_(0)
@@ -88,17 +91,17 @@ public:
       , is_body_error_(false)
       , body_buffer_pos_(NULL) {}
 
-  uint8_t floats() const { return flags_; }
+  uint8_t flags() const { return flags_; }
 
   uint8_t opcode() const { return opcode_; }
 
   int16_t stream() const { return stream_; }
 
-  const SharedRefPtr<Response>& response_body() { return response_body_; }
+  const Response::Ptr& response_body() { return response_body_; }
 
   bool is_body_ready() const { return is_body_ready_; }
 
-  ssize_t decode(char* input, size_t size);
+  ssize_t decode(const char* input, size_t size);
 
 private:
   bool allocate_body(int8_t opcode);
@@ -118,13 +121,13 @@ private:
 
   bool is_body_ready_;
   bool is_body_error_;
-  SharedRefPtr<Response> response_body_;
+  Response::Ptr response_body_;
   char* body_buffer_pos_;
 
 private:
   DISALLOW_COPY_AND_ASSIGN(ResponseMessage);
 };
 
-} // namespace cass
+}}} // namespace datastax::internal::core
 
 #endif

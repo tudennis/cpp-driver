@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014-2016 DataStax
+  Copyright (c) DataStax, Inc.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -19,18 +19,17 @@
  * domain. The author hereby disclaims copyright to this source code.
  */
 
-#ifndef __CASS_MURMUR3_HPP_INCLUDED__
-#define __CASS_MURMUR3_HPP_INCLUDED__
+#ifndef DATASTAX_INTERNAL_MURMUR3_HPP
+#define DATASTAX_INTERNAL_MURMUR3_HPP
 
 #include "macros.hpp"
 
 #include <uv.h>
 
-namespace cass {
+namespace datastax { namespace internal {
 
-int64_t MurmurHash3_x64_128(const void * key, const int len,
-                            const uint32_t seed);
+int64_t MurmurHash3_x64_128(const void* key, const int len, const uint32_t seed);
 
-} // namespace cass
+}} // namespace datastax::internal
 
 #endif

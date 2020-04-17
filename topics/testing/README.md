@@ -1,6 +1,8 @@
 # Testing
 Before proceeding ensure the tests were built using the [build procedures].
 
+Integration tests rely on [Cassandra Cluster Manager (CCM)](ccm) to be installed.
+
 Each test performs a [setup](#setup-cassandra), [execute](#execute-test), and
 [teardown](#teardown-cassandra). This ensures that each test has a clean and
 consistent run against the Apache Cassandra instance during the execution
@@ -41,7 +43,7 @@ cluster may be as large as nine nodes depending on the test being performed.
 
 ```
 
-### Execute Test
+#### Execute Test
 ```ditaa
                 /-----------\                                  /------------\
                 | Unit Test |         Perform Test             | C++ Driver |
@@ -80,7 +82,7 @@ cluster may be as large as nine nodes depending on the test being performed.
                                    \--------------------/
 ```
 
-### Teardown Cassandra
+#### Teardown Cassandra
 ```ditaa
 /------------------\               /------------\                  /-------------\                 /----------\
 | Integration Test |               | CCM Bridge |                  | CCM Machine |                 | CCM Tool |
@@ -111,8 +113,7 @@ cluster may be as large as nine nodes depending on the test being performed.
 Here are some of the items being scheduled for future enhancements.
 
 - Incorporate integration tests into Jenkins environment
-- Remove Boost Test Framework in Favor of Google Test Framework
 - Updates to CCM Bridge
  - Allow files to be copied over SSH established connection
 
-[build procedures]: (http://datastax.github.io/cpp-driver/topics/building/#test-dependencies-and-building-tests-not-required)
+[build procedures]: http://datastax.github.io/cpp-driver/topics/building/#test-dependencies-and-building-tests-not-required

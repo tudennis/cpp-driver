@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014-2016 DataStax
+  Copyright (c) DataStax, Inc.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@
 #include "tuple.hpp"
 #include "user_type_value.hpp"
 
-namespace cass {
+using namespace datastax::internal::core;
 
 CassError AbstractData::set(size_t index, CassNull value) {
   CASS_CHECK_INDEX_AND_TYPE(index, value);
@@ -32,8 +32,7 @@ CassError AbstractData::set(size_t index, CassNull value) {
 
 CassError AbstractData::set(size_t index, const Collection* value) {
   CASS_CHECK_INDEX_AND_TYPE(index, value);
-  if (value->type() == CASS_COLLECTION_TYPE_MAP &&
-      value->items().size() % 2 != 0) {
+  if (value->type() == CASS_COLLECTION_TYPE_MAP && value->items().size() % 2 != 0) {
     return CASS_ERROR_LIB_INVALID_ITEM_COUNT;
   }
   elements_[index] = value;
@@ -70,10 +69,9 @@ Buffer AbstractData::encode_with_length() const {
 
 size_t AbstractData::get_buffers_size() const {
   size_t size = 0;
-  for (ElementVec::const_iterator i = elements_.begin(),
-       end = elements_.end(); i != end; ++i) {
+  for (ElementVec::const_iterator i = elements_.begin(), end = elements_.end(); i != end; ++i) {
     if (!i->is_unset()) {
-      size += i->get_size(CASS_HIGHEST_SUPPORTED_PROTOCOL_VERSION);
+      size += i->get_size();
     } else {
       size += sizeof(int32_t); // null
     }
@@ -82,28 +80,27 @@ size_t AbstractData::get_buffers_size() const {
 }
 
 void AbstractData::encode_buffers(size_t pos, Buffer* buf) const {
-  for (ElementVec::const_iterator i = elements_.begin(),
-       end = elements_.end(); i != end; ++i) {
+  for (ElementVec::const_iterator i = elements_.begin(), end = elements_.end(); i != end; ++i) {
     if (!i->is_unset()) {
-      pos = i->copy_buffer(CASS_HIGHEST_SUPPORTED_PROTOCOL_VERSION, pos, buf);
+      pos = i->copy_buffer(pos, buf);
     } else {
       pos = buf->encode_int32(pos, -1); // null
     }
   }
 }
 
-size_t AbstractData::Element::get_size(int version) const {
+size_t AbstractData::Element::get_size() const {
   if (type_ == COLLECTION) {
-    return collection_->get_size_with_length(version);
+    return collection_->get_size_with_length();
   } else {
     assert(type_ == BUFFER || type_ == NUL);
     return buf_.size();
   }
 }
 
-size_t AbstractData::Element::copy_buffer(int version, size_t pos, Buffer* buf) const {
+size_t AbstractData::Element::copy_buffer(size_t pos, Buffer* buf) const {
   if (type_ == COLLECTION) {
-    Buffer encoded(collection_->encode_with_length(version));
+    Buffer encoded(collection_->encode_with_length());
     return buf->copy(pos, encoded.data(), encoded.size());
   } else {
     assert(type_ == BUFFER || type_ == NUL);
@@ -111,23 +108,11 @@ size_t AbstractData::Element::copy_buffer(int version, size_t pos, Buffer* buf) 
   }
 }
 
-Buffer AbstractData::Element::get_buffer_cached(int version, Request::EncodingCache* cache, bool add_to_cache) const {
+Buffer AbstractData::Element::get_buffer() const {
   if (type_ == COLLECTION) {
-    Request::EncodingCache::const_iterator i = cache->find(collection_.get());
-    if (i != cache->end()) {
-      return i->second;
-    } else {
-      Buffer buf(collection_->encode_with_length(version));
-      if (add_to_cache) {
-        // TODO: Is there a size threshold where it might be faster to alway re-encode?
-        cache->insert(std::make_pair(collection_.get(), buf));
-      }
-      return buf;
-    }
+    return collection_->encode_with_length();
   } else {
     assert(type_ == BUFFER || type_ == NUL);
     return buf_;
   }
 }
-
-} // namespace cass

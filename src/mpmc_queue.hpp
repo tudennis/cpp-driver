@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014-2016 DataStax
+  Copyright (c) DataStax, Inc.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -19,19 +19,22 @@
   http://www.1024cores.net/home/lock-free-algorithms/queues/bounded-mpmc-queue
 */
 
-#ifndef __CASS_MPMC_QUEUE_INCLUDED__
-#define __CASS_MPMC_QUEUE_INCLUDED__
+#ifndef DATASTAX_INTERNAL_MPMC_QUEUE
+#define DATASTAX_INTERNAL_MPMC_QUEUE
 
+#include "allocated.hpp"
 #include "atomic.hpp"
-#include "utils.hpp"
+#include "driver_config.hpp"
 #include "macros.hpp"
+#include "scoped_ptr.hpp"
+#include "utils.hpp"
 
 #include <assert.h>
 
-namespace cass {
+namespace datastax { namespace internal { namespace core {
 
 template <typename T>
-class MPMCQueue {
+class MPMCQueue : public Allocated {
 public:
   typedef T EntryType;
 
@@ -46,8 +49,6 @@ public:
       buffer_[i].seq.store(i, MEMORY_ORDER_RELAXED);
     }
   }
-
-  ~MPMCQueue() { delete[] buffer_; }
 
   bool enqueue(const T& data) {
     // head_seq_ only wraps at MAX(head_seq_) instead we use a mask to
@@ -125,20 +126,20 @@ public:
   }
 
   bool is_empty() const {
-    size_t pos = head_.load(MEMORY_ORDER_ACQUIRE);
-    Node* node = &buffer_[pos & mask_];
+    size_t pos = head_.load(MEMORY_ORDER_RELAXED);
+    const Node* node = &buffer_[pos & mask_];
     size_t node_seq = node->seq.load(MEMORY_ORDER_ACQUIRE);
     return (intptr_t)node_seq - (intptr_t)(pos + 1) < 0;
   }
 
   static void memory_fence() {
-#if defined(CASS_USE_BOOST_ATOMIC) || defined(CASS_USE_STD_ATOMIC)
+#if defined(HAVE_BOOST_ATOMIC) || defined(HAVE_STD_ATOMIC)
     atomic_thread_fence(MEMORY_ORDER_SEQ_CST);
 #endif
   }
 
 private:
-  struct Node {
+  struct Node : public Allocated {
     Atomic<size_t> seq;
     T data;
   };
@@ -149,7 +150,7 @@ private:
   CachePad pad0_;
   const size_t size_;
   const size_t mask_;
-  Node* const buffer_;
+  ScopedArray<Node> buffer_;
   CachePad pad1_;
   Atomic<size_t> tail_;
   CachePad pad2_;
@@ -159,6 +160,6 @@ private:
   DISALLOW_COPY_AND_ASSIGN(MPMCQueue);
 };
 
-} // namespace cass
+}}} // namespace datastax::internal::core
 
 #endif

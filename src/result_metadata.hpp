@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014-2016 DataStax
+  Copyright (c) DataStax, Inc.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -14,25 +14,20 @@
   limitations under the License.
 */
 
-#ifndef __CASS_RESULT_METADATA_HPP_INCLUDED__
-#define __CASS_RESULT_METADATA_HPP_INCLUDED__
+#ifndef DATASTAX_INTERNAL_RESULT_METADATA_HPP
+#define DATASTAX_INTERNAL_RESULT_METADATA_HPP
 
 #include "cassandra.h"
 #include "data_type.hpp"
-#include "fixed_vector.hpp"
 #include "hash_table.hpp"
-#include "list.hpp"
 #include "ref_counted.hpp"
 #include "string_ref.hpp"
 
 #include <uv.h>
 
 #include <algorithm>
-#include <map>
-#include <string>
-#include <vector>
 
-namespace cass {
+namespace datastax { namespace internal { namespace core {
 
 struct ColumnDefinition : public HashTableEntry<ColumnDefinition> {
   StringRef name;
@@ -43,7 +38,9 @@ struct ColumnDefinition : public HashTableEntry<ColumnDefinition> {
 
 class ResultMetadata : public RefCounted<ResultMetadata> {
 public:
-  ResultMetadata(size_t column_count);
+  typedef SharedRefPtr<ResultMetadata> Ptr;
+
+  ResultMetadata(size_t column_count, const RefBuffer::Ptr& buffer);
 
   const ColumnDefinition& get_column_definition(size_t index) const { return defs_[index]; }
 
@@ -55,11 +52,12 @@ public:
 
 private:
   CaseInsensitiveHashTable<ColumnDefinition> defs_;
+  RefBuffer::Ptr buffer_;
 
 private:
   DISALLOW_COPY_AND_ASSIGN(ResultMetadata);
 };
 
-} // namespace cass
+}}} // namespace datastax::internal::core
 
 #endif

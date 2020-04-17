@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014-2016 DataStax
+  Copyright (c) DataStax, Inc.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -14,36 +14,36 @@
   limitations under the License.
 */
 
-#ifndef __CASS_COLLECTION_HPP_INCLUDED__
-#define __CASS_COLLECTION_HPP_INCLUDED__
+#ifndef DATASTAX_INTERNAL_COLLECTION_HPP
+#define DATASTAX_INTERNAL_COLLECTION_HPP
 
+#include "buffer.hpp"
 #include "cassandra.h"
 #include "data_type.hpp"
 #include "encode.hpp"
-#include "buffer.hpp"
+#include "external.hpp"
 #include "ref_counted.hpp"
 #include "types.hpp"
 
-#define CASS_COLLECTION_CHECK_TYPE(Value) do { \
-  CassError rc = check(Value);                 \
-  if (rc != CASS_OK) return rc;                \
-} while(0)
+#define CASS_COLLECTION_CHECK_TYPE(Value) \
+  do {                                    \
+    CassError rc = check(Value);          \
+    if (rc != CASS_OK) return rc;         \
+  } while (0)
 
-namespace cass {
+namespace datastax { namespace internal { namespace core {
 
 class UserTypeValue;
 
 class Collection : public RefCounted<Collection> {
 public:
-  Collection(CassCollectionType type,
-             size_t item_count)
-    : data_type_(new CollectionType(static_cast<CassValueType>(type), false)) {
+  Collection(CassCollectionType type, size_t item_count)
+      : data_type_(new CollectionType(static_cast<CassValueType>(type), false)) {
     items_.reserve(item_count);
   }
 
-  Collection(const CollectionType::ConstPtr& data_type,
-             size_t item_count)
-    : data_type_(data_type) {
+  Collection(const CollectionType::ConstPtr& data_type, size_t item_count)
+      : data_type_(data_type) {
     items_.reserve(item_count);
   }
 
@@ -57,7 +57,7 @@ public:
 #define APPEND_TYPE(Type)                  \
   CassError append(const Type value) {     \
     CASS_COLLECTION_CHECK_TYPE(value);     \
-    items_.push_back(cass::encode(value)); \
+    items_.push_back(core::encode(value)); \
     return CASS_OK;                        \
   }
 
@@ -75,6 +75,7 @@ public:
   APPEND_TYPE(CassUuid)
   APPEND_TYPE(CassInet)
   APPEND_TYPE(CassDecimal)
+  APPEND_TYPE(CassDuration)
 
 #undef APPEND_TYPE
 
@@ -83,17 +84,16 @@ public:
   CassError append(const Tuple* value);
   CassError append(const UserTypeValue* value);
 
-  size_t get_items_size(int version) const;
-  void encode_items(int version, char* buf) const;
+  size_t get_items_size() const;
+  void encode_items(char* buf) const;
 
-  size_t get_size_with_length(int version) const;
+  size_t get_size() const;
+  size_t get_size_with_length() const;
 
   Buffer encode() const;
-  Buffer encode_with_length(int version) const;
+  Buffer encode_with_length() const;
 
-  void clear() {
-    items_.clear();
-  }
+  void clear() { items_.clear(); }
 
 private:
   template <class T>
@@ -101,7 +101,7 @@ private:
     IsValidDataType<T> is_valid_type;
     size_t index = items_.size();
 
-    switch(type()) {
+    switch (type()) {
       case CASS_COLLECTION_TYPE_MAP:
         if (data_type_->types().size() == 2 &&
             !is_valid_type(value, data_type_->types()[index % 2])) {
@@ -111,8 +111,7 @@ private:
 
       case CASS_COLLECTION_TYPE_LIST:
       case CASS_COLLECTION_TYPE_SET:
-        if (data_type_->types().size() == 1 &&
-            !is_valid_type(value, data_type_->types()[0])) {
+        if (data_type_->types().size() == 1 && !is_valid_type(value, data_type_->types()[0])) {
           return CASS_ERROR_LIB_INVALID_VALUE_TYPE;
         }
         break;
@@ -124,11 +123,6 @@ private:
     return ((type() == CASS_COLLECTION_TYPE_MAP) ? items_.size() / 2 : items_.size());
   }
 
-  size_t get_items_size(size_t num_bytes_for_size) const;
-
-  void encode_items_int32(char* buf) const;
-  void encode_items_uint16(char* buf) const;
-
 private:
   CollectionType::ConstPtr data_type_;
   BufferVec items_;
@@ -137,7 +131,8 @@ private:
   DISALLOW_COPY_AND_ASSIGN(Collection);
 };
 
-} // namespace cass
+}}} // namespace datastax::internal::core
+
+EXTERNAL_TYPE(datastax::internal::core::Collection, CassCollection)
 
 #endif
-

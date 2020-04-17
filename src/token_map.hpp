@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014-2016 DataStax
+  Copyright (c) DataStax, Inc.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -14,98 +14,48 @@
   limitations under the License.
 */
 
-#ifndef __CASS_TOKEN_MAP_HPP_INCLUDED__
-#define __CASS_TOKEN_MAP_HPP_INCLUDED__
+#ifndef DATASTAX_INTERNAL_TOKEN_MAP_HPP
+#define DATASTAX_INTERNAL_TOKEN_MAP_HPP
 
-#include "buffer.hpp"
-#include "copy_on_write_ptr.hpp"
 #include "host.hpp"
-#include "replication_strategy.hpp"
-#include "scoped_ptr.hpp"
+#include "ref_counted.hpp"
+#include "string.hpp"
 #include "string_ref.hpp"
 
-#include <map>
-#include <vector>
+namespace datastax { namespace internal { namespace core {
 
-namespace cass {
+class VersionNumber;
+class Value;
+class ResultResponse;
 
-typedef std::vector<StringRef> TokenStringList;
-
-class Partitioner {
+class TokenMap : public RefCounted<TokenMap> {
 public:
-  virtual ~Partitioner() {}
-  virtual Token token_from_string_ref(const StringRef& token_string_ref) const = 0;
-  virtual Token hash(const uint8_t* data, size_t size) const = 0;
-};
+  typedef SharedRefPtr<TokenMap> Ptr;
 
-class TokenMap {
-public:
+  static TokenMap::Ptr from_partitioner(StringRef partitioner);
+
   virtual ~TokenMap() {}
 
-  void clear();
-  void build();
+  virtual void add_host(const Host::Ptr& host) = 0;
+  virtual void update_host_and_build(const Host::Ptr& host) = 0;
+  virtual void remove_host_and_build(const Host::Ptr& host) = 0;
 
-  void set_partitioner(const std::string& partitioner_class);
-  void update_host(SharedRefPtr<Host>& host, const TokenStringList& token_strings);
-  void remove_host(SharedRefPtr<Host>& host);
-  void update_keyspace(const std::string& ks_name, const KeyspaceMetadata& ks_meta);
-  void drop_keyspace(const std::string& ks_name);
-  const CopyOnWriteHostVec& get_replicas(const std::string& ks_name,
-                                         const std::string& routing_key) const;
+  virtual void add_keyspaces(const VersionNumber& cassandra_version,
+                             const ResultResponse* result) = 0;
+  virtual void update_keyspaces_and_build(const VersionNumber& cassandra_version,
+                                          const ResultResponse* result) = 0;
+  virtual void drop_keyspace(const String& keyspace_name) = 0;
 
-  // Testing only
-  void set_replication_strategy(const std::string& ks_name,
-                                const SharedRefPtr<ReplicationStrategy>& strategy);
+  virtual void build() = 0;
 
-private:
-  void map_replicas(bool force = false);
-  void map_keyspace_replicas(const std::string& ks_name,
-                             const SharedRefPtr<ReplicationStrategy>& strategy,
-                             bool force = false);
-  bool purge_address(const Address& addr);
+  virtual TokenMap::Ptr copy() const = 0;
 
-protected:
-  TokenHostMap token_map_;
+  virtual const CopyOnWriteHostVec& get_replicas(const String& keyspace_name,
+                                                 const String& routing_key) const = 0;
 
-  typedef std::map<std::string, TokenReplicaMap> KeyspaceReplicaMap;
-  KeyspaceReplicaMap keyspace_replica_map_;
-
-  typedef std::map<std::string, SharedRefPtr<ReplicationStrategy> > KeyspaceStrategyMap;
-  KeyspaceStrategyMap keyspace_strategy_map_;
-
-  typedef std::set<Address> AddressSet;
-  AddressSet mapped_addresses_;
-
-  ScopedPtr<Partitioner> partitioner_;
+  virtual String dump(const String& keyspace_name) const = 0;
 };
 
-
-class Murmur3Partitioner : public Partitioner {
-public:
-  static const std::string PARTITIONER_CLASS;
-
-  virtual Token token_from_string_ref(const StringRef& token_string_ref) const;
-  virtual Token hash(const uint8_t* data, size_t size) const;
-};
-
-
-class RandomPartitioner : public Partitioner {
-public:
-  static const std::string PARTITIONER_CLASS;
-
-  virtual Token token_from_string_ref(const StringRef& token_string_ref) const;
-  virtual Token hash(const uint8_t* data, size_t size) const;
-};
-
-
-class ByteOrderedPartitioner : public Partitioner {
-public:
-  static const std::string PARTITIONER_CLASS;
-
-  virtual Token token_from_string_ref(const StringRef& token_string_ref) const;
-  virtual Token hash(const uint8_t* data, size_t size) const;
-};
-
-} // namespace cass
+}}} // namespace datastax::internal::core
 
 #endif

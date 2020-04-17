@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014-2016 DataStax
+  Copyright (c) DataStax, Inc.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -16,15 +16,20 @@
 
 #include "result_response.hpp"
 
-#include "external_types.hpp"
+#include "external.hpp"
+#include "logger.hpp"
+#include "protocol.hpp"
 #include "result_metadata.hpp"
+#include "result_response.hpp"
 #include "serialization.hpp"
+
+using namespace datastax;
+using namespace datastax::internal;
+using namespace datastax::internal::core;
 
 extern "C" {
 
-void cass_result_free(const CassResult* result) {
-  result->dec_ref();
-}
+void cass_result_free(const CassResult* result) { result->dec_ref(); }
 
 size_t cass_result_row_count(const CassResult* result) {
   if (result->kind() == CASS_RESULT_KIND_ROWS) {
@@ -40,36 +45,32 @@ size_t cass_result_column_count(const CassResult* result) {
   return 0;
 }
 
-CassError cass_result_column_name(const CassResult* result,
-                                  size_t index,
-                                  const char** name,
+CassError cass_result_column_name(const CassResult* result, size_t index, const char** name,
                                   size_t* name_length) {
-  const cass::SharedRefPtr<cass::ResultMetadata>& metadata(result->metadata());
+  const SharedRefPtr<ResultMetadata>& metadata(result->metadata());
   if (index >= metadata->column_count()) {
     return CASS_ERROR_LIB_INDEX_OUT_OF_BOUNDS;
   }
   if (result->kind() != CASS_RESULT_KIND_ROWS) {
     return CASS_ERROR_LIB_BAD_PARAMS;
   }
-  const cass::ColumnDefinition def = metadata->get_column_definition(index);
+  const ColumnDefinition def = metadata->get_column_definition(index);
   *name = def.name.data();
   *name_length = def.name.size();
   return CASS_OK;
 }
 
 CassValueType cass_result_column_type(const CassResult* result, size_t index) {
-  const cass::SharedRefPtr<cass::ResultMetadata>& metadata(result->metadata());
-  if (result->kind() == CASS_RESULT_KIND_ROWS &&
-      index < metadata->column_count()) {
+  const SharedRefPtr<ResultMetadata>& metadata(result->metadata());
+  if (result->kind() == CASS_RESULT_KIND_ROWS && index < metadata->column_count()) {
     return metadata->get_column_definition(index).data_type->value_type();
   }
   return CASS_VALUE_TYPE_UNKNOWN;
 }
 
 const CassDataType* cass_result_column_data_type(const CassResult* result, size_t index) {
-  const cass::SharedRefPtr<cass::ResultMetadata>& metadata(result->metadata());
-  if (result->kind() == CASS_RESULT_KIND_ROWS &&
-      index < metadata->column_count()) {
+  const SharedRefPtr<ResultMetadata>& metadata(result->metadata());
+  if (result->kind() == CASS_RESULT_KIND_ROWS && index < metadata->column_count()) {
     return CassDataType::to(metadata->get_column_definition(index).data_type.get());
   }
   return NULL;
@@ -86,9 +87,8 @@ cass_bool_t cass_result_has_more_pages(const CassResult* result) {
   return static_cast<cass_bool_t>(result->has_more_pages());
 }
 
-CassError cass_result_paging_state_token(const CassResult* result,
-                                   const char** paging_state,
-                                   size_t* paging_state_size) {
+CassError cass_result_paging_state_token(const CassResult* result, const char** paging_state,
+                                         size_t* paging_state_size) {
   if (!result->has_more_pages()) {
     return CASS_ERROR_LIB_NO_PAGING_STATE;
   }
@@ -99,18 +99,16 @@ CassError cass_result_paging_state_token(const CassResult* result,
 
 } // extern "C"
 
-namespace cass {
-
 class DataTypeDecoder {
 public:
-  DataTypeDecoder(char* input)
-    : buffer_(input) { }
+  DataTypeDecoder(Decoder& decoder, SimpleDataTypeCache& cache)
+      : decoder_(decoder)
+      , cache_(cache) {}
 
-  char* buffer() const { return buffer_; }
-
-  SharedRefPtr<DataType> decode() {
+  DataType::ConstPtr decode() {
+    decoder_.set_type("data type");
     uint16_t value_type;
-    buffer_ = decode_uint16(buffer_, value_type);
+    if (!decoder_.decode_uint16(value_type)) return DataType::NIL;
 
     switch (value_type) {
       case CASS_VALUE_TYPE_CUSTOM:
@@ -128,129 +126,140 @@ public:
         return decode_tuple();
 
       default:
-        if (value_type < CASS_VALUE_TYPE_LAST_ENTRY) {
-          if (data_type_cache_[value_type]) {
-            return data_type_cache_[value_type];
-          } else {
-            SharedRefPtr<DataType> data_type(
-                  new DataType(static_cast<CassValueType>(value_type)));
-            data_type_cache_[value_type] = data_type;
-            return data_type;
-          }
-        }
-        break;
+        return cache_.by_value_type(value_type);
     }
-
-    return SharedRefPtr<DataType>();
   }
 
 private:
-  SharedRefPtr<DataType> decode_custom() {
+  DataType::ConstPtr decode_custom() {
     StringRef class_name;
-    buffer_ = decode_string(buffer_, &class_name);
-    return SharedRefPtr<DataType>(new CustomType(class_name.to_string()));
+    if (!decoder_.decode_string(&class_name)) return DataType::NIL;
+
+    DataType::ConstPtr type = cache_.by_class(class_name);
+    if (type) return type;
+
+    // If no mapping exists, return an actual custom type.
+    return DataType::ConstPtr(new CustomType(class_name.to_string()));
   }
 
-  SharedRefPtr<DataType> decode_collection(CassValueType collection_type) {
+  DataType::ConstPtr decode_collection(CassValueType collection_type) {
     DataType::Vec types;
     types.push_back(decode());
     if (collection_type == CASS_VALUE_TYPE_MAP) {
       types.push_back(decode());
     }
-    return SharedRefPtr<DataType>(new CollectionType(collection_type, types, false));
+    return DataType::ConstPtr(new CollectionType(collection_type, types, false));
   }
 
-  SharedRefPtr<DataType> decode_user_type() {
+  DataType::ConstPtr decode_user_type() {
     StringRef keyspace;
-    buffer_ = decode_string(buffer_, &keyspace);
+    if (!decoder_.decode_string(&keyspace)) return DataType::NIL;
 
     StringRef type_name;
-    buffer_ = decode_string(buffer_, &type_name);
+    if (!decoder_.decode_string(&type_name)) return DataType::NIL;
 
     uint16_t n;
-    buffer_ = decode_uint16(buffer_, n);
+    if (!decoder_.decode_uint16(n)) return DataType::NIL;
 
     UserType::FieldVec fields;
     for (uint16_t i = 0; i < n; ++i) {
       StringRef field_name;
-      buffer_ = decode_string(buffer_, &field_name);
+      if (!decoder_.decode_string(&field_name)) return DataType::NIL;
       fields.push_back(UserType::Field(field_name.to_string(), decode()));
     }
-    return SharedRefPtr<DataType>(new UserType(keyspace.to_string(),
-                                               type_name.to_string(),
-                                               fields,
-                                               false));
+    return DataType::ConstPtr(
+        new UserType(keyspace.to_string(), type_name.to_string(), fields, false));
   }
 
-  SharedRefPtr<DataType> decode_tuple() {
+  DataType::ConstPtr decode_tuple() {
     uint16_t n;
-    buffer_ = decode_uint16(buffer_, n);
+    if (!decoder_.decode_uint16(n)) return DataType::NIL;
 
     DataType::Vec types;
     for (uint16_t i = 0; i < n; ++i) {
       types.push_back(decode());
     }
-    return SharedRefPtr<DataType>(new TupleType(types, false));
+    return DataType::ConstPtr(new TupleType(types, false));
   }
 
 private:
-  char* buffer_;
-  SharedRefPtr<DataType> data_type_cache_[CASS_VALUE_TYPE_LAST_ENTRY];
+  Decoder& decoder_;
+  SimpleDataTypeCache& cache_;
 };
 
-bool ResultResponse::decode(int version, char* input, size_t size) {
-  protocol_version_ = version;
+void ResultResponse::set_metadata(const ResultMetadata::Ptr& metadata) {
+  metadata_ = metadata;
+  decode_first_row();
+}
 
-  char* buffer = decode_int32(input, kind_);
+bool ResultResponse::decode(Decoder& decoder) {
+  protocol_version_ = decoder.protocol_version();
+  decoder.set_type("result");
+  bool is_valid = false;
+
+  CHECK_RESULT(decoder.decode_int32(kind_));
 
   switch (kind_) {
     case CASS_RESULT_KIND_VOID:
-      return true;
+      is_valid = true;
       break;
 
     case CASS_RESULT_KIND_ROWS:
-      return decode_rows(buffer);
+      is_valid = decode_rows(decoder);
       break;
 
     case CASS_RESULT_KIND_SET_KEYSPACE:
-      return decode_set_keyspace(buffer);
+      is_valid = decode_set_keyspace(decoder);
       break;
 
     case CASS_RESULT_KIND_PREPARED:
-      return decode_prepared(version, buffer);
+      is_valid = decode_prepared(decoder);
       break;
 
     case CASS_RESULT_KIND_SCHEMA_CHANGE:
-      return decode_schema_change(buffer);
+      is_valid = decode_schema_change(decoder);
       break;
 
     default:
       assert(false);
+      break;
   }
-  return false;
+
+  if (!is_valid) decoder.maybe_log_remaining();
+  return is_valid;
 }
 
-char* ResultResponse::decode_metadata(char* input, SharedRefPtr<ResultMetadata>* metadata,
-                                      bool has_pk_indices) {
+bool ResultResponse::decode_metadata(Decoder& decoder, ResultMetadata::Ptr* metadata,
+                                     bool has_pk_indices) {
   int32_t flags = 0;
-  char* buffer = decode_int32(input, flags);
+  CHECK_RESULT(decoder.decode_int32(flags));
 
   int32_t column_count = 0;
-  buffer = decode_int32(buffer, column_count);
+  CHECK_RESULT(decoder.decode_int32(column_count));
+
+  if (flags & CASS_RESULT_FLAG_METADATA_CHANGED) {
+    if (decoder.protocol_version().supports_result_metadata_id()) {
+      CHECK_RESULT(decoder.decode_string(&new_metadata_id_))
+    } else {
+      LOG_ERROR("Metadata changed flag set with invalid protocol version %s",
+                decoder.protocol_version().to_string().c_str());
+      return false;
+    }
+  }
 
   if (has_pk_indices) {
     int32_t pk_count = 0;
-    buffer = decode_int32(buffer, pk_count);
+    CHECK_RESULT(decoder.decode_int32(pk_count));
     for (int i = 0; i < pk_count; ++i) {
       uint16_t pk_index = 0;
-      buffer = decode_uint16(buffer, pk_index);
+      CHECK_RESULT(decoder.decode_uint16(pk_index));
       pk_indices_.push_back(pk_index);
     }
   }
 
   if (flags & CASS_RESULT_FLAG_HAS_MORE_PAGES) {
     has_more_pages_ = true;
-    buffer = decode_bytes(buffer, &paging_state_);
+    CHECK_RESULT(decoder.decode_bytes(&paging_state_));
   } else {
     has_more_pages_ = false;
   }
@@ -259,11 +268,13 @@ char* ResultResponse::decode_metadata(char* input, SharedRefPtr<ResultMetadata>*
     bool global_table_spec = flags & CASS_RESULT_FLAG_GLOBAL_TABLESPEC;
 
     if (global_table_spec) {
-      buffer = decode_string(buffer, &keyspace_);
-      buffer = decode_string(buffer, &table_);
+      CHECK_RESULT(decoder.decode_string(&keyspace_));
+      CHECK_RESULT(decoder.decode_string(&table_));
     }
 
-    metadata->reset(new ResultMetadata(column_count));
+    metadata->reset(new ResultMetadata(column_count, this->buffer()));
+
+    SimpleDataTypeCache cache;
 
     for (int i = 0; i < column_count; ++i) {
       ColumnDefinition def;
@@ -271,54 +282,58 @@ char* ResultResponse::decode_metadata(char* input, SharedRefPtr<ResultMetadata>*
       def.index = i;
 
       if (!global_table_spec) {
-        buffer = decode_string(buffer, &def.keyspace);
-        buffer = decode_string(buffer, &def.table);
+        CHECK_RESULT(decoder.decode_string(&def.keyspace));
+        CHECK_RESULT(decoder.decode_string(&def.table));
       }
 
-      buffer = decode_string(buffer, &def.name);
+      CHECK_RESULT(decoder.decode_string(&def.name));
 
-      DataTypeDecoder type_decoder(buffer);
+      DataTypeDecoder type_decoder(decoder, cache);
       def.data_type = DataType::ConstPtr(type_decoder.decode());
-      buffer = type_decoder.buffer();
+      if (def.data_type == DataType::NIL) return false;
 
       (*metadata)->add(def);
     }
   }
-  return buffer;
+  return true;
 }
 
-void ResultResponse::decode_first_row() {
-  if (row_count_ > 0) {
+bool ResultResponse::decode_first_row() {
+  if (row_count_ > 0 && metadata_ && // Valid metadata required for column count
+      first_row_.values.empty()) {   // Only decode the first row once
     first_row_.values.reserve(column_count());
-    rows_ = decode_row(rows_, this, first_row_.values);
-  }
-}
-
-bool ResultResponse::decode_rows(char* input) {
-  char* buffer = decode_metadata(input, &metadata_);
-  rows_ = decode_int32(buffer, row_count_);
-  return true;
-}
-
-bool ResultResponse::decode_set_keyspace(char* input) {
-  decode_string(input, &keyspace_);
-  return true;
-}
-
-bool ResultResponse::decode_prepared(int version, char* input) {
-  char* buffer = decode_string(input, &prepared_);
-  buffer = decode_metadata(buffer, &metadata_, version >= 4);
-  if (version > 1) {
-    decode_metadata(buffer, &result_metadata_);
+    return decode_row(row_decoder_, this, first_row_.values);
   }
   return true;
 }
 
-bool ResultResponse::decode_schema_change(char* input) {
-  char* buffer = decode_string(input, &change_);
-  buffer = decode_string(buffer, &keyspace_);
-  buffer = decode_string(buffer, &table_);
+bool ResultResponse::decode_rows(Decoder& decoder) {
+  CHECK_RESULT(decode_metadata(decoder, &metadata_));
+  CHECK_RESULT(decoder.decode_int32(row_count_));
+  row_decoder_ = decoder;
+  CHECK_RESULT(decode_first_row());
   return true;
 }
 
-} // namespace cass
+bool ResultResponse::decode_set_keyspace(Decoder& decoder) {
+  CHECK_RESULT(decoder.decode_string(&keyspace_));
+  return true;
+}
+
+bool ResultResponse::decode_prepared(Decoder& decoder) {
+  CHECK_RESULT(decoder.decode_string(&prepared_id_));
+  if (decoder.protocol_version().supports_result_metadata_id()) {
+    CHECK_RESULT(decoder.decode_string(&result_metadata_id_));
+  }
+  CHECK_RESULT(
+      decode_metadata(decoder, &metadata_, decoder.protocol_version() >= CASS_PROTOCOL_VERSION_V4));
+  CHECK_RESULT(decode_metadata(decoder, &result_metadata_));
+  return true;
+}
+
+bool ResultResponse::decode_schema_change(Decoder& decoder) {
+  CHECK_RESULT(decoder.decode_string(&change_));
+  CHECK_RESULT(decoder.decode_string(&keyspace_));
+  CHECK_RESULT(decoder.decode_string(&table_));
+  return true;
+}

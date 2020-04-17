@@ -1,10 +1,12 @@
+%if 0%{!?amzn}
 %define distnum %(/usr/lib/rpm/redhat/dist.sh --distnum)
+%endif
 
 Name:    cassandra-cpp-driver
 Epoch:   1
 Version: %{driver_version}
 Release: 1%{?dist}
-Summary: DataStax C/C++ Driver for Apache Cassandra
+Summary: DataStax C/C++ Driver for Apache Cassandra and DataStax Products
 
 Group: Development/Tools
 License: Apache 2.0
@@ -14,17 +16,22 @@ Source1: cassandra.pc.in
 Source2: cassandra_static.pc.in
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
-%if %{distnum} == 5
-BuildRequires: buildsys-macros >= 5
+
+%if 0%{?distnum} >= 8
+%define cmakecmd cmake
+BuildRequires: cmake >= 3.5.0
+%else
+BuildRequires: cmake3 >= 3.5.0
+%define cmakecmd cmake3
 %endif
-BuildRequires: cmake >= 2.6.4
+
 BuildRequires: libuv-devel >= %{libuv_version}
 BuildRequires: openssl-devel >= 0.9.8e
 
 %description
 A modern, feature-rich, and highly tunable C/C++ client library for Apache
-Cassandra using exclusively Cassandra's native protocol and Cassandra Query
-Language.
+Cassandra and DataStax Products using Cassandra's native protocol and Cassandra
+Query Language along with extensions for DataStax Products.
 
 %package devel
 Summary: Development libraries for ${name}
@@ -32,6 +39,7 @@ Group: Development/Tools
 Requires: %{name} = %{epoch}:%{version}-%{release}
 Requires: libuv >= %{libuv_version}
 Requires: openssl >= 0.9.8e
+Requires: krb5-libs
 Requires: pkgconfig
 
 %description devel
@@ -43,7 +51,7 @@ Development libraries for %{name}
 %build
 export CFLAGS='%{optflags}'
 export CXXFLAGS='%{optflags}'
-cmake -DCMAKE_BUILD_TYPE=RELEASE -DCASS_BUILD_STATIC=ON -DCASS_INSTALL_PKG_CONFIG=OFF -DCMAKE_INSTALL_PREFIX:PATH=%{_prefix} -DCMAKE_INSTALL_LIBDIR=%{_libdir} .
+%{cmakecmd} -DCMAKE_BUILD_TYPE=RELEASE -DCASS_BUILD_STATIC=ON -DCASS_INSTALL_PKG_CONFIG=OFF -DCMAKE_INSTALL_PREFIX:PATH=%{_prefix} -DCMAKE_INSTALL_LIBDIR=%{_libdir} .
 make %{?_smp_mflags}
 
 %install
@@ -87,33 +95,5 @@ rm -rf %{buildroot}
 %{_libdir}/pkgconfig/*.pc
 
 %changelog
-* Mon Dec 14 2015 Michael Penick <michael.penick@datastax.com> - 2.2.2-1
-- patch release
-* Fri Nov 20 2015 Michael Penick <michael.penick@datastax.com> - 2.2.1-1
-- patch release
-* Mon Nov 02 2015 Michael Penick <michael.penick@datastax.com> - 2.2.0-1
+* Mon Mar 13 2017 Michael Penick <michael.penick@datastax.com> - 2.6.0-1
 - release
-* Mon Sep 21 2015 Michael Penick <michael.penick@datastax.com> - 2.2.0beta1-1
-- beta release
-* Tue Aug 11 2015 Michael Penick <michael.penick@datastax.com> - 2.1.0-1
-- release
-* Wed Jul 08 2015 Michael Penick <michael.penick@datastax.com> - 2.1.0beta-1
-- beta release
-* Mon May 18 2015 Michael Penick <michael.penick@datastax.com> - 2.0.1-1
-- patch release
-* Thu Apr 23 2015 Michael Penick <michael.penick@datastax.com> - 2.0.0-1
-- release
-* Tue Feb 03 2015 Michael Penick <michael.penick@datastax.com> - 1.0.0-1
-- release
-* Tue Dec 23 2014 Michael Penick <michael.penick@datastax.com> - 1.0.0rc1-1
-- release candidate
-* Thu Nov 20 2014 Michael Penick <michael.penick@datastax.com> - 1.0.0beta5-1
-- beta release
-* Thu Sep 11 2014 Michael Penick <michael.penick@datastax.com> - 1.0.0beta4-1
-- beta release
-* Wed Aug 13 2014 Michael Penick <michael.penick@datastax.com> - 1.0.0beta3-1
-- beta release
-* Thu Jul 17 2014 Michael Penick <michael.penick@datastax.com> - 1.0.0beta2-1
-- beta release
-* Mon Jun 16 2014 Michael Penick <michael.penick@datastax.com> - 1.0.0beta1-1
-- beta release

@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014-2016 DataStax
+  Copyright (c) DataStax, Inc.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -16,13 +16,19 @@
 
 #include "token_aware_policy.hpp"
 
-namespace cass {
+#include "random.hpp"
+#include "request_handler.hpp"
+
+#include <algorithm>
+
+using namespace datastax;
+using namespace datastax::internal;
+using namespace datastax::internal::core;
 
 // The number of replicas is bounded by replication factor per DC. In practice, the number
 // of replicas is fairly small so a linear search should be extremely fast.
 static inline bool contains(const CopyOnWriteHostVec& replicas, const Address& address) {
-  for (HostVec::const_iterator i = replicas->begin(),
-       end = replicas->end(); i != end; ++i) {
+  for (HostVec::const_iterator i = replicas->begin(), end = replicas->end(); i != end; ++i) {
     if ((*i)->address() == address) {
       return true;
     }
@@ -30,57 +36,72 @@ static inline bool contains(const CopyOnWriteHostVec& replicas, const Address& a
   return false;
 }
 
-QueryPlan* TokenAwarePolicy::new_query_plan(const std::string& connected_keyspace,
-                                            const Request* request,
-                                            const TokenMap& token_map,
-                                            Request::EncodingCache* cache) {
-  if (request != NULL) {
+void TokenAwarePolicy::init(const Host::Ptr& connected_host, const HostMap& hosts, Random* random,
+                            const String& local_dc) {
+  if (random != NULL) {
+    if (shuffle_replicas_) {
+      // Store random so that it can be used to shuffle replicas.
+      random_ = random;
+    } else {
+      // Make sure that different instances of the token aware policy (e.g. different sessions)
+      // don't use the same host order.
+      index_ = random->next(std::max(static_cast<size_t>(1), hosts.size()));
+    }
+  }
+  ChainedLoadBalancingPolicy::init(connected_host, hosts, random, local_dc);
+}
+
+QueryPlan* TokenAwarePolicy::new_query_plan(const String& keyspace, RequestHandler* request_handler,
+                                            const TokenMap* token_map) {
+  if (request_handler != NULL) {
+    const RoutableRequest* request =
+        static_cast<const RoutableRequest*>(request_handler->request());
     switch (request->opcode()) {
       {
-      case CQL_OPCODE_QUERY:
-      case CQL_OPCODE_EXECUTE:
-      case CQL_OPCODE_BATCH:
-        const RoutableRequest* rr = static_cast<const RoutableRequest*>(request);
-        const std::string& statement_keyspace = rr->keyspace();
-        const std::string& keyspace = statement_keyspace.empty()
-                                      ? connected_keyspace : statement_keyspace;
-        std::string routing_key;
-        if (rr->get_routing_key(&routing_key, cache) && !keyspace.empty()) {
-          CopyOnWriteHostVec replicas = token_map.get_replicas(keyspace, routing_key);
-          if (!replicas->empty()) {
-            return new TokenAwareQueryPlan(child_policy_.get(),
-                                           child_policy_->new_query_plan(connected_keyspace, request, token_map, cache),
-                                           replicas,
-                                           index_++);
+        case CQL_OPCODE_QUERY:
+        case CQL_OPCODE_EXECUTE:
+        case CQL_OPCODE_BATCH:
+          String routing_key;
+          if (request->get_routing_key(&routing_key) && !keyspace.empty()) {
+            if (token_map != NULL) {
+              CopyOnWriteHostVec replicas = token_map->get_replicas(keyspace, routing_key);
+              if (replicas && !replicas->empty()) {
+                if (random_ != NULL) {
+                  random_shuffle(replicas->begin(), replicas->end(), random_);
+                }
+                return new TokenAwareQueryPlan(
+                    child_policy_.get(),
+                    child_policy_->new_query_plan(keyspace, request_handler, token_map), replicas,
+                    index_);
+              }
+            }
           }
-        }
-        break;
+          break;
       }
 
       default:
         break;
     }
   }
-  return child_policy_->new_query_plan(connected_keyspace, request, token_map, cache);
+  return child_policy_->new_query_plan(keyspace, request_handler, token_map);
 }
 
-SharedRefPtr<Host> TokenAwarePolicy::TokenAwareQueryPlan::compute_next()  {
+Host::Ptr TokenAwarePolicy::TokenAwareQueryPlan::compute_next() {
   while (remaining_ > 0) {
     --remaining_;
-    const SharedRefPtr<Host>& host((*replicas_)[index_++ % replicas_->size()]);
-    if (host->is_up() && child_policy_->distance(host) == CASS_HOST_DISTANCE_LOCAL) {
+    const Host::Ptr& host((*replicas_)[index_++ % replicas_->size()]);
+    if (child_policy_->is_host_up(host->address()) &&
+        child_policy_->distance(host) == CASS_HOST_DISTANCE_LOCAL) {
       return host;
     }
   }
 
-  SharedRefPtr<Host> host;
+  Host::Ptr host;
   while ((host = child_plan_->compute_next())) {
     if (!contains(replicas_, host->address()) ||
         child_policy_->distance(host) != CASS_HOST_DISTANCE_LOCAL) {
       return host;
     }
   }
-  return SharedRefPtr<Host>();
+  return Host::Ptr();
 }
-
-} // namespace cass

@@ -26,10 +26,10 @@
 */
 
 #include <assert.h>
-#include <string.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
+#include <string.h>
 
 #include <uv.h>
 
@@ -47,6 +47,33 @@
 
 #define DO_SELECTS 1
 #define USE_PREPARED 1
+
+#if defined(_MSC_VER) && defined(_DEBUG)
+#include <windows.h>
+const DWORD MS_VC_EXCEPTION = 0x406D1388;
+#pragma pack(push, 8)
+typedef struct tagTHREADNAME_INFO {
+  DWORD dwType;     /* Must be 0x1000. */
+  LPCSTR szName;    /* Pointer to name (in user addr space). */
+  DWORD dwThreadID; /* Thread ID (-1=caller thread). */
+  DWORD dwFlags;    /* Reserved for future use, must be zero. */
+} THREADNAME_INFO;
+#pragma pack(pop)
+void set_thread_name(const char* thread_name) {
+  THREADNAME_INFO info;
+  info.dwType = 0x1000;
+  info.szName = thread_name;
+  info.dwThreadID = -1;
+  info.dwFlags = 0;
+#pragma warning(push)
+#pragma warning(disable : 6320 6322)
+  __try {
+    RaiseException(MS_VC_EXCEPTION, 0, sizeof(info) / sizeof(ULONG_PTR), (ULONG_PTR*)&info);
+  } __except (EXCEPTION_EXECUTE_HANDLER) {
+  }
+#pragma warning(pop)
+}
+#endif
 
 const char* big_string = "0123456701234567012345670123456701234567012345670123456701234567"
                          "0123456701234567012345670123456701234567012345670123456701234567"
@@ -110,17 +137,13 @@ CassCluster* create_cluster(const char* hosts) {
   cass_cluster_set_credentials(cluster, "cassandra", "cassandra");
   cass_cluster_set_num_threads_io(cluster, NUM_IO_WORKER_THREADS);
   cass_cluster_set_queue_size_io(cluster, 10000);
-  cass_cluster_set_pending_requests_low_water_mark(cluster, 5000);
-  cass_cluster_set_pending_requests_high_water_mark(cluster, 10000);
   cass_cluster_set_core_connections_per_host(cluster, 1);
-  cass_cluster_set_max_connections_per_host(cluster, 2);
-  cass_cluster_set_max_requests_per_flush(cluster, 10000);
   return cluster;
 }
 
 CassError connect_session(CassSession* session, const CassCluster* cluster) {
   CassError rc = CASS_OK;
-  CassFuture* future = cass_session_connect_keyspace(session, cluster, "examples");
+  CassFuture* future = cass_session_connect(session, cluster);
 
   cass_future_wait(future);
   rc = cass_future_error_code(future);
@@ -198,6 +221,8 @@ void insert_into_perf(CassSession* session, const char* query, const CassPrepare
       statement = cass_statement_new(query, 5);
     }
 
+    cass_statement_set_is_idempotent(statement, cass_true);
+
     cass_uuid_gen_time(uuid_gen, &id);
     cass_statement_bind_uuid(statement, 0, id);
     cass_statement_bind_string(statement, 1, big_string);
@@ -227,7 +252,8 @@ void run_insert_queries(void* data) {
   CassSession* session = (CassSession*)data;
 
   const CassPrepared* insert_prepared = NULL;
-  const char* insert_query = "INSERT INTO songs (id, title, album, artist, tags) VALUES (?, ?, ?, ?, ?);";
+  const char* insert_query =
+      "INSERT INTO stress.songs (id, title, album, artist, tags) VALUES (?, ?, ?, ?, ?);";
 
 #if USE_PREPARED
   if (prepare_query(session, insert_query, &insert_prepared) == CASS_OK) {
@@ -256,6 +282,8 @@ void select_from_perf(CassSession* session, const char* query, const CassPrepare
       statement = cass_statement_new(query, 0);
     }
 
+    cass_statement_set_is_idempotent(statement, cass_true);
+
     futures[i] = cass_session_execute(session, statement);
 
     cass_statement_free(statement);
@@ -279,7 +307,14 @@ void run_select_queries(void* data) {
   int i;
   CassSession* session = (CassSession*)data;
   const CassPrepared* select_prepared = NULL;
-  const char* select_query = "SELECT * FROM songs WHERE id = a98d21b2-1900-11e4-b97b-e5e358e71e0d";
+  const char* select_query =
+      "SELECT * FROM stress.songs WHERE id = a98d21b2-1900-11e4-b97b-e5e358e71e0d";
+
+#if defined(_MSC_VER) && defined(_DEBUG)
+  char thread_name[32];
+  sprintf(thread_name, "Perf - %lu", (unsigned long)(GetThreadId(uv_thread_self())));
+  set_thread_name(thread_name);
+#endif
 
 #if USE_PREPARED
   if (prepare_query(session, select_query, &select_prepared) == CASS_OK) {
@@ -301,7 +336,6 @@ int main(int argc, char* argv[]) {
   uv_thread_t threads[NUM_THREADS];
   CassCluster* cluster = NULL;
   CassSession* session = NULL;
-  CassFuture* close_future = NULL;
   char* hosts = "127.0.0.1";
   if (argc > 1) {
     hosts = argv[1];
@@ -318,14 +352,24 @@ int main(int argc, char* argv[]) {
   if (connect_session(session, cluster) != CASS_OK) {
     cass_cluster_free(cluster);
     cass_session_free(session);
+    cass_uuid_gen_free(uuid_gen);
     return -1;
   }
 
-  execute_query(session,
-                "INSERT INTO songs (id, title, album, artist, tags) VALUES "
-                "(a98d21b2-1900-11e4-b97b-e5e358e71e0d, "
-                "'La Petite Tonkinoise', 'Bye Bye Blackbird', 'Joséphine Baker', { 'jazz', '2013' });");
+  execute_query(session, "DROP KEYSPACE stress");
 
+  execute_query(session, "CREATE KEYSPACE IF NOT EXISTS stress WITH "
+                         "replication = { 'class': 'SimpleStrategy', 'replication_factor': '3'}");
+
+  execute_query(session, "CREATE TABLE IF NOT EXISTS stress.songs (id uuid PRIMARY KEY, "
+                         "title text, album text, artist text, "
+                         "tags set<text>, data blob)");
+
+  execute_query(
+      session,
+      "INSERT INTO stress.songs (id, title, album, artist, tags) VALUES "
+      "(a98d21b2-1900-11e4-b97b-e5e358e71e0d, "
+      "'La Petite Tonkinoise', 'Bye Bye Blackbird', 'Joséphine Baker', { 'jazz', '2013' });");
 
   for (i = 0; i < NUM_THREADS; ++i) {
 #if DO_SELECTS
@@ -337,28 +381,28 @@ int main(int argc, char* argv[]) {
 
   while (status_wait(&status, 5) > 0) {
     cass_session_get_metrics(session, &metrics);
-    printf("rate stats (requests/second): mean %f 1m %f 5m %f 10m %f\n",
-           metrics.requests.mean_rate,
-           metrics.requests.one_minute_rate,
-           metrics.requests.five_minute_rate,
+    printf("rate stats (requests/second): mean %f 1m %f 5m %f 10m %f\n", metrics.requests.mean_rate,
+           metrics.requests.one_minute_rate, metrics.requests.five_minute_rate,
            metrics.requests.fifteen_minute_rate);
   }
 
   cass_session_get_metrics(session, &metrics);
-  printf("final stats (microseconds): min %llu max %llu median %llu 75th %llu 95th %llu 98th %llu 99th %llu 99.9th %llu\n",
+  printf("final stats (microseconds): min %llu max %llu median %llu 75th %llu 95th %llu 98th %llu "
+         "99th %llu 99.9th %llu\n",
          (unsigned long long int)metrics.requests.min, (unsigned long long int)metrics.requests.max,
-         (unsigned long long int)metrics.requests.median, (unsigned long long int)metrics.requests.percentile_75th,
-         (unsigned long long int)metrics.requests.percentile_95th, (unsigned long long int)metrics.requests.percentile_98th,
-         (unsigned long long int)metrics.requests.percentile_99th, (unsigned long long int)metrics.requests.percentile_999th);
+         (unsigned long long int)metrics.requests.median,
+         (unsigned long long int)metrics.requests.percentile_75th,
+         (unsigned long long int)metrics.requests.percentile_95th,
+         (unsigned long long int)metrics.requests.percentile_98th,
+         (unsigned long long int)metrics.requests.percentile_99th,
+         (unsigned long long int)metrics.requests.percentile_999th);
 
   for (i = 0; i < NUM_THREADS; ++i) {
     uv_thread_join(&threads[i]);
   }
 
-  close_future = cass_session_close(session);
-  cass_future_wait(close_future);
-  cass_future_free(close_future);
   cass_cluster_free(cluster);
+  cass_session_free(session);
   cass_uuid_gen_free(uuid_gen);
 
   status_destroy(&status);

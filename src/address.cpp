@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014-2016 DataStax
+  Copyright (c) DataStax, Inc.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -16,155 +16,178 @@
 
 #include "address.hpp"
 
-#include <assert.h>
-#include <sstream>
+#include "logger.hpp"
+#include "macros.hpp"
+#include "row.hpp"
+#include "value.hpp"
 
-namespace cass {
+using namespace datastax;
+using namespace datastax::internal::core;
 
-Address::Address() {
-  init();
+const Address Address::EMPTY_KEY(String(), 0);
+const Address Address::DELETED_KEY(String(), 1);
+
+namespace {
+
+template <class T>
+inline void hash_combine(std::size_t& seed, const T& v) {
+  SPARSEHASH_HASH<T> hasher;
+  seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
 }
 
-Address::Address(const std::string& ip, int port) {
-  init();
-  from_string(ip, port, this);
-}
+} // namespace
 
-bool Address::from_string(const std::string& ip, int port, Address* output) {
-  char buf[sizeof(struct in6_addr)];
-#if UV_VERSION_MAJOR == 0
-  if (uv_inet_pton(AF_INET, ip.c_str(), &buf).code == UV_OK) {
-#else
-  if (uv_inet_pton(AF_INET, ip.c_str(), &buf) == 0) {
-#endif
-    if (output != NULL) {
-      struct sockaddr_in addr;
-#if UV_VERSION_MAJOR == 0
-      addr = uv_ip4_addr(ip.c_str(), port);
-#else
-      uv_ip4_addr(ip.c_str(), port, &addr);
-#endif
-      output->init(copy_cast<struct sockaddr_in*, struct sockaddr*>(&addr));
-    }
-    return true;
-#if UV_VERSION_MAJOR == 0
-  } else if (uv_inet_pton(AF_INET6, ip.c_str(), &buf).code == UV_OK) {
-#else
-  } else if (uv_inet_pton(AF_INET6, ip.c_str(), &buf) == 0) {
-#endif
-    if (output != NULL) {
-      struct sockaddr_in6 addr;
-#if UV_VERSION_MAJOR == 0
-      addr = uv_ip6_addr(ip.c_str(), port);
-#else
-      uv_ip6_addr(ip.c_str(), port, &addr);
-#endif
-      output->init(copy_cast<struct sockaddr_in6*, struct sockaddr*>(&addr));
-    }
-    return true;
+Address::Address()
+    : family_(UNRESOLVED)
+    , port_(0) {}
+
+Address::Address(const Address& other, const String& server_name)
+    : hostname_or_address_(other.hostname_or_address_)
+    , server_name_(server_name)
+    , family_(other.family_)
+    , port_(other.port_) {}
+
+Address::Address(const String& hostname, int port, const String& server_name)
+    : server_name_(server_name)
+    , family_(UNRESOLVED)
+    , port_(port) {
+  char addr[16];
+  if (uv_inet_pton(AF_INET, hostname.c_str(), addr) == 0) {
+    hostname_or_address_.assign(addr, addr + 4);
+    family_ = IPv4;
+  } else if (uv_inet_pton(AF_INET6, hostname.c_str(), addr) == 0) {
+    hostname_or_address_.assign(addr, addr + 16);
+    family_ = IPv6;
   } else {
-    return false;
+    hostname_or_address_ = hostname;
   }
 }
 
-void Address::from_inet(const char* data, size_t size, int port, Address* output) {
-
-  assert(size == 4 || size == 16);
-  if (size == 4) {
-    char buf[INET_ADDRSTRLEN];
-    uv_inet_ntop(AF_INET, data, buf, sizeof(buf));
-    if (output != NULL) {
-      struct sockaddr_in addr;
-#if UV_VERSION_MAJOR == 0
-      addr = uv_ip4_addr(buf, port);
-#else
-      uv_ip4_addr(buf, port, &addr);
-#endif
-      output->init(copy_cast<struct sockaddr_in*, struct sockaddr*>(&addr));
-    }
-  } else {
-    char buf[INET6_ADDRSTRLEN];
-    uv_inet_ntop(AF_INET6, data, buf, sizeof(buf));
-    if (output != NULL) {
-      struct sockaddr_in6 addr;
-#if UV_VERSION_MAJOR == 0
-      addr = uv_ip6_addr(buf, port);
-#else
-      uv_ip6_addr(buf, port, &addr);
-#endif
-      output->init(copy_cast<struct sockaddr_in6*, struct sockaddr*>(&addr));
-    }
+Address::Address(const uint8_t* address, uint8_t address_length, int port)
+    : family_(UNRESOLVED)
+    , port_(port) {
+  if (address_length == 4) {
+    hostname_or_address_.assign(reinterpret_cast<const char*>(address), address_length);
+    family_ = IPv4;
+  } else if (address_length == 16) {
+    hostname_or_address_.assign(reinterpret_cast<const char*>(address), address_length);
+    family_ = IPv6;
   }
 }
 
-bool Address::init(const sockaddr* addr) {
+Address::Address(const struct sockaddr* addr)
+    : family_(UNRESOLVED)
+    , port_(0) {
   if (addr->sa_family == AF_INET) {
-    memcpy(&addr_, addr, sizeof(struct sockaddr_in));
-    return true;
+    const struct sockaddr_in* addr_in = reinterpret_cast<const struct sockaddr_in*>(addr);
+    hostname_or_address_.assign(reinterpret_cast<const char*>(&addr_in->sin_addr), 4);
+    port_ = ntohs(addr_in->sin_port);
+    family_ = IPv4;
   } else if (addr->sa_family == AF_INET6) {
-    memcpy(&addr_, addr, sizeof(struct sockaddr_in6));
-    return true;
-  }
-  return false;
-}
-
-int Address::port() const {
-  if (family() == AF_INET) {
-    return htons(addr_in()->sin_port);
-  } else if (family() == AF_INET6) {
-    return htons(addr_in6()->sin6_port);
-  } else {
-    assert(false);
-    return -1;
+    const struct sockaddr_in6* addr_in6 = reinterpret_cast<const struct sockaddr_in6*>(addr);
+    hostname_or_address_.assign(reinterpret_cast<const char*>(&addr_in6->sin6_addr), 16);
+    port_ = ntohs(addr_in6->sin6_port);
+    family_ = IPv6;
   }
 }
 
-std::string Address::to_string(bool with_port) const {
-  std::stringstream ss;
-  char host[INET6_ADDRSTRLEN + 1] = {'\0'};
-  if (family() == AF_INET) {
-    uv_ip4_name(const_cast<struct sockaddr_in*>(addr_in()), host,
-                INET_ADDRSTRLEN);
-    ss << host;
-    if (with_port) ss << ":" << port();
-  } else if (family() == AF_INET6) {
-    uv_ip6_name(const_cast<struct sockaddr_in6*>(addr_in6()), host,
-                INET6_ADDRSTRLEN);
-    if (with_port) ss << "[";
-    ss << host;
-    if (with_port) ss << "]:" << port();
-  } else {
-    assert(false);
-  }
-  return ss.str();
+bool Address::equals(const Address& other, bool with_port) const {
+  if (family_ != other.family_) return false;
+  if (with_port && port_ != other.port_) return false;
+  if (server_name_ != other.server_name_) return false;
+  if (hostname_or_address_ != other.hostname_or_address_) return false;
+  return true;
 }
 
-uint8_t Address::to_inet(uint8_t* data) const {
-  if (family() == AF_INET) {
-    memcpy(data, &addr_in()->sin_addr, 4);
-    return 4;
+bool Address::operator<(const Address& other) const {
+  if (family_ != other.family_) return family_ < other.family_;
+  if (port_ != other.port_) return port_ < other.port_;
+  if (server_name_ != other.server_name_) return server_name_ < other.server_name_;
+  return hostname_or_address_ < other.hostname_or_address_;
+}
+
+String Address::hostname_or_address() const {
+  if (family_ == IPv4) {
+    char name[INET_ADDRSTRLEN + 1] = { '\0' };
+    uv_inet_ntop(AF_INET, hostname_or_address_.data(), name, INET_ADDRSTRLEN);
+    return name;
+  } else if (family_ == IPv6) {
+    char name[INET6_ADDRSTRLEN + 1] = { '\0' };
+    uv_inet_ntop(AF_INET6, hostname_or_address_.data(), name, INET6_ADDRSTRLEN);
+    return name;
   } else {
-    memcpy(data, &addr_in6()->sin6_addr, 16);
-    return 16;
+    return hostname_or_address_;
   }
 }
 
-int Address::compare(const Address& a) const {
-  if (family() != a.family()) {
-    return family() < a.family() ? -1 : 1;
-  }
-  if (family() == AF_INET) {
-    if (addr_in()->sin_addr.s_addr != a.addr_in()->sin_addr.s_addr) {
-      return addr_in()->sin_addr.s_addr < a.addr_in()->sin_addr.s_addr ? -1 : 1;
-    }
-  } else if (family() == AF_INET6) {
-    return memcmp(&(addr_in6()->sin6_addr), &(a.addr_in6()->sin6_addr),
-                  sizeof(addr_in6()->sin6_addr));
-  } else {
-    assert(false);
-    return -1;
+size_t Address::hash_code() const {
+  SPARSEHASH_HASH<Family> hasher;
+  size_t code = hasher(family_);
+  hash_combine(code, port_);
+  hash_combine(code, server_name_);
+  hash_combine(code, hostname_or_address_);
+  return code;
+}
+
+uint8_t Address::to_inet(void* address) const {
+  if (family_ == IPv4 || family_ == IPv6) {
+    size_t size = hostname_or_address_.size();
+    assert((size == 4 || size == 16) && "Invalid size for address");
+    hostname_or_address_.copy(reinterpret_cast<char*>(address), size);
+    return static_cast<uint8_t>(size);
   }
   return 0;
 }
 
+const struct sockaddr* Address::to_sockaddr(SocketStorage* storage) const {
+  int rc = 0;
+  if (family_ == IPv4) {
+    char name[INET_ADDRSTRLEN + 1] = { '\0' };
+    rc = uv_inet_ntop(AF_INET, hostname_or_address_.data(), name, INET_ADDRSTRLEN);
+    if (rc != 0) return NULL;
+    rc = uv_ip4_addr(name, port_, storage->addr_in());
+  } else if (family_ == IPv6) {
+    char name[INET6_ADDRSTRLEN + 1] = { '\0' };
+    rc = uv_inet_ntop(AF_INET6, hostname_or_address_.data(), name, INET6_ADDRSTRLEN);
+    if (rc != 0) return NULL;
+    rc = uv_ip6_addr(name, port_, storage->addr_in6());
+  } else {
+    return NULL;
+  }
+  if (rc != 0) return NULL;
+  return storage->addr();
 }
+
+String Address::to_string(bool with_port) const {
+  OStringStream ss;
+  if (family_ == IPv6 && with_port) {
+    ss << "[" << hostname_or_address() << "]";
+  } else {
+    ss << hostname_or_address();
+  }
+  if (with_port) {
+    ss << ":" << port_;
+  }
+  if (!server_name_.empty()) {
+    ss << " (" << server_name_ << ")";
+  }
+  return ss.str();
+}
+
+namespace datastax { namespace internal { namespace core {
+
+String determine_listen_address(const Address& address, const Row* row) {
+  const Value* v = row->get_by_name("peer");
+  if (v != NULL) {
+    Address listen_address;
+    if (v->decoder().as_inet(v->size(), address.port(), &listen_address)) {
+      return listen_address.to_string();
+    } else {
+      LOG_WARN("Invalid address format for listen address for host %s",
+               address.to_string().c_str());
+    }
+  }
+  return "";
+}
+
+}}} // namespace datastax::internal::core

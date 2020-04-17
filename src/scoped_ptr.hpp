@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014-2016 DataStax
+  Copyright (c) DataStax, Inc.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -14,25 +14,19 @@
   limitations under the License.
 */
 
-#ifndef __CASS_SCOPED_PTR_HPP_INCLUDED__
-#define __CASS_SCOPED_PTR_HPP_INCLUDED__
+#ifndef DATASTAX_INTERNAL_SCOPED_PTR_HPP
+#define DATASTAX_INTERNAL_SCOPED_PTR_HPP
 
 #include "macros.hpp"
-#include "ref_counted.hpp"
 #include "utils.hpp"
 
 #include <stddef.h>
 
-namespace cass {
+namespace datastax { namespace internal {
 
 template <class T>
 struct DefaultDeleter {
   void operator()(T* ptr) const { delete ptr; }
-};
-
-template <class T>
-struct DefaultDeleter<T[]> {
-  void operator()(T* ptr) const { delete[] ptr; }
 };
 
 template <class T, class D = DefaultDeleter<T> >
@@ -41,9 +35,6 @@ public:
   typedef T type;
   typedef D deleter;
 
-  // Prevent RefCounted<> objects from using ScopedPtr<>, that would be bad
-  STATIC_ASSERT((!IsConvertible<T, RefCountedBase>::value));
-
   explicit ScopedPtr(type* ptr = NULL)
       : ptr_(ptr) {}
 
@@ -64,7 +55,7 @@ public:
 
   type* get() const { return ptr_; }
   type& operator*() const { return *ptr_; }
-  type * operator->() const { return ptr_; }
+  type* operator->() const { return ptr_; }
   operator bool() const { return ptr_ != NULL; }
 
 private:
@@ -74,17 +65,21 @@ private:
   DISALLOW_COPY_AND_ASSIGN(ScopedPtr);
 };
 
-template <class T, class D>
-class ScopedPtr<T[], D> {
-public:
+template <class T>
+struct DefaultArrayDeleter {
+  void operator()(T* ptr) const { delete[] ptr; }
+};
+
+template <class T, class D = DefaultArrayDeleter<T> >
+class ScopedArray {
 public:
   typedef T type;
   typedef D deleter;
 
-  explicit ScopedPtr(type* ptr = NULL)
+  explicit ScopedArray(type* ptr = NULL)
       : ptr_(ptr) {}
 
-  ~ScopedPtr() { deleter()(ptr_); }
+  ~ScopedArray() { deleter()(ptr_); }
 
   void reset(type* ptr = NULL) {
     if (ptr_ != NULL) {
@@ -100,20 +95,16 @@ public:
   }
 
   type* get() const { return ptr_; }
-  type& operator*() const { return *ptr_; }
-  type * operator->() const { return ptr_; }
-  operator bool() const { return ptr_ != NULL; }
-
-  type& operator[](size_t index) { return ptr_[index]; }
   type& operator[](size_t index) const { return ptr_[index]; }
+  operator bool() const { return ptr_ != NULL; }
 
 private:
   type* ptr_;
 
 private:
-  DISALLOW_COPY_AND_ASSIGN(ScopedPtr);
+  DISALLOW_COPY_AND_ASSIGN(ScopedArray);
 };
 
-} // namespace cass
+}} // namespace datastax::internal
 
 #endif

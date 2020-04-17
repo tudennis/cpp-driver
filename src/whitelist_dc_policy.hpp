@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014-2016 DataStax
+  Copyright (c) DataStax, Inc.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -14,22 +14,21 @@
   limitations under the License.
 */
 
-#ifndef __CASS_WHITELIST_DC_POLICY_HPP_INCLUDED__
-#define __CASS_WHITELIST_DC_POLICY_HPP_INCLUDED__
+#ifndef DATASTAX_INTERNAL_WHITELIST_DC_POLICY_HPP
+#define DATASTAX_INTERNAL_WHITELIST_DC_POLICY_HPP
 
-#include "load_balancing.hpp"
 #include "host.hpp"
-#include "scoped_ptr.hpp"
 #include "list_policy.hpp"
+#include "load_balancing.hpp"
+#include "scoped_ptr.hpp"
 
-namespace cass {
+namespace datastax { namespace internal { namespace core {
 
 class WhitelistDCPolicy : public ListPolicy {
 public:
-  WhitelistDCPolicy(LoadBalancingPolicy* child_policy,
-                    const DcList& dcs)
-    : ListPolicy(child_policy)
-    , dcs_(dcs) {}
+  WhitelistDCPolicy(LoadBalancingPolicy* child_policy, const DcList& dcs)
+      : ListPolicy(child_policy)
+      , dcs_(dcs) {}
 
   virtual ~WhitelistDCPolicy() {}
 
@@ -38,7 +37,7 @@ public:
   }
 
 private:
-  bool is_valid_host(const SharedRefPtr<Host>& host) const;
+  bool is_valid_host(const Host::Ptr& host) const;
 
   DcList dcs_;
 
@@ -46,6 +45,6 @@ private:
   DISALLOW_COPY_AND_ASSIGN(WhitelistDCPolicy);
 };
 
-} // namespace cass
+}}} // namespace datastax::internal::core
 
 #endif

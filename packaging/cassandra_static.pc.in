@@ -4,9 +4,10 @@ libdir=@libdir@
 includedir=@includedir@
 
 Name: cassandra
-Description: A C/C++ client driver for Apache Cassandra
+Description: A C/C++ client driver for Apache Cassandra and DataStax Products
 Version: @version@
 Requires: libuv
+Requires: openssl
 Libs: -L${libdir} -lcassandra_static -lstdc++
-Cflags:
+Cflags: -I${includedir}
 URL: https://github.com/datastax/cpp-driver/

@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014-2016 DataStax
+  Copyright (c) DataStax, Inc.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -14,20 +14,22 @@
   limitations under the License.
 */
 
-#ifndef __CASS_UUIDS_HPP_INCLUDED__
-#define __CASS_UUIDS_HPP_INCLUDED__
+#ifndef DATASTAX_INTERNAL_UUIDS_HPP
+#define DATASTAX_INTERNAL_UUIDS_HPP
 
+#include "allocated.hpp"
 #include "atomic.hpp"
 #include "cassandra.h"
+#include "external.hpp"
 #include "random.hpp"
 
-#include <uv.h>
 #include <assert.h>
 #include <string.h>
+#include <uv.h>
 
-namespace cass {
+namespace datastax { namespace internal { namespace core {
 
-class UuidGen {
+class UuidGen : public Allocated {
 public:
   UuidGen();
   UuidGen(uint64_t node);
@@ -48,6 +50,8 @@ private:
   MT19937_64 ng_;
 };
 
-} // namespace cass
+}}} // namespace datastax::internal::core
+
+EXTERNAL_TYPE(datastax::internal::core::UuidGen, CassUuidGen)
 
 #endif

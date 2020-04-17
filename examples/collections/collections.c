@@ -26,9 +26,9 @@
 */
 
 #include <assert.h>
-#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "cassandra.h"
 
@@ -160,12 +160,9 @@ CassError select_from_collections(CassSession* session, const char* key) {
 int main(int argc, char* argv[]) {
   CassCluster* cluster = NULL;
   CassSession* session = cass_session_new();
-  CassFuture* close_future = NULL;
   char* hosts = "127.0.0.1";
 
   const char* items[] = { "apple", "orange", "banana", "mango", NULL };
-
-  cass_cluster_set_protocol_version(cluster, 2);
 
   if (argc > 1) {
     hosts = argv[1];
@@ -178,22 +175,15 @@ int main(int argc, char* argv[]) {
     return -1;
   }
 
-  execute_query(session,
-                "CREATE KEYSPACE examples WITH replication = { \
+  execute_query(session, "CREATE KEYSPACE examples WITH replication = { \
                            'class': 'SimpleStrategy', 'replication_factor': '1' };");
 
-  execute_query(session,
-                "CREATE TABLE examples.collections (key text, \
+  execute_query(session, "CREATE TABLE examples.collections (key text, \
                                                     items set<text>, \
                                                     PRIMARY KEY (key))");
 
-
   insert_into_collections(session, "test", items);
   select_from_collections(session, "test");
-
-  close_future = cass_session_close(session);
-  cass_future_wait(close_future);
-  cass_future_free(close_future);
 
   cass_cluster_free(cluster);
   cass_session_free(session);

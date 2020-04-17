@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014-2016 DataStax
+  Copyright (c) DataStax, Inc.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -16,62 +16,49 @@
 
 #include "list_policy.hpp"
 
-namespace cass {
+#include "logger.hpp"
 
-void ListPolicy::init(const SharedRefPtr<Host>& connected_host,
-                           const HostMap& hosts) {
-  HostMap whitelist_hosts;
-  for (HostMap::const_iterator i = hosts.begin(),
-    end = hosts.end(); i != end; ++i) {
-    const SharedRefPtr<Host>& host = i->second;
+using namespace datastax;
+using namespace datastax::internal;
+using namespace datastax::internal::core;
+
+void ListPolicy::init(const Host::Ptr& connected_host, const HostMap& hosts, Random* random,
+                      const String& local_dc) {
+  HostMap valid_hosts;
+  for (HostMap::const_iterator i = hosts.begin(), end = hosts.end(); i != end; ++i) {
+    const Host::Ptr& host = i->second;
     if (is_valid_host(host)) {
-      whitelist_hosts.insert(HostPair(i->first, host));
+      valid_hosts.insert(HostPair(i->first, host));
     }
   }
 
-  assert(!whitelist_hosts.empty());
-  child_policy_->init(connected_host, whitelist_hosts);
+  if (valid_hosts.empty()) {
+    LOG_ERROR("No valid hosts available for list policy");
+  }
+
+  ChainedLoadBalancingPolicy::init(connected_host, valid_hosts, random, local_dc);
 }
 
-CassHostDistance ListPolicy::distance(const SharedRefPtr<Host>& host) const {
+CassHostDistance ListPolicy::distance(const Host::Ptr& host) const {
   if (is_valid_host(host)) {
     return child_policy_->distance(host);
   }
   return CASS_HOST_DISTANCE_IGNORE;
 }
 
-QueryPlan* ListPolicy::new_query_plan(const std::string& connected_keyspace,
-                                           const Request* request,
-                                           const TokenMap& token_map,
-                                           Request::EncodingCache* cache) {
-  return child_policy_->new_query_plan(connected_keyspace,
-                                       request,
-                                       token_map,
-                                       cache);
+QueryPlan* ListPolicy::new_query_plan(const String& keyspace, RequestHandler* request_handler,
+                                      const TokenMap* token_map) {
+  return child_policy_->new_query_plan(keyspace, request_handler, token_map);
 }
 
-void ListPolicy::on_add(const SharedRefPtr<Host>& host) {
+void ListPolicy::on_host_added(const Host::Ptr& host) {
   if (is_valid_host(host)) {
-    child_policy_->on_add(host);
+    child_policy_->on_host_added(host);
   }
 }
 
-void ListPolicy::on_remove(const SharedRefPtr<Host>& host) {
+void ListPolicy::on_host_up(const Host::Ptr& host) {
   if (is_valid_host(host)) {
-    child_policy_->on_remove(host);
+    child_policy_->on_host_up(host);
   }
 }
-
-void ListPolicy::on_up(const SharedRefPtr<Host>& host) {
-  if (is_valid_host(host)) {
-    child_policy_->on_up(host);
-  }
-}
-
-void ListPolicy::on_down(const SharedRefPtr<Host>& host) {
-  if (is_valid_host(host)) {
-    child_policy_->on_down(host);
-  }
-}
-
-} // namespace cass

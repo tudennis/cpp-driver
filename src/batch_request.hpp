@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014-2016 DataStax
+  Copyright (c) DataStax, Inc.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -14,52 +14,52 @@
   limitations under the License.
 */
 
-#ifndef __CASS_BATCH_REQUEST_HPP_INCLUDED__
-#define __CASS_BATCH_REQUEST_HPP_INCLUDED__
+#ifndef DATASTAX_INTERNAL_BATCH_REQUEST_HPP
+#define DATASTAX_INTERNAL_BATCH_REQUEST_HPP
 
 #include "cassandra.h"
 #include "constants.hpp"
-#include "request.hpp"
+#include "external.hpp"
+#include "map.hpp"
 #include "ref_counted.hpp"
+#include "request.hpp"
+#include "statement.hpp"
+#include "string.hpp"
+#include "vector.hpp"
 
-#include <list>
-#include <map>
-#include <string>
+namespace datastax { namespace internal { namespace core {
 
-namespace cass {
-
-class Statement;
 class ExecuteRequest;
 
 class BatchRequest : public RoutableRequest {
 public:
-  typedef std::list<SharedRefPtr<Statement> > StatementList;
+  typedef SharedRefPtr<BatchRequest> Ptr;
+  typedef Vector<Statement::Ptr> StatementVec;
 
-  BatchRequest(uint8_t type_)
+  BatchRequest(uint8_t type)
       : RoutableRequest(CQL_OPCODE_BATCH)
-      , type_(type_) { }
+      , type_(type) {}
 
   uint8_t type() const { return type_; }
 
-  const StatementList& statements() const { return statements_; }
+  const StatementVec& statements() const { return statements_; }
 
   void add_statement(Statement* statement);
 
-  bool prepared_statement(const std::string& id, std::string* statement) const;
+  bool find_prepared_query(const String& id, String* query) const;
 
-  virtual bool get_routing_key(std::string* routing_key, EncodingCache* cache) const;
-
-private:
-  int encode(int version, Handler* handler, BufferVec* bufs) const;
+  virtual bool get_routing_key(String* routing_key) const;
 
 private:
-  typedef std::map<std::string, ExecuteRequest*> PreparedMap;
+  int encode(ProtocolVersion version, RequestCallback* callback, BufferVec* bufs) const;
 
+private:
   uint8_t type_;
-  StatementList statements_;
-  PreparedMap prepared_statements_;
+  StatementVec statements_;
 };
 
-} // namespace cass
+}}} // namespace datastax::internal::core
+
+EXTERNAL_TYPE(datastax::internal::core::BatchRequest, CassBatch)
 
 #endif

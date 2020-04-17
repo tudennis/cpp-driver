@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014-2016 DataStax
+  Copyright (c) DataStax, Inc.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -21,19 +21,20 @@
 
   [1]
   http://www.1024cores.net/home/lock-free-algorithms/queues/bounded-mpmc-queue
-
 */
 
-#ifndef __CASS_SPSC_QUEUE_HPP_INCLUDED__
-#define __CASS_SPSC_QUEUE_HPP_INCLUDED__
+#ifndef DATASTAX_INTERNAL_SPSC_QUEUE_HPP
+#define DATASTAX_INTERNAL_SPSC_QUEUE_HPP
 
 #include <assert.h>
 
 #include "atomic.hpp"
-#include "utils.hpp"
+#include "driver_config.hpp"
 #include "macros.hpp"
+#include "scoped_ptr.hpp"
+#include "utils.hpp"
 
-namespace cass {
+namespace datastax { namespace internal { namespace core {
 
 template <typename T>
 class SPSCQueue {
@@ -43,11 +44,9 @@ public:
   SPSCQueue(size_t size)
       : size_(next_pow_2(size))
       , mask_(size_ - 1)
-      , buffer_(new T[size_])
+      , buffer_(new T[size])
       , tail_(0)
       , head_(0) {}
-
-  ~SPSCQueue() { delete[] buffer_; }
 
   bool enqueue(const T& input) {
     const size_t pos = tail_.load(MEMORY_ORDER_RELAXED);
@@ -70,17 +69,14 @@ public:
     return true;
   }
 
-  bool is_empty() {
-    return head_.load(MEMORY_ORDER_ACQUIRE) ==
-        tail_.load(MEMORY_ORDER_ACQUIRE);
-  }
+  bool is_empty() { return head_.load(MEMORY_ORDER_ACQUIRE) == tail_.load(MEMORY_ORDER_ACQUIRE); }
 
   static void memory_fence() {
-   // Internally, libuv has a "pending" flag check whose load can be reordered
-   // before storing the data into the queue causing the data in the queue
-   // not to be consumed. This fence ensures that the load happens after the
-   // data has been store in the queue.
-#if defined(CASS_USE_BOOST_ATOMIC) || defined(CASS_USE_STD_ATOMIC)
+    // Internally, libuv has a "pending" flag check whose load can be reordered
+    // before storing the data into the queue causing the data in the queue
+    // not to be consumed. This fence ensures that the load happens after the
+    // data has been store in the queue.
+#if defined(HAVE_BOOST_ATOMIC) || defined(HAVE_STD_ATOMIC)
     atomic_thread_fence(MEMORY_ORDER_SEQ_CST);
 #endif
   }
@@ -91,7 +87,7 @@ private:
   cache_line_pad_t pad0_;
   const size_t size_;
   const size_t mask_;
-  T* const buffer_;
+  ScopedArray<T> buffer_;
 
   cache_line_pad_t pad1_;
   Atomic<size_t> tail_;
@@ -102,6 +98,6 @@ private:
   DISALLOW_COPY_AND_ASSIGN(SPSCQueue);
 };
 
-} // namespace cass
+}}} // namespace datastax::internal::core
 
 #endif

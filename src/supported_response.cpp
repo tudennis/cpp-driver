@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014-2016 DataStax
+  Copyright (c) DataStax, Inc.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -16,24 +16,29 @@
 
 #include "supported_response.hpp"
 
+#include "logger.hpp"
 #include "serialization.hpp"
+#include "utils.hpp"
 
-namespace cass {
+#include <algorithm>
 
-bool SupportedResponse::decode(int version, char* buffer, size_t size) {
-  StringMultimap supported;
+using namespace datastax;
+using namespace datastax::internal;
+using namespace datastax::internal::core;
 
-  decode_string_multimap(buffer, supported);
-  StringMultimap::const_iterator it = supported.find("COMPRESSION");
-  if (it != supported.end()) {
-    compression_ = it->second;
+bool SupportedResponse::decode(Decoder& decoder) {
+  decoder.set_type("supported");
+  StringMultimap supported_options;
+  CHECK_RESULT(decoder.decode_string_multimap(supported_options));
+  decoder.maybe_log_remaining();
+
+  // Force keys to be uppercase
+  for (StringMultimap::iterator it = supported_options.begin(), end = supported_options.end();
+       it != end; ++it) {
+    String key = it->first;
+    std::transform(key.begin(), key.end(), key.begin(), toupper);
+    supported_options_[key] = it->second;
   }
 
-  it = supported.find("CASS_VERSION");
-  if (it != supported.end()) {
-    versions_ = it->second;
-  }
   return true;
 }
-
-} // namespace cass

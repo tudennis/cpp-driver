@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014-2016 DataStax
+  Copyright (c) DataStax, Inc.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -14,241 +14,293 @@
   limitations under the License.
 */
 
-#ifndef __CASS_CONTROL_CONNECTION_HPP_INCLUDED__
-#define __CASS_CONTROL_CONNECTION_HPP_INCLUDED__
+#ifndef DATASTAX_INTERNAL_CONTROL_CONNECTION_HPP
+#define DATASTAX_INTERNAL_CONTROL_CONNECTION_HPP
 
 #include "address.hpp"
+#include "address_factory.hpp"
+#include "config.hpp"
 #include "connection.hpp"
-#include "token_map.hpp"
-#include "handler.hpp"
+#include "connector.hpp"
+#include "dense_hash_map.hpp"
 #include "host.hpp"
 #include "load_balancing.hpp"
 #include "macros.hpp"
-#include "multiple_request_handler.hpp"
+#include "request_callback.hpp"
 #include "response.hpp"
 #include "scoped_ptr.hpp"
+#include "token_map.hpp"
 
-namespace cass {
+#include <stdint.h>
 
+#define SELECT_LOCAL "SELECT * FROM system.local WHERE key='local'"
+#define SELECT_PEERS "SELECT * FROM system.peers"
+
+#define SELECT_KEYSPACES_20 "SELECT * FROM system.schema_keyspaces"
+#define SELECT_COLUMN_FAMILIES_20 "SELECT * FROM system.schema_columnfamilies"
+#define SELECT_COLUMNS_20 "SELECT * FROM system.schema_columns"
+#define SELECT_USERTYPES_21 "SELECT * FROM system.schema_usertypes"
+#define SELECT_FUNCTIONS_22 "SELECT * FROM system.schema_functions"
+#define SELECT_AGGREGATES_22 "SELECT * FROM system.schema_aggregates"
+
+#define SELECT_KEYSPACES_30 "SELECT * FROM system_schema.keyspaces"
+#define SELECT_TABLES_30 "SELECT * FROM system_schema.tables"
+#define SELECT_VIEWS_30 "SELECT * FROM system_schema.views"
+#define SELECT_COLUMNS_30 "SELECT * FROM system_schema.columns"
+#define SELECT_INDEXES_30 "SELECT * FROM system_schema.indexes"
+#define SELECT_USERTYPES_30 "SELECT * FROM system_schema.types"
+#define SELECT_FUNCTIONS_30 "SELECT * FROM system_schema.functions"
+#define SELECT_AGGREGATES_30 "SELECT * FROM system_schema.aggregates"
+
+#define SELECT_VIRTUAL_KEYSPACES_40 "SELECT * FROM system_virtual_schema.keyspaces"
+#define SELECT_VIRTUAL_TABLES_40 "SELECT * FROM system_virtual_schema.tables"
+#define SELECT_VIRTUAL_COLUMNS_40 "SELECT * FROM system_virtual_schema.columns"
+
+namespace datastax { namespace internal { namespace core {
+
+class ChainedControlRequestCallback;
+class ControlRequestCallback;
+class ControlConnection;
 class EventResponse;
-class Request;
-class Row;
-class Session;
-class Timer;
-class Value;
+class RefreshNodeCallback;
+class RefreshKeyspaceCallback;
+class RefreshTableCallback;
+class RefreshTypeCallback;
+class RefreshFunctionCallback;
 
-class ControlConnection : public Connection::Listener {
+/**
+ * A listener for processing control connection events such as topology, node
+ * status, and schema changes.
+ */
+class ControlConnectionListener {
 public:
-  static bool determine_address_for_peer_host(const Address& connected_address,
-                                              const Value* peer_value,
-                                              const Value* rpc_value,
-                                              Address* output);
+  enum SchemaType { KEYSPACE, TABLE, VIEW, COLUMN, INDEX, USER_TYPE, FUNCTION, AGGREGATE };
 
-  enum State {
-    CONTROL_STATE_NEW,
-    CONTROL_STATE_READY,
-    CONTROL_STATE_CLOSED
-  };
+  virtual ~ControlConnectionListener() {}
 
-  ControlConnection();
-  virtual ~ControlConnection() {}
+  /**
+   * A callback that's called when a host is marked as being UP.
+   *
+   * @param address The address of the host.
+   */
+  virtual void on_up(const Address& address) = 0;
 
-  int protocol_version() const {
-    return protocol_version_;
-  }
+  /**
+   * A callback that's called when a host is marked as being DOWN.
+   *
+   * @param address The address of the host.
+   */
+  virtual void on_down(const Address& address) = 0;
 
-  const SharedRefPtr<Host>& connected_host() const;
+  /**
+   * A callback that's called when a new host is added to the cluster.
+   *
+   * @param host A fully populated host object.
+   */
+  virtual void on_add(const Host::Ptr& host) = 0;
 
-  void clear();
+  /**
+   * A callback that's called when a host is removed from a cluster.
+   *
+   * @param address The address of the host.
+   */
+  virtual void on_remove(const Address& address) = 0;
 
-  void connect(Session* session);
-  void close();
+  /**
+   * A callback that's called when schema is created or updated. Table and
+   * materialized view changes will result in several calls to this method for
+   * the associated columns and indexes. Column and indexes are not updated
+   * without a preceding table or materialized view update.
+   *
+   * @param type The type of the schema changed.
+   * @param result A result response with the row data associated with the
+   * schema change.
+   */
+  virtual void on_update_schema(SchemaType type, const ResultResponse::Ptr& result,
+                                const String& keyspace_name, const String& target_name = "") = 0;
 
-  void on_up(const Address& address);
-  void on_down(const Address& address);
+  /**
+   * A callback that's called when schema is dropped.
+   *
+   * @param type The type of the schema dropped.
+   * @param keyspace_name The keyspace of the schema.
+   * @param target_name The name of the table, user type, function, or
+   * aggregate dropped. This is the empty string for dropped keyspaces.
+   */
+  virtual void on_drop_schema(SchemaType type, const String& keyspace_name,
+                              const String& target_name = "") = 0;
 
-private:
-  template<class T>
-  class ControlMultipleRequestHandler : public MultipleRequestHandler {
-  public:
-    typedef void (*ResponseCallback)(ControlConnection*, const T&, const MultipleRequestHandler::ResponseMap&);
-
-    ControlMultipleRequestHandler(ControlConnection* control_connection,
-                                  ResponseCallback response_callback,
-                                  const T& data)
-        : MultipleRequestHandler(control_connection->connection_)
-        , control_connection_(control_connection)
-        , response_callback_(response_callback)
-        , data_(data) {}
-
-    virtual void on_set(const MultipleRequestHandler::ResponseMap& responses);
-
-    virtual void on_error(CassError code, const std::string& message) {
-      control_connection_->handle_query_failure(code, message);
-    }
-
-    virtual void on_timeout() {
-      control_connection_->handle_query_timeout();
-    }
-
-  private:
-    ControlConnection* control_connection_;
-    ResponseCallback response_callback_;
-    T data_;
-  };
-
-  struct RefreshTableData {
-    RefreshTableData(const std::string& keyspace_name,
-                     const std::string& table_name)
-      : keyspace_name(keyspace_name)
-      , table_or_view_name(table_name) {}
-    std::string keyspace_name;
-    std::string table_or_view_name;
-  };
-
-  struct UnusedData {};
-
-  template<class T>
-  class ControlHandler : public Handler {
-  public:
-    typedef void (*ResponseCallback)(ControlConnection*, const T&, Response*);
-
-    ControlHandler(const Request* request,
-                   ControlConnection* control_connection,
-                   ResponseCallback response_callback,
-                   const T& data)
-      : Handler(request)
-      , control_connection_(control_connection)
-      , response_callback_(response_callback)
-      , data_(data) {}
-
-    virtual void on_set(ResponseMessage* response) {
-      Response* response_body = response->response_body().get();
-      if (control_connection_->handle_query_invalid_response(response_body)) {
-        return;
-      }
-      response_callback_(control_connection_, data_, response_body);
-    }
-
-    virtual void on_error(CassError code, const std::string& message) {
-      control_connection_->handle_query_failure(code, message);
-    }
-
-    virtual void on_timeout() {
-      control_connection_->handle_query_timeout();
-    }
-
-  private:
-    ControlConnection* control_connection_;
-    ResponseCallback response_callback_;
-    T data_;
-  };
-
-  struct RefreshNodeData {
-    RefreshNodeData(const SharedRefPtr<Host>& host,
-                    bool is_new_node)
-      : host(host)
-      , is_new_node(is_new_node) {}
-    SharedRefPtr<Host> host;
-    bool is_new_node;
-  };
-
-  struct RefreshFunctionData {
-    typedef std::vector<std::string> StringVec;
-
-    RefreshFunctionData(StringRef keyspace,
-                        StringRef function,
-                        const StringRefVec& arg_types,
-                        bool is_aggregate)
-      : keyspace(keyspace.to_string())
-      , function(function.to_string())
-      , arg_types(to_strings(arg_types))
-      , is_aggregate(is_aggregate) { }
-
-    std::string keyspace;
-    std::string function;
-    StringVec arg_types;
-    bool is_aggregate;
-  };
-
-  void schedule_reconnect(uint64_t ms = 0);
-  void reconnect(bool retry_current_host);
-
-  // Connection listener methods
-  virtual void on_ready(Connection* connection);
-  virtual void on_close(Connection* connection);
-  virtual void on_availability_change(Connection* connection) {}
-  virtual void on_event(EventResponse* response);
-
-  static void on_reconnect(Timer* timer);
-
-  bool handle_query_invalid_response(Response* response);
-  void handle_query_failure(CassError code, const std::string& message);
-  void handle_query_timeout();
-
-  void query_meta_hosts();
-  static void on_query_hosts(ControlConnection* control_connection,
-                             const UnusedData& data,
-                             const MultipleRequestHandler::ResponseMap& responses);
-
-  void query_meta_schema();
-  static void on_query_meta_schema(ControlConnection* control_connection,
-                                const UnusedData& data,
-                                const MultipleRequestHandler::ResponseMap& responses);
-
-  void refresh_node_info(SharedRefPtr<Host> host,
-                         bool is_new_node,
-                         bool query_tokens = false);
-  static void on_refresh_node_info(ControlConnection* control_connection,
-                                   const RefreshNodeData& data,
-                                   Response* response);
-  static void on_refresh_node_info_all(ControlConnection* control_connection,
-                                       const RefreshNodeData& data,
-                                       Response* response);
-
-  void update_node_info(SharedRefPtr<Host> host, const Row* row);
-
-  void refresh_keyspace(const StringRef& keyspace_name);
-  static void on_refresh_keyspace(ControlConnection* control_connection, const std::string& keyspace_name, Response* response);
-
-  void refresh_table_or_view(const StringRef& keyspace_name,
-                     const StringRef& table_name);
-  static void on_refresh_table_or_view(ControlConnection* control_connection,
-                               const RefreshTableData& data,
-                               const MultipleRequestHandler::ResponseMap& responses);
-
-  void refresh_type(const StringRef& keyspace_name,
-                    const StringRef& type_name);
-  static void on_refresh_type(ControlConnection* control_connection,
-                              const std::pair<std::string, std::string>& keyspace_and_type_names,
-                              Response* response);
-
-  void refresh_function(const StringRef& keyspace_name,
-                        const StringRef& function_name,
-                        const StringRefVec& arg_types,
-                        bool is_aggregate);
-  static void on_refresh_function(ControlConnection* control_connection,
-                                  const RefreshFunctionData& data,
-                                  Response* response);
-
-private:
-  State state_;
-  Session* session_;
-  Connection* connection_;
-  Timer reconnect_timer_;
-  ScopedPtr<QueryPlan> query_plan_;
-  Host::Ptr current_host_;
-  int protocol_version_;
-  std::string last_connection_error_;
-  bool should_query_tokens_;
-
-  static Address bind_any_ipv4_;
-  static Address bind_any_ipv6_;
-
-private:
-  DISALLOW_COPY_AND_ASSIGN(ControlConnection);
+  /**
+   * A callback that's called when the control connection is closed.
+   *
+   * @param connection The closing control connection.
+   */
+  virtual void on_close(ControlConnection* connection) = 0;
 };
 
-} // namespace cass
+/**
+ * A mapping between a host's address and it's listening address. The listening
+ * address is used to look up a peer in the "system.peers" table.
+ */
+class ListenAddressMap : public DenseHashMap<Address, String> {
+public:
+  ListenAddressMap() {
+    set_empty_key(Address::EMPTY_KEY);
+    set_deleted_key(Address::DELETED_KEY);
+  }
+};
+
+/**
+ * Control connection settings.
+ */
+struct ControlConnectionSettings {
+  /**
+   * Constructor. Initialize with default settings.
+   */
+  ControlConnectionSettings();
+
+  /**
+   * Constructor. Initialize the settings from a config object.
+   *
+   * @param config The config object.
+   */
+  ControlConnectionSettings(const Config& config);
+
+  /**
+   * The settings for the underlying connection.
+   */
+  ConnectionSettings connection_settings;
+
+  /**
+   * If true then the control connection will listen for schema events.
+   */
+  bool use_schema;
+
+  /**
+   * If true then the control connection will listen for keyspace schema
+   * events. This is needed for the keyspaces replication strategy.
+   */
+  bool use_token_aware_routing;
+
+  /**
+   * A factory for creating addresses (for the connection process).
+   */
+  AddressFactory::Ptr address_factory;
+};
+
+/**
+ * A control connection. This is a wrapper around a connection that handles
+ * schema, node status, and topology changes. This class handles events
+ * by running queries on the control connection to get additional information
+ * then passing that data to the listener.
+ */
+class ControlConnection
+    : public RefCounted<ControlConnection>
+    , public ConnectionListener {
+public:
+  typedef SharedRefPtr<ControlConnection> Ptr;
+
+  enum RefreshNodeType { NEW_NODE, MOVED_NODE };
+
+  /**
+   * Constructor. Don't use directly.
+   *
+   * @param connection The wrapped connection.
+   * @param listener A listener to handle events.
+   * @param settings The control connection's settings.
+   * @param server_version The version number of the server implementation.
+   * @param dse_server_version The version number of the DSE server implementation.
+   * @param listen_addresses The current state of the listen addresses map.
+   */
+  ControlConnection(const Connection::Ptr& connection, ControlConnectionListener* listener,
+                    const ControlConnectionSettings& settings, const VersionNumber& server_version,
+                    const VersionNumber& dse_server_version, ListenAddressMap listen_addresses);
+
+  /**
+   * Write a request and flush immediately.
+   *
+   * @param The request callback to write and handle the request.
+   * @return The number of bytes written to the connection. If negative then
+   * an error occurred.
+   */
+  int32_t write_and_flush(const RequestCallback::Ptr& callback);
+
+  /**
+   * Close the connection.
+   */
+  void close();
+
+  /**
+   * Close the connection with an error.
+   */
+  void defunct();
+
+  /**
+   * Set the listener that will handle control connection events.
+   *
+   * @param listener The listener.
+   */
+  void set_listener(ControlConnectionListener* listener = NULL);
+
+public:
+  const Address& address() const { return connection_->address(); }
+
+  const String& address_string() const { return connection_->address_string(); }
+
+  const Address& resolved_address() const { return connection_->resolved_address(); }
+
+  ProtocolVersion protocol_version() const { return connection_->protocol_version(); }
+
+  const VersionNumber& server_version() { return server_version_; }
+
+  const VersionNumber& dse_server_version() { return dse_server_version_; }
+
+  uv_loop_t* loop() { return connection_->loop(); }
+  const Connection::Ptr& connection() const { return connection_; }
+
+private:
+  friend class ControlConnector;
+  friend class RefreshNodeCallback;
+  friend class RefreshKeyspaceCallback;
+  friend class RefreshTableCallback;
+  friend class RefreshTypeCallback;
+  friend class RefreshFunctionCallback;
+
+private:
+  void refresh_node(RefreshNodeType type, const Address& address);
+  static void on_refresh_node(ControlRequestCallback* callback);
+  void handle_refresh_node(RefreshNodeCallback* callback);
+
+  void refresh_keyspace(const StringRef& keyspace_name);
+  static void on_refresh_keyspace(ControlRequestCallback* callback);
+  void handle_refresh_keyspace(RefreshKeyspaceCallback* callback);
+
+  void refresh_table_or_view(const StringRef& keyspace_name, const StringRef& table_or_view_name);
+  static void on_refresh_table_or_view(ChainedControlRequestCallback* callback);
+  void handle_refresh_table_or_view(RefreshTableCallback* callback);
+
+  void refresh_type(const StringRef& keyspace_name, const StringRef& type_name);
+  static void on_refresh_type(ControlRequestCallback* callback);
+  void handle_refresh_type(RefreshTypeCallback* callback);
+
+  void refresh_function(const StringRef& keyspace_name, const StringRef& function_name,
+                        const StringRefVec& arg_types, bool is_aggregate);
+  static void on_refresh_function(ControlRequestCallback* callback);
+  void handle_refresh_function(RefreshFunctionCallback* callback);
+
+  // Connection listener methods
+  virtual void on_close(Connection* connection);
+  virtual void on_event(const EventResponse::Ptr& response);
+
+private:
+  Connection::Ptr connection_;
+  ControlConnectionSettings settings_;
+  VersionNumber server_version_;
+  VersionNumber dse_server_version_;
+  ListenAddressMap listen_addresses_;
+  ControlConnectionListener* listener_;
+};
+
+}}} // namespace datastax::internal::core
 
 #endif

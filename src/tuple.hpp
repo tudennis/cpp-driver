@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014-2016 DataStax
+  Copyright (c) DataStax, Inc.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -14,44 +14,47 @@
   limitations under the License.
 */
 
-#ifndef __CASS_TUPLE_HPP_INCLUDED__
-#define __CASS_TUPLE_HPP_INCLUDED__
+#ifndef DATASTAX_INTERNAL_TUPLE_HPP
+#define DATASTAX_INTERNAL_TUPLE_HPP
 
+#include "allocated.hpp"
+#include "buffer.hpp"
 #include "cassandra.h"
 #include "data_type.hpp"
 #include "encode.hpp"
-#include "buffer.hpp"
+#include "external.hpp"
 #include "ref_counted.hpp"
 #include "types.hpp"
 
-#define CASS_TUPLE_CHECK_INDEX_AND_TYPE(Index, Value) do { \
-  CassError rc = check(Index, Value);                 \
-  if (rc != CASS_OK) return rc;                \
-  } while(0)
+#define CASS_TUPLE_CHECK_INDEX_AND_TYPE(Index, Value) \
+  do {                                                \
+    CassError rc = check(Index, Value);               \
+    if (rc != CASS_OK) return rc;                     \
+  } while (0)
 
-namespace cass {
+namespace datastax { namespace internal { namespace core {
 
 class Collection;
 class UserTypeValue;
 
-class Tuple {
+class Tuple : public Allocated {
 public:
   explicit Tuple(size_t item_count)
-    : data_type_(new TupleType(false))
-    , items_(item_count) { }
+      : data_type_(new TupleType(false))
+      , items_(item_count) {}
 
   explicit Tuple(const DataType::ConstPtr& data_type)
-    : data_type_(data_type)
-    , items_(data_type_->types().size()) { }
+      : data_type_(data_type)
+      , items_(data_type_->types().size()) {}
 
-  const SharedRefPtr<const TupleType>& data_type() const { return data_type_; }
+  const TupleType::ConstPtr& data_type() const { return data_type_; }
   const BufferVec& items() const { return items_; }
 
-#define SET_TYPE(Type)                  \
-  CassError set(size_t index, const Type value) {     \
-    CASS_TUPLE_CHECK_INDEX_AND_TYPE(index, value);     \
-    items_[index] = cass::encode_with_length(value); \
-    return CASS_OK;                        \
+#define SET_TYPE(Type)                               \
+  CassError set(size_t index, const Type value) {    \
+    CASS_TUPLE_CHECK_INDEX_AND_TYPE(index, value);   \
+    items_[index] = core::encode_with_length(value); \
+    return CASS_OK;                                  \
   }
 
   SET_TYPE(cass_int8_t)
@@ -68,6 +71,7 @@ public:
   SET_TYPE(CassUuid)
   SET_TYPE(CassInet)
   SET_TYPE(CassDecimal)
+  SET_TYPE(CassDuration)
 
 #undef SET_TYPE
 
@@ -87,8 +91,7 @@ private:
     }
 
     IsValidDataType<T> is_valid_type;
-    if (index < data_type()->types().size() &&
-        !is_valid_type(value, data_type_->types()[index])) {
+    if (index < data_type()->types().size() && !is_valid_type(value, data_type_->types()[index])) {
       return CASS_ERROR_LIB_INVALID_VALUE_TYPE;
     }
 
@@ -99,14 +102,15 @@ private:
   void encode_buffers(size_t pos, Buffer* buf) const;
 
 private:
-  SharedRefPtr<const TupleType> data_type_;
+  TupleType::ConstPtr data_type_;
   BufferVec items_;
 
 private:
   DISALLOW_COPY_AND_ASSIGN(Tuple);
 };
 
-} // namespace cass
+}}} // namespace datastax::internal::core
+
+EXTERNAL_TYPE(datastax::internal::core::Tuple, CassTuple)
 
 #endif
-

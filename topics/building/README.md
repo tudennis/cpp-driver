@@ -1,330 +1,357 @@
 # Building
 
-## Supported Platforms
-The driver is known to work on CentOS/RHEL 5/6/7, Mac OS X 10.8/10.9/10.10/10.11
-(Moutain Lion, Mavericks, Yosemite, and El Capitan), Ubuntu 12.04/14.04 LTS, and
-Windows 7 SP1 and above.
+The DataStax C/C++ Driver for Apache Cassandra and DataStax Products will build
+on most standard Unix-like and Microsoft Windows platforms. Packages are
+available for the following platforms:
 
-It has been built using GCC 4.1.2+, Clang 3.4+, and MSVC 2010/2012/2013/2015.
+* [CentOS 6][cpp-driver-centos6]
+* [CentOS 7][cpp-driver-centos7]
+* [CentOS 8][cpp-driver-centos8]
+* [Ubuntu 14.04 LTS][cpp-driver-ubuntu14-04]
+* [Ubuntu 16.04 LTS][cpp-driver-ubuntu16-04]
+* [Ubuntu 18.04 LTS][cpp-driver-ubuntu18-04]
+* [Windows][cpp-driver-windows]
+
+__NOTE__: The build procedures only need to be performed for driver development
+          or if your system doesn't have packages available for download and
+          installation.
+
+## Compatibility
+
+* Architectures: 32-bit (x86) and 64-bit (x64)
+* Compilers: GCC 4.1.2+ Clang 3.4+, and MSVC 2010/2012/2013/2015/2017/2019
 
 ## Dependencies
 
-### Driver
+The C/C++ driver depends on the following software:
 
-- [CMake](http://www.cmake.org)
-- [libuv (1.x or 0.10.x)](https://github.com/libuv/libuv)
-- [OpenSSL](http://www.openssl.org/) (optional)
+* [CMake] v2.6.4+
+* [libuv] 1.x
+* Kerberos v5 ([Heimdal] or [MIT]) \*
+* [OpenSSL] v1.0.x or v1.1.x \*\*
+* [zlib] v1.x \*\*\*
 
-**NOTE:** Utilizing the default package manager configuration to install
-dependencies on \*nix based operating systems may result in older versions of
-dependencies being installed.
+__\*__ Use the `CASS_USE_KERBEROS` CMake option to enable/disable Kerberos
+       support. Enabling this option will enable Kerberos authentication
+       protocol within the driver; defaults to `Off`.
 
-### Test Dependencies
+__\*\*__ Use the `CASS_USE_OPENSSL` CMake option to enable/disable OpenSSL
+         support. Disabling this option will disable SSL/TLS protocol support
+         within the driver; defaults to `On`.
 
-- [boost 1.55+](http://www.boost.org)
-- [libssh2](http://www.libssh2.org) (optional)
+__\*\*\*__ Use the `CASS_USE_ZLIB` CMake option to enable/disable zlib support.
+           Disabling this option will disable DataStax Constellation support
+           within the driver; defaults to `On`.
 
-## Linux/OS X
-The driver has been built using both Clang (Ubuntu 12.04/14.04 and OS X) and GCC
-(Linux).
+## Linux/Mac OS
 
-### Obtaining Dependencies
+The driver is known to build on CentOS/RHEL 6/7/8, Mac OS X 10.10/10.11 (Yosemite
+and El Capitan), Mac OS 10.12/10.13 (Sierra and High Sierra), and Ubuntu
+14.04/16.04/18.04 LTS.
 
-#### CentOS/RHEL
+__NOTE__: The driver will also build on most standard Unix-like systems using
+          GCC 4.1.2+ or Clang 3.4+.
 
-##### Additional Requirements for CentOS/RHEL 5
-CentOS/RHEL 5 does not contain `git` in its repositories; however RepoForge
-(formerly RPMforge) has a RPM for this dependency. It can be found
-[here](http://pkgs.repoforge.org/git/).
+### Installing dependencies
 
-###### Download the Appropriate RepoForge Release Package
-- [32-bit](http://pkgs.repoforge.org/rpmforge-release/rpmforge-release-0.5.3-1.el5.rf.i386.rpm)
-- [64-bit](http://pkgs.repoforge.org/rpmforge-release/rpmforge-release-0.5.3-1.el5.rf.x86_64.rpm)
+#### Initial environment setup
 
-###### Install Key and RPM Package
+##### CentOS/RHEL (Yum)
 
 ```bash
-sudo rpm --import http://apt.sw.be/RPM-GPG-KEY.dag.txt
-sudo rpm -i rpmforge-release-0.5.3-1.el5.rf.*.rpm
+yum install automake cmake gcc-c++ git libtool
 ```
 
-##### Dependencies and libuv Installation
+##### Ubuntu (APT)
 
 ```bash
-sudo yum install automake cmake gcc-c++ git libtool openssl-devel wget
+apt-get update
+apt-get install build-essential cmake git
+```
+
+##### Mac OS (Brew)
+
+[Homebrew][Homebrew] (or brew) is a free and open-source software package
+management system that simplifies the installation of software on the Mac OS
+operating system. Ensure [Homebrew is installed][Homebrew] before proceeding.
+
+```bash
+brew update
+brew upgrade
+brew install autoconf automake cmake libtool
+```
+
+#### Kerberos
+
+##### CentOS/RHEL (Yum)
+
+```bash
+yum install krb5-devel
+```
+
+##### Ubuntu (APT)
+
+```bash
+apt-get install libkrb5-dev
+```
+
+#### libuv
+
+libuv v1.x should be used in order to ensure all features of the C/C++ driver
+are available. When using a package manager for your operating system make sure
+you install v1.x; if available.
+
+##### CentOS/RHEL and Ubuntu packages
+
+Packages are available from our [download server]:
+
+* [CentOS 6][libuv-centos6]
+* [CentOS 7][libuv-centos7]
+* [CentOS 8][libuv-centos8]
+* [Ubuntu 14.04 LTS][libuv-ubuntu14-04]
+* [Ubuntu 16.04 LTS][libuv-ubuntu16-04]
+* [Ubuntu 18.04 LTS][libuv-ubuntu18-04]
+
+##### Mac OS (Brew)
+
+```bash
+brew install libuv
+```
+
+##### Manually build and install
+
+_The following procedures should be performed if packages are not available for
+your system._
+
+```bash
 pushd /tmp
-wget http://dist.libuv.org/dist/v1.7.5/libuv-v1.7.5.tar.gz
-tar xzf libuv-v1.7.5.tar.gz
-pushd libuv-v1.7.5
+wget http://dist.libuv.org/dist/v1.34.0/libuv-v1.35.0.tar.gz
+tar xzf libuv-v1.35.0.tar.gz
+pushd libuv-v1.35.0
 sh autogen.sh
 ./configure
-sudo make install
+make install
 popd
 popd
 ```
 
-#### OS X
-The driver has been built and tested using the Clang compiler provided by XCode
-5.1+. The dependencies were obtained using [Homebrew](http://brew.sh).
+#### OpenSSL
+
+##### CentOS (Yum)
 
 ```bash
-brew install libuv cmake
+yum install openssl-devel
 ```
 
-**NOTE:** The driver utilizes the OpenSSL library included with XCode unless
-          running XCode 7+.
+##### Ubuntu (APT)
 
-##### Additional Requirements for 10.11+ (El Capitan) and XCode 7+
-OpenSSL has been officially removed from the OS X SDK 10.11+ and requires
-additional configuration before building the driver.
+```bash
+apt-get install libssl-dev
+```
+
+##### Mac OS (Brew)
 
 ```bash
 brew install openssl
+```
+
+__Note__: For Mac OS X 10.11 (El Capitan) and Mac OS 10.12/10.13 (Sierra and
+          High Sierra) a link needs to be created in order to make OpenSSL
+          available to the building libraries:
+
+```bash
 brew link --force openssl
 ```
 
-#### Ubuntu
-
-##### Additional Requirements for Ubuntu 12.04
-Ubuntu 12.04 does not contain libuv in its repositories; however the LinuxJedi
-PPA has a backport from Ubuntu 14.04 which can be found
-[here](https://launchpad.net/~linuxjedi/+archive/ubuntu/ppa).
+##### Manually build and install
 
 ```bash
-sudo apt-add-repository ppa:linuxjedi/ppa
-sudo apt-get update
+pushd /tmp
+wget --no-check-certificate https://www.openssl.org/source/openssl-1.0.2u.tar.gz
+tar xzf openssl-1.0.2u.tar.gz
+pushd openssl-1.0.2u
+CFLAGS=-fpic ./config shared
+make install
+popd
+popd
 ```
 
-##### GCC
+#### zlib
+
+##### CentOS (Yum)
 
 ```bash
-sudo apt-get install g++ make cmake libuv-dev libssl-dev
+yum install zlib-devel
 ```
 
-##### Clang
+##### Ubuntu (APT)
 
 ```bash
-sudo apt-get install clang make cmake libuv-dev libssl-dev
+apt-get install zlib1g-dev
 ```
 
-### Building the Driver
+##### Mac OS (Brew)
 
 ```bash
-git clone https://github.com/datastax/cpp-driver.git
-mkdir cpp-driver/build
-cd cpp-driver/build
+brew install zlib
+```
+
+##### Manually build and install
+
+```bash
+pushd /tmp
+wget --no-check-certificate https://www.zlib.net/zlib-1.2.11.tar.gz
+tar xzf zlib-1.2.11.tar.gz
+pushd zlib-1.2.11
+./configure
+make install
+popd
+popd
+```
+
+### Building and installing the C/C++ driver
+
+```bash
+mkdir build
+pushd build
 cmake ..
 make
-```
-
-### Test Dependencies and Building the Tests (_NOT REQUIRED_)
-
-#### Obtaining Test Dependencies
-
-##### CentOS/RHEL
-CentOS/RHEL does not contain Boost v1.55+ libraries in its repositories; however
-these can be easily installed from source. Ensure previous version of Boost has
-been removed by executing the command `sudo yum remove boost*` before
-proceeding.
-
-```bash
-sudo yum install libssh2-devel
-pushd /tmp
-wget http://sourceforge.net/projects/boost/files/boost/1.59.0/boost_1_59_0.tar.gz/download -O boost_1_59_0.tar.gz
-tar xzf boost_1_59_0.tar.gz
-pushd boost_1_59_0
-./bootstrap.sh --with-libraries=atomic,chrono,date_time,log,program_options,random,regex,system,thread,test
-sudo ./b2 cxxflags="-fPIC" install
-popd
+make install
 popd
 ```
 
-**NOTE:** CentOS/RHEL 5 has known issues when compiling tests with GCC 4.1.2 as
-it is not a supported Boost compiler.
+#### Building examples (optional)
 
-##### OS X
+Examples are not built by default and need to be enabled. Update your [CMake]
+line to build examples.
 
 ```bash
-brew install boost libssh2
+cmake -DCASS_BUILD_EXAMPLES=On ..
 ```
 
-##### Ubuntu
+#### Building tests (optional)
 
-###### Additional Requirements for Ubuntu 12.04
-Ubuntu 12.04 does not contain Boost v1.55+ C++ libraries in its repositories;
-however it can be obtained from the Boost PPA which can be found
-[here](https://launchpad.net/~boost-latest/+archive/ubuntu/ppa).
+Tests (integration and unit) are not built by default and need to be enabled.
+
+##### All tests
 
 ```bash
-sudo add-apt-repository ppa:boost-latest/ppa
-sudo apt-get update
+cmake -DCASS_BUILD_TESTS=On ..
 ```
 
-##### Install Dependencies
+__Note__: This will build both the integration and unit tests
+
+##### Integration tests
 
 ```bash
-sudo apt-get install libboost1.55-all-dev libssh2-1-dev
+cmake -DCASS_BUILD_INTEGRATION_TESTS=On ..
 ```
 
-#### Building the Driver with the Tests
+##### Unit tests
 
 ```bash
-git clone https://github.com/datastax/cpp-driver.git
-mkdir cpp-driver/build
-cd cpp-driver/build
-cmake -DCASS_BUILD_TESTS=ON ..
-make
+cmake -DCASS_BUILD_UNIT_TESTS=On ..
 ```
 
 ## Windows
-The driver has been built and tested using Microsoft Visual Studio 2010, 2012,
-2013 and 2015 (using the "Express" and Professional versions) and Windows SDK
-v7.1, 8.0, 8.1, and 10.0 on Windows 7 SP1 and above. The library dependencies
-will automatically download and build; however the following build dependencies
-will need to be installed.
 
-### Obtaining Build Dependencies
-- Download and install [CMake](http://www.cmake.org/download).
- - Make sure to select the option "Add CMake to the system PATH for all users"
-   or "Add CMake to the system PATH for current user".
-- Download and install [Git](http://git-scm.com/download/win)
- - Make sure to select the option "Use Git from Windows Command Prompt" or
-   manually add the git executable to the system PATH.
-- Download and install [ActiveState Perl](https://www.perl.org/get.html#win32)
- - Make sure to select the option "Add Perl to PATH environment variable".
- - **NOTE:** This build dependency is required if building with OpenSSL support
-- Download and install [Python v2.7.x](https://www.python.org/downloads)
- - Make sure to select/install the feature "Add python.exe to Path"
+The driver is known to build with Visual Studio 2010, 2012, 2013, 2015, 2017, and 2019.
 
-### Building the Driver
-A batch script has been created to detect installed versions of Visual Studio
-(and/or Windows SDK installations) to simplify the build process on Windows. If
-you have more than one version of Visual Studio (and/or Windows SDK) installed
-you will be prompted to select which version to use when compiling the driver.
+### Obtaining build dependencies
 
-First you will need to open a "Command Prompt" (or Windows SDK Command Prompt)
-to execute the batch script.
+* Download and install [Bison]
+  * Make sure Bison is in your system PATH and not installed in a directory with
+    spaces (e.g. `%SYSTEMDRIVE%\GnuWin32`)
+* Download and install [CMake]
+  * Make sure to select the option "Add CMake to the system PATH for all users"
+    or "Add CMake to the system PATH for current user"
+* Download and install [Strawberry Perl] or [ActiveState Perl]
+  * Make sure to select the option "Add Perl to PATH environment variable"
+* Download and install Kerberos for Windows v4.0.1
+  * [32-bit][k4w-32]
+  * [64-bit][k4w-64]
 
-```dos
-Usage: VC_BUILD.BAT [OPTION...]
+### Building the driver
 
-    --DEBUG                           Enable debug build
-    --RELEASE                         Enable release build (default)
-    --DISABLE-CLEAN                   Disable clean build
-    --DEPENDENCIES-ONLY               Build dependencies only
-    --TARGET-COMPILER [version]       140, 120, 110, 100, or WINSDK
-    --DISABLE-OPENSSL                 Disable OpenSSL support
-    --ENABLE-EXAMPLES                 Enable example builds
-    --ENABLE-PACKAGES [version]       Enable package generation (*)
-    --ENABLE-ZLIB                     Enable zlib
-    --GENERATE-SOLUTION               Generate Visual Studio solution (**)
-    --INSTALL-DIR [install-dir]       Override installation directory
-    --SHARED                          Build shared library (default)
-    --STATIC                          Build static library
-    --X86                             Target 32-bit build (***)
-    --X64                             Target 64-bit build (***)
-    --USE-BOOST-ATOMIC                Use Boost atomic
+First you will need to open a "Command Prompt" to execute the CMake commands.
 
-    Testing Arguments
+#### Building the C/C++ driver
 
-    --ENABLE-TESTS
-         [boost-root-dir]             Enable test builds
-    --ENABLE-INTEGRATION-TESTS
-         [boost-root-dir]             Enable integration tests build
-    --ENABLE-UNIT-TESTS
-         [boost-root-dir]             Enable unit tests build
-    --ENABLE-LIBSSH2                  Enable libssh2 (remote server testing)
+Supported generators are:
+* Visual Studio 10 2010
+* Visual Studio 11 2012
+* Visual Studio 12 2013
+* Visual Studio 14 2015
+* Visual Studio 15 2017
+* Visual Studio 16 2019
 
-    --HELP                            Display this message
-
-*   Packages are only generated using detected installations of Visual Studio
-**  Dependencies are built before generation of Visual Studio solution
-*** Default target architecture is determined based on system architecture
+```bash
+mkdir build
+pushd build
+cmake -G "Visual Studio 16 2019" -A x64 ..
+cmake --build .
+popd
 ```
 
-To build 32-bit shared library:
+__Note__: To build 32-bit binaries/libraries use `-A Win32`.
 
-```dos
-VC_BUILD.BAT --X86
+#### Building examples (optional)
+
+Examples are not built by default and need to be enabled. Update your [CMake]
+line to build examples.
+
+```bash
+cmake -G "Visual Studio 16 2019" -A x64 -DCASS_BUILD_EXAMPLES=On ..
 ```
 
-To build 64-bit shared library:
+#### Building tests (optional)
 
-```dos
-VC_BUILD.BAT --X64
+Tests (integration and unit) are not built by default and need to be enabled.
+
+##### All tests
+
+```bash
+cmake -G "Visual Studio 16 2019" -A x64 -DCASS_BUILD_TESTS=On ..
 ```
 
-To build using Boost atomic implementation:
+__Note__: This will build both the integration and unit tests
 
-```dos
-VC_BUILD.BAT --USE-BOOST-ATOMIC
+
+##### Integration tests
+
+```bash
+cmake -G "Visual Studio 16 2019" -A x64 -DCASS_BUILD_INTEGRATION_TESTS=On ..
 ```
 
-To build static library:
+##### Unit tests
 
-```dos
-VC_BUILD.BAT --STATIC
+```bash
+cmake -G "Visual Studio 16 2019" -A x64 -DCASS_BUILD_UNIT_TESTS=On ..
 ```
 
-To build examples:
-
-```dos
-VC_BUILD.BAT --ENABLE-EXAMPLES
-```
-
-To build library without OpenSSL support:
-
-```dos
-VC_BUILD.BAT --DISABLE-OPENSSL
-```
-
-To build 32-bit static library without OpenSSL support:
-
-```dos
-VC_BUILD.BAT --DISABLE-OPENSSL --STATIC --X86
-```
-
-To generate Visual Studio solution file:
-
-```dos
-VC_BUILD.BAT --GENERATE-SOLUTION
-```
-
-To use vc_build.bat for easy inclusion into a project:
-
-```dos
-VC_BUILD.BAT --TARGET-COMPILER 120 --INSTALL-DIR C:\myproject\dependencies\libs\cpp-driver
-```
-
-**NOTE:** When overriding installation directory using `--INSTALL-DIR`, the
-driver dependencies will also be copied (e.g. C:\myproject\dependencies\libs)
-
-### Test Dependencies and Building the Tests (_NOT REQUIRED_)
-
-#### Obtaining Test Dependencies
-Boost v1.55+ is the only external dependency that will need to be obtained in
-order to build the unit and integration tests.
-
-To simplify the process; pre-built binaries can be obtained
-[here](http://sourceforge.net/projects/boost/files/boost-binaries/1.59.0/).
-Ensure the proper Visual Studio (or Windows SDK) version and architecture is
-obtained and select from the following list:
-
-- Visual Studio 2010 (Windows SDK 7.1)
- - Boost v1.59 [32-bit](http://sourceforge.net/projects/boost/files/boost-binaries/1.59.0/boost_1_59_0-msvc-10.0-32.exe/download)/[64-bit](http://sourceforge.net/projects/boost/files/boost-binaries/1.59.0/boost_1_59_0-msvc-10.0-64.exe/download)
-- Visual Studio 2012 (Windows SDK 8.0)
- - Boost v1.59 [32-bit](http://sourceforge.net/projects/boost/files/boost-binaries/1.59.0/boost_1_59_0-msvc-11.0-32.exe/download)/[64-bit](http://sourceforge.net/projects/boost/files/boost-binaries/1.59.0/boost_1_59_0-msvc-11.0-64.exe/download)
-- Visual Studio 2013 (Windows SDK 8.1)
- - Boost v1.59 [32-bit](http://sourceforge.net/projects/boost/files/boost-binaries/1.59.0/boost_1_59_0-msvc-12.0-32.exe/download)/[64-bit](http://sourceforge.net/projects/boost/files/boost-binaries/1.59.0/boost_1_59_0-msvc-12.0-64.exe/download)
-- Visual Studio 2015 (Windows SDK 10.0)
- - Boost v1.59 [32-bit](http://sourceforge.net/projects/boost/files/boost-binaries/1.59.0/boost_1_59_0-msvc-14.0-32.exe/download)/[64-bit](http://sourceforge.net/projects/boost/files/boost-binaries/1.59.0/boost_1_59_0-msvc-14.0-64.exe/download)
-
-#### Building the Driver with the Tests
-
-```dos
-VC_BUILD.BAT --STATIC --ENABLE-TESTS <ABSOLUTE-PATH-TO-BOOST>
-
-[e.g. C:\local\boost_1_59_0]
-```
- **NOTE:** When enabling tests, --USE-BOOST-ATOMIC will use the Boost atomic
- implementation supplied by <ABSOLUTE-PATH-TO-BOOST>
+[download server]: http://downloads.datastax.com
+[cpp-driver-centos6]: http://downloads.datastax.com/cpp-driver/centos/6/cassandra
+[cpp-driver-centos7]: http://downloads.datastax.com/cpp-driver/centos/7/cassandra
+[cpp-driver-centos8]: http://downloads.datastax.com/cpp-driver/centos/8/cassandra
+[cpp-driver-ubuntu14-04]: http://downloads.datastax.com/cpp-driver/ubuntu/14.04/cassandra
+[cpp-driver-ubuntu16-04]: http://downloads.datastax.com/cpp-driver/ubuntu/16.04/cassandra
+[cpp-driver-ubuntu18-04]: http://downloads.datastax.com/cpp-driver/ubuntu/18.04/cassandra
+[cpp-driver-windows]: http://downloads.datastax.com/cpp-driver/windows/cassandra
+[libuv-centos6]: http://downloads.datastax.com/cpp-driver/centos/6/dependencies/libuv
+[libuv-centos7]: http://downloads.datastax.com/cpp-driver/centos/7/dependencies/libuv
+[libuv-centos8]: http://downloads.datastax.com/cpp-driver/centos/8/dependencies/libuv
+[libuv-ubuntu14-04]: http://downloads.datastax.com/cpp-driver/ubuntu/14.04/dependencies/libuv
+[libuv-ubuntu16-04]: http://downloads.datastax.com/cpp-driver/ubuntu/16.04/dependencies/libuv
+[libuv-ubuntu18-04]: http://downloads.datastax.com/cpp-driver/ubuntu/18.04/dependencies/libuv
+[Homebrew]: https://brew.sh
+[Bison]: http://gnuwin32.sourceforge.net/downlinks/bison.php
+[CMake]: http://www.cmake.org/download
+[Strawberry Perl]: http://strawberryperl.com
+[ActiveState Perl]: https://www.perl.org/get.html#win32
+[k4w-32]: http://web.mit.edu/kerberos/dist/kfw/4.0/kfw-4.0.1-i386.msi
+[k4w-64]: http://web.mit.edu/kerberos/dist/kfw/4.0/kfw-4.0.1-amd64.msi
+[libuv]: http://libuv.org
+[Heimdal]: https://www.h5l.org
+[MIT]: https://web.mit.edu/kerberos
+[OpenSSL]: https://www.openssl.org
+[zlib]: https://www.zlib.net

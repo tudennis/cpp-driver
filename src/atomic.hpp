@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014-2016 DataStax
+  Copyright (c) DataStax, Inc.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -14,16 +14,17 @@
   limitations under the License.
 */
 
-#ifndef __CASS_ATOMIC_HPP_INCLUDED__
-#define __CASS_ATOMIC_HPP_INCLUDED__
+#ifndef DATASTAX_INTERNAL_ATOMIC_HPP
+#define DATASTAX_INTERNAL_ATOMIC_HPP
 
-#if defined(CASS_USE_BOOST_ATOMIC)
+#include "driver_config.hpp"
+
+#if defined(HAVE_BOOST_ATOMIC)
 #include "atomic/atomic_boost.hpp"
-#elif defined(CASS_USE_STD_ATOMIC)
+#elif defined(HAVE_STD_ATOMIC)
 #include "atomic/atomic_std.hpp"
 #else
 #include "atomic/atomic_intrinsics.hpp"
 #endif
 
 #endif
-

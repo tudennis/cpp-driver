@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014-2016 DataStax
+  Copyright (c) DataStax, Inc.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -14,16 +14,39 @@
   limitations under the License.
 */
 
-#ifndef __CASS_RANDOM_HPP_INCLUDED__
-#define __CASS_RANDOM_HPP_INCLUDED__
+#ifndef DATASTAX_INTERNAL_RANDOM_HPP
+#define DATASTAX_INTERNAL_RANDOM_HPP
 
+#include "allocated.hpp"
 #include "third_party/mt19937_64/mt19937_64.hpp"
 
-namespace cass {
+#include <algorithm>
+#include <uv.h>
+
+namespace datastax { namespace internal {
+
+class Random : public Allocated {
+public:
+  Random();
+  ~Random();
+
+  uint64_t next(uint64_t max);
+
+private:
+  uv_mutex_t mutex_;
+  MT19937_64 rng_;
+};
 
 uint64_t get_random_seed(uint64_t seed);
 
-} // namespace cass
+template <class RandomAccessIterator>
+void random_shuffle(RandomAccessIterator first, RandomAccessIterator last, Random* random) {
+  size_t size = last - first;
+  for (size_t i = size - 1; i > 0; --i) {
+    std::swap(first[i], first[random->next(i + 1)]);
+  }
+}
+
+}} // namespace datastax::internal
 
 #endif
-

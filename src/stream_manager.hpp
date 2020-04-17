@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014-2016 DataStax
+  Copyright (c) DataStax, Inc.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -14,9 +14,11 @@
   limitations under the License.
 */
 
-#ifndef __CASS_STREAM_MANAGER_HPP_INCLUDED__
-#define __CASS_STREAM_MANAGER_HPP_INCLUDED__
+#ifndef DATASTAX_INTERNAL_STREAM_MANAGER_HPP
+#define DATASTAX_INTERNAL_STREAM_MANAGER_HPP
 
+#include "constants.hpp"
+#include "dense_hash_map.hpp"
 #include "macros.hpp"
 #include "scoped_ptr.hpp"
 
@@ -24,54 +26,49 @@
 #include <stdint.h>
 #include <string.h>
 
-#ifdef CASS_USE_SPARSEHASH
-#include <google/dense_hash_map>
-#else
-#include <map>
-#endif
-
 #if defined(_MSC_VER)
 #include <intrin.h>
 #endif
 
-namespace cass {
+namespace datastax { namespace internal { namespace core {
+
+struct StreamHash {
+  std::size_t operator()(int stream) const { return ((stream & 0x3F) << 10) | (stream >> 6); }
+};
 
 template <class T>
 class StreamManager {
 public:
-  StreamManager(int protocol_version)
-      : max_streams_(static_cast<size_t>(1) << (num_bytes_for_stream(protocol_version) * 8 - 1))
+  StreamManager()
+      : max_streams_(CASS_MAX_STREAMS)
       , num_words_(max_streams_ / NUM_BITS_PER_WORD)
       , offset_(0)
-      , words_(new word_t[num_words_]) {
-#ifdef CASS_USE_SPARSEHASH
+      , words_(num_words_, ~static_cast<word_t>(0)) {
     // Client request stream IDs are always positive values so it's
     // safe to use negative values for the empty and deleted keys.
     pending_.set_empty_key(-1);
     pending_.set_deleted_key(-2);
-#endif
-    memset(words_.get(), 0xFF, sizeof(word_t) * num_words_);
+    pending_.max_load_factor(0.4f);
   }
 
   int acquire(const T& item) {
     int stream = acquire_stream();
     if (stream < 0) return -1;
-    pending_[stream] = item;
+    pending_.insert(std::pair<int, T>(stream, item));
     return stream;
   }
 
   void release(int stream) {
     assert(stream >= 0 && static_cast<size_t>(stream) < max_streams_);
+    assert(pending_.count(stream) > 0);
     pending_.erase(stream);
     release_stream(stream);
   }
 
-  bool get_pending_and_release(int stream, T& output) {
+  bool get(int stream, T& output) {
     typename PendingMap::iterator i = pending_.find(stream);
     if (i != pending_.end()) {
       output = i->second;
-      pending_.erase(i);
-      release_stream(stream);
       return true;
     }
     return false;
@@ -82,11 +79,7 @@ public:
   size_t max_streams() const { return max_streams_; }
 
 private:
-#ifdef CASS_USE_SPARSEHASH
-  typedef google::dense_hash_map<int, T> PendingMap;
-#else
-  typedef std::map<int, T> PendingMap;
-#endif
+  typedef DenseHashMap<int, T, StreamHash> PendingMap;
 
 #if defined(_MSC_VER) && defined(_M_AMD64)
   typedef __int64 word_t;
@@ -96,25 +89,17 @@ private:
 
   static const size_t NUM_BITS_PER_WORD = sizeof(word_t) * 8;
 
-  static inline int num_bytes_for_stream(int protocol_version) {
-    if (protocol_version >= 3) {
-      return 2;
-    } else {
-      return 1;
-    }
-  }
-
   static inline int count_trailing_zeros(word_t word) {
 #if defined(__GNUC__)
     return __builtin_ctzl(word);
 #elif defined(_MSC_VER)
     unsigned long index;
-#  if defined(_M_AMD64)
+#if defined(_M_AMD64)
     _BitScanForward64(&index, word);
 
-#  else
+#else
     _BitScanForward(&index, word);
-#  endif
+#endif
     return static_cast<int>(index);
 #else
 #endif
@@ -129,17 +114,20 @@ private:
 
     for (size_t i = 0; i < num_words; ++i) {
       size_t index = (i + offset) % num_words;
-      int stream = get_and_set_first_available_stream(index);
-      if (stream >= 0) return stream + (NUM_BITS_PER_WORD * index);
+      int bit = get_and_set_first_available_stream(index);
+      if (bit >= 0) {
+        return bit + (NUM_BITS_PER_WORD * index);
+      }
     }
 
     return -1;
   }
 
   inline void release_stream(int stream) {
-    assert((words_[stream / NUM_BITS_PER_WORD] & (static_cast<word_t>(1) << (stream % NUM_BITS_PER_WORD))) == 0);
-    words_[stream / NUM_BITS_PER_WORD] |=
-        (static_cast<word_t>(1) << (stream % NUM_BITS_PER_WORD));
+    size_t index = stream / NUM_BITS_PER_WORD;
+    int bit = stream % NUM_BITS_PER_WORD;
+    assert((words_[index] & (static_cast<word_t>(1) << (bit))) == 0);
+    words_[index] |= (static_cast<word_t>(1) << (bit));
   }
 
   inline int get_and_set_first_available_stream(size_t index) {
@@ -154,13 +142,13 @@ private:
   const size_t max_streams_;
   const size_t num_words_;
   size_t offset_;
-  ScopedPtr<word_t[]> words_;
+  Vector<word_t> words_;
   PendingMap pending_;
 
 private:
   DISALLOW_COPY_AND_ASSIGN(StreamManager);
 };
 
-} // namespace cass
+}}} // namespace datastax::internal::core
 
 #endif

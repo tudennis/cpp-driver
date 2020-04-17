@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014-2016 DataStax
+  Copyright (c) DataStax, Inc.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -14,14 +14,16 @@
   limitations under the License.
 */
 
-#ifndef __CASS_ITERATOR_HPP_INCLUDED__
-#define __CASS_ITERATOR_HPP_INCLUDED__
+#ifndef DATASTAX_INTERNAL_ITERATOR_HPP
+#define DATASTAX_INTERNAL_ITERATOR_HPP
 
+#include "allocated.hpp"
 #include "cassandra.h"
+#include "external.hpp"
 
-namespace cass {
+namespace datastax { namespace internal { namespace core {
 
-class Iterator {
+class Iterator : public Allocated {
 public:
   Iterator(CassIteratorType type)
       : type_(type) {}
@@ -36,6 +38,8 @@ private:
   const CassIteratorType type_;
 };
 
-} // namespace cass
+}}} // namespace datastax::internal::core
+
+EXTERNAL_TYPE(datastax::internal::core::Iterator, CassIterator)
 
 #endif

@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014-2016 DataStax
+  Copyright (c) DataStax, Inc.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -14,43 +14,30 @@
   limitations under the License.
 */
 
-#ifndef __CASS_EVENT_RESPONSE_HPP_INCLUDED__
-#define __CASS_EVENT_RESPONSE_HPP_INCLUDED__
+#ifndef DATASTAX_INTERNAL_EVENT_RESPONSE_HPP
+#define DATASTAX_INTERNAL_EVENT_RESPONSE_HPP
 
 #include "address.hpp"
-#include "response.hpp"
 #include "constants.hpp"
+#include "response.hpp"
 #include "scoped_ptr.hpp"
 #include "string_ref.hpp"
+#include "vector.hpp"
 
-namespace cass {
+namespace datastax { namespace internal { namespace core {
 
 class EventResponse : public Response {
 public:
-  enum TopologyChange {
-    NEW_NODE = 1,
-    REMOVED_NODE,
-    MOVED_NODE
-  };
+  typedef SharedRefPtr<EventResponse> Ptr;
+  typedef Vector<Ptr> Vec;
 
-  enum StatusChange {
-    UP = 1,
-    DOWN
-  };
+  enum TopologyChange { NEW_NODE = 1, REMOVED_NODE, MOVED_NODE };
 
-  enum SchemaChange {
-    CREATED = 1,
-    UPDATED,
-    DROPPED
-  };
+  enum StatusChange { UP = 1, DOWN };
 
-  enum SchemaChangeTarget {
-    KEYSPACE = 1,
-    TABLE,
-    TYPE,
-    FUNCTION,
-    AGGREGATE
-  };
+  enum SchemaChange { CREATED = 1, UPDATED, DROPPED };
+
+  enum SchemaChangeTarget { KEYSPACE = 1, TABLE, TYPE, FUNCTION, AGGREGATE };
 
   EventResponse()
       : Response(CQL_OPCODE_EVENT)
@@ -58,9 +45,9 @@ public:
       , topology_change_(0)
       , status_change_(0)
       , schema_change_(0)
-      , schema_change_target_(0) { }
+      , schema_change_target_(0) {}
 
-  bool decode(int version, char* buffer, size_t size);
+  virtual bool decode(Decoder& decoder);
 
   int event_type() const { return event_type_; }
   int topology_change() const { return topology_change_; }
@@ -86,6 +73,6 @@ private:
   StringRefVec arg_types_;
 };
 
-} // namespace cass
+}}} // namespace datastax::internal::core
 
 #endif

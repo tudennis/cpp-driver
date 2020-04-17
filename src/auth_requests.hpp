@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014-2016 DataStax
+  Copyright (c) DataStax, Inc.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -14,47 +14,33 @@
   limitations under the License.
 */
 
-#ifndef __CASS_AUTH_REQUESTS_HPP_INCLUDED__
-#define __CASS_AUTH_REQUESTS_HPP_INCLUDED__
+#ifndef DATASTAX_INTERNAL_AUTH_REQUESTS_HPP
+#define DATASTAX_INTERNAL_AUTH_REQUESTS_HPP
 
 #include "auth.hpp"
 #include "constants.hpp"
 #include "ref_counted.hpp"
 #include "request.hpp"
 
-namespace cass {
-
-class CredentialsRequest : public Request {
-public:
-  CredentialsRequest(const V1Authenticator::Credentials& credentials)
-    : Request(CQL_OPCODE_CREDENTIALS)
-    , credentials_(credentials) { }
-
-private:
-  int encode(int version, Handler* handler, BufferVec* bufs) const;
-
-private:
-  V1Authenticator::Credentials credentials_;
-};
+namespace datastax { namespace internal { namespace core {
 
 class AuthResponseRequest : public Request {
 public:
-  AuthResponseRequest(const std::string& token,
-                      const SharedRefPtr<Authenticator>& auth)
-    : Request(CQL_OPCODE_AUTH_RESPONSE)
-    , token_(token)
-    , auth_(auth) { }
+  AuthResponseRequest(const String& token, const Authenticator::Ptr& auth)
+      : Request(CQL_OPCODE_AUTH_RESPONSE)
+      , token_(token)
+      , auth_(auth) {}
 
-  const SharedRefPtr<Authenticator>& auth() const { return auth_; }
-
-private:
-  int encode(int version, Handler* handler, BufferVec* bufs) const;
+  const Authenticator::Ptr& auth() const { return auth_; }
 
 private:
-  std::string token_;
-  SharedRefPtr<Authenticator> auth_;
+  int encode(ProtocolVersion version, RequestCallback* callback, BufferVec* bufs) const;
+
+private:
+  String token_;
+  Authenticator::Ptr auth_;
 };
 
-} // namespace cass
+}}} // namespace datastax::internal::core
 
 #endif

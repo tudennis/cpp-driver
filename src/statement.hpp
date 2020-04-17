@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014-2016 DataStax
+  Copyright (c) DataStax, Inc.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -14,58 +14,42 @@
   limitations under the License.
 */
 
-#ifndef __CASS_STATEMENT_HPP_INCLUDED__
-#define __CASS_STATEMENT_HPP_INCLUDED__
+#ifndef DATASTAX_INTERNAL_STATEMENT_HPP
+#define DATASTAX_INTERNAL_STATEMENT_HPP
 
 #include "abstract_data.hpp"
 #include "constants.hpp"
+#include "external.hpp"
 #include "macros.hpp"
+#include "prepared.hpp"
 #include "request.hpp"
 #include "result_metadata.hpp"
 #include "result_response.hpp"
 #include "retry_policy.hpp"
+#include "scoped_ptr.hpp"
+#include "string.hpp"
+#include "vector.hpp"
 
-#include <vector>
-#include <string>
+namespace datastax { namespace internal { namespace core {
 
-namespace cass {
+class RequestCallback;
 
-class Handler;
-
-class Statement : public RoutableRequest, public AbstractData {
+class Statement
+    : public RoutableRequest
+    , public AbstractData {
 public:
-  Statement(uint8_t opcode, uint8_t kind, size_t values_count = 0)
-      : RoutableRequest(opcode)
-      , AbstractData(values_count)
-      , flags_(0)
-      , page_size_(-1)
-      , kind_(kind) { }
+  typedef SharedRefPtr<Statement> Ptr;
 
-  Statement(uint8_t opcode, uint8_t kind, size_t values_count,
-            const std::vector<size_t>& key_indices,
-            const std::string& keyspace)
-      : RoutableRequest(opcode, keyspace)
-      , AbstractData(values_count)
-      , flags_(0)
-      , page_size_(-1)
-      , kind_(kind)
-      , key_indices_(key_indices) { }
+  Statement(const char* query, size_t query_length, size_t values_count);
 
-  virtual ~Statement() { }
+  Statement(const Prepared* prepared);
 
-  uint8_t flags() const { return flags_; }
+  virtual ~Statement() {}
 
-  bool skip_metadata() const {
-    return flags_ & CASS_QUERY_FLAG_SKIP_METADATA;
-  }
-
-  void set_skip_metadata(bool skip_metadata) {
-    if (skip_metadata) {
-      flags_ |= CASS_QUERY_FLAG_SKIP_METADATA;
-    } else {
-      flags_ &= ~CASS_QUERY_FLAG_SKIP_METADATA;
-    }
-  }
+  // Used to get the original query string from a simple statement. To get the
+  // query from a execute request (bound statement) cast it and get it from the
+  // prepared object.
+  String query() const;
 
   void set_has_names_for_values(bool has_names_for_values) {
     if (has_names_for_values) {
@@ -75,42 +59,52 @@ public:
     }
   }
 
-  bool has_names_for_values() const {
-    return flags_ & CASS_QUERY_FLAG_NAMES_FOR_VALUES;
-  }
+  bool has_names_for_values() const { return (flags_ & CASS_QUERY_FLAG_NAMES_FOR_VALUES) != 0; }
 
-  int32_t page_size() const {  return page_size_;  }
+  int32_t page_size() const { return page_size_; }
 
   void set_page_size(int32_t page_size) { page_size_ = page_size; }
 
-  const std::string& paging_state() const { return paging_state_; }
+  const String& paging_state() const { return paging_state_; }
 
-  void set_paging_state(const std::string& paging_state) {
-    paging_state_ = paging_state;
+  void set_paging_state(const String& paging_state) { paging_state_ = paging_state; }
+
+  uint8_t kind() const {
+    return opcode() == CQL_OPCODE_QUERY ? CASS_BATCH_KIND_QUERY : CASS_BATCH_KIND_PREPARED;
   }
-
-  uint8_t kind() const { return kind_; }
 
   void add_key_index(size_t index) { key_indices_.push_back(index); }
 
-  virtual bool get_routing_key(std::string* routing_key, EncodingCache* cache) const;
+  virtual bool get_routing_key(String* routing_key) const {
+    return calculate_routing_key(key_indices_, routing_key);
+  }
 
-  virtual int32_t encode_batch(int version, BufferVec* bufs, Handler* handler) const = 0;
+  int32_t encode_batch(ProtocolVersion version, RequestCallback* callback, BufferVec* bufs) const;
 
 protected:
-  int32_t copy_buffers(int version, BufferVec* bufs, Handler* handler) const;
+  bool with_keyspace(ProtocolVersion version) const;
+
+  int32_t encode_query_or_id(BufferVec* bufs) const;
+  int32_t encode_begin(ProtocolVersion version, uint16_t element_count, RequestCallback* callback,
+                       BufferVec* bufs) const;
+  int32_t encode_values(ProtocolVersion version, RequestCallback* callback, BufferVec* bufs) const;
+  int32_t encode_end(ProtocolVersion version, RequestCallback* callback, BufferVec* bufs) const;
+
+  bool calculate_routing_key(const Vector<size_t>& key_indices, String* routing_key) const;
 
 private:
-  uint8_t flags_;
+  Buffer query_or_id_;
+  int32_t flags_;
   int32_t page_size_;
-  std::string paging_state_;
-  uint8_t kind_;
-  std::vector<size_t> key_indices_;
+  String paging_state_;
+  Vector<size_t> key_indices_;
 
 private:
   DISALLOW_COPY_AND_ASSIGN(Statement);
 };
 
-} // namespace cass
+}}} // namespace datastax::internal::core
+
+EXTERNAL_TYPE(datastax::internal::core::Statement, CassStatement)
 
 #endif

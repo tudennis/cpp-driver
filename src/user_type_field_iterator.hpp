@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014-2016 DataStax
+  Copyright (c) DataStax, Inc.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@
   limitations under the License.
 */
 
-#ifndef __CASS_USER_TYPE_ITERATOR_HPP_INCLUDED__
-#define __CASS_USER_TYPE_ITERATOR_HPP_INCLUDED__
+#ifndef DATASTAX_INTERNAL_USER_TYPE_ITERATOR_HPP
+#define DATASTAX_INTERNAL_USER_TYPE_ITERATOR_HPP
 
 #include "cassandra.h"
 #include "data_type.hpp"
@@ -23,14 +23,13 @@
 #include "serialization.hpp"
 #include "value.hpp"
 
-namespace cass {
+namespace datastax { namespace internal { namespace core {
 
 class UserTypeFieldIterator : public Iterator {
 public:
   UserTypeFieldIterator(const Value* user_type_value)
       : Iterator(CASS_ITERATOR_TYPE_USER_TYPE_FIELD)
-      , user_type_value_(user_type_value)
-      , position_(user_type_value->data()) {
+      , decoder_(user_type_value->decoder()) {
     UserType::ConstPtr user_type(user_type_value->data_type());
     next_ = user_type->fields().begin();
     end_ = user_type->fields().end();
@@ -49,12 +48,7 @@ public:
   }
 
 private:
-  char* decode_field(char* position);
-
-private:
-  const Value* user_type_value_;
-
-  char* position_;
+  Decoder decoder_;
   UserType::FieldVec::const_iterator next_;
   UserType::FieldVec::const_iterator current_;
   UserType::FieldVec::const_iterator end_;
@@ -62,6 +56,6 @@ private:
   Value value_;
 };
 
-} // namespace cass
+}}} // namespace datastax::internal::core
 
 #endif

@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014-2016 DataStax
+  Copyright (c) DataStax, Inc.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -14,108 +14,105 @@
   limitations under the License.
 */
 
-#ifndef __CASS_AUTH_HPP_INCLUDED__
-#define __CASS_AUTH_HPP_INCLUDED__
+#ifndef DATASTAX_INTERNAL_AUTH_HPP
+#define DATASTAX_INTERNAL_AUTH_HPP
 
 #include "buffer.hpp"
+#include "external.hpp"
 #include "host.hpp"
 #include "macros.hpp"
+#include "map.hpp"
 #include "ref_counted.hpp"
+#include "string.hpp"
 
-#include <map>
-#include <string>
-
-namespace cass {
-
-class V1Authenticator {
-public:
-  V1Authenticator() { }
-  virtual ~V1Authenticator() { }
-
-  typedef std::map<std::string, std::string> Credentials;
-  virtual void get_credentials(Credentials* credentials) = 0;
-
-private:
-  DISALLOW_COPY_AND_ASSIGN(V1Authenticator);
-};
+namespace datastax { namespace internal { namespace core {
 
 class Authenticator : public RefCounted<Authenticator> {
 public:
-  Authenticator() { }
-  virtual ~Authenticator() { }
+  typedef SharedRefPtr<Authenticator> Ptr;
 
-  const std::string& error() { return error_; }
-  void set_error(const std::string& error) { error_ = error; }
+  Authenticator() {}
+  virtual ~Authenticator() {}
 
-  virtual bool initial_response(std::string* response) = 0;
-  virtual bool evaluate_challenge(const std::string& token, std::string* response) = 0;
-  virtual bool success(const std::string& token) = 0;
+  const String& error() { return error_; }
+  void set_error(const String& error) { error_ = error; }
+
+  virtual bool initial_response(String* response) = 0;
+  virtual bool evaluate_challenge(const String& token, String* response) = 0;
+  virtual bool success(const String& token) = 0;
 
 protected:
-  std::string error_;
+  String error_;
 
 private:
   DISALLOW_COPY_AND_ASSIGN(Authenticator);
 };
 
-class PlainTextAuthenticator : public V1Authenticator, public Authenticator {
+class PlainTextAuthenticator : public Authenticator {
 public:
-  PlainTextAuthenticator(const std::string& username,
-                         const std::string& password)
-    : username_(username)
-    , password_(password) { }
+  PlainTextAuthenticator(const String& username, const String& password)
+      : username_(username)
+      , password_(password) {}
 
-  virtual void get_credentials(Credentials* credentials);
-
-  virtual bool initial_response(std::string* response);
-  virtual bool evaluate_challenge(const std::string& token, std::string* response);
-  virtual bool success(const std::string& token);
+  virtual bool initial_response(String* response);
+  virtual bool evaluate_challenge(const String& token, String* response);
+  virtual bool success(const String& token);
 
 private:
-  const std::string& username_;
-  const std::string& password_;
+  const String& username_;
+  const String& password_;
 };
 
 class AuthProvider : public RefCounted<AuthProvider> {
 public:
-  AuthProvider()
-    : RefCounted<AuthProvider>() { }
+  typedef SharedRefPtr<AuthProvider> Ptr;
 
-  virtual ~AuthProvider() { }
+  AuthProvider(const String& name = "")
+      : RefCounted<AuthProvider>()
+      , name_(name) {}
 
-  virtual V1Authenticator* new_authenticator_v1(const Host::ConstPtr& host, const std::string& class_name) const { return NULL; }
-  virtual Authenticator* new_authenticator(const Host::ConstPtr& host, const std::string& class_name) const { return NULL; }
+  virtual ~AuthProvider() {}
+
+  virtual Authenticator::Ptr new_authenticator(const Address& address, const String& hostname,
+                                               const String& class_name) const {
+    return Authenticator::Ptr();
+  }
+
+  const String& name() const { return name_; }
 
 private:
   DISALLOW_COPY_AND_ASSIGN(AuthProvider);
+
+private:
+  const String name_;
 };
 
 class ExternalAuthenticator : public Authenticator {
 public:
-  ExternalAuthenticator(const Host::ConstPtr& host, const std::string& class_name,
+  ExternalAuthenticator(const Address& address, const String& hostname, const String& class_name,
                         const CassAuthenticatorCallbacks* callbacks, void* data);
 
   ~ExternalAuthenticator();
 
   const Address& address() const { return address_; }
 
-  const std::string& hostname() const { return hostname_; }
-  const std::string& class_name() const { return class_name_; }
+  const String& hostname() const { return hostname_; }
+  const String& class_name() const { return class_name_; }
 
-  std::string* response() { return response_; }
+  String* response() { return response_; }
 
   void* exchange_data() const { return exchange_data_; }
   void set_exchange_data(void* exchange_data) { exchange_data_ = exchange_data; }
 
-  virtual bool initial_response(std::string* response);
-  virtual bool evaluate_challenge(const std::string& token, std::string* response);
-  virtual bool success(const std::string& token);
+  virtual bool initial_response(String* response);
+  virtual bool evaluate_challenge(const String& token, String* response);
+  virtual bool success(const String& token);
 
 private:
   const Address address_;
-  const std::string hostname_;
-  const std::string class_name_;
-  std::string* response_;
+  const String hostname_;
+  const String class_name_;
+  String* response_;
   const CassAuthenticatorCallbacks* callbacks_;
   void* data_;
   void* exchange_data_;
@@ -124,11 +121,11 @@ private:
 class ExternalAuthProvider : public AuthProvider {
 public:
   ExternalAuthProvider(const CassAuthenticatorCallbacks* exchange_callbacks,
-                   CassAuthenticatorDataCleanupCallback cleanup_callback,
-                   void* data)
-    : exchange_callbacks_(*exchange_callbacks)
-    , cleanup_callback_(cleanup_callback)
-    , data_(data) { }
+                       CassAuthenticatorDataCleanupCallback cleanup_callback, void* data)
+      : AuthProvider("ExternalAuthProvider")
+      , exchange_callbacks_(*exchange_callbacks)
+      , cleanup_callback_(cleanup_callback)
+      , data_(data) {}
 
   ~ExternalAuthProvider() {
     if (cleanup_callback_ != NULL) {
@@ -136,9 +133,10 @@ public:
     }
   }
 
-  virtual V1Authenticator* new_authenticator_v1(const Host::ConstPtr& host, const std::string& class_name) const { return NULL; }
-  virtual Authenticator* new_authenticator(const Host::ConstPtr& host, const std::string& class_name) const {
-    return new ExternalAuthenticator(host, class_name, &exchange_callbacks_, data_);
+  virtual Authenticator::Ptr new_authenticator(const Address& address, const String& hostname,
+                                               const String& class_name) const {
+    return Authenticator::Ptr(
+        new ExternalAuthenticator(address, hostname, class_name, &exchange_callbacks_, data_));
   }
 
 private:
@@ -149,24 +147,23 @@ private:
 
 class PlainTextAuthProvider : public AuthProvider {
 public:
-  PlainTextAuthProvider(const std::string& username,
-                        const std::string& password)
-    : username_(username)
-    , password_(password) { }
+  PlainTextAuthProvider(const String& username, const String& password)
+      : AuthProvider("PlainTextAuthProvider")
+      , username_(username)
+      , password_(password) {}
 
-  virtual V1Authenticator* new_authenticator_v1(const Host::ConstPtr& host, const std::string& class_name) const {
-    return new PlainTextAuthenticator(username_, password_);
-  }
-
-  virtual Authenticator* new_authenticator(const Host::ConstPtr& host, const std::string& class_name) const {
-    return new PlainTextAuthenticator(username_, password_);
+  virtual Authenticator::Ptr new_authenticator(const Address& address, const String& hostname,
+                                               const String& class_name) const {
+    return Authenticator::Ptr(new PlainTextAuthenticator(username_, password_));
   }
 
 private:
-  std::string username_;
-  std::string password_;
+  String username_;
+  String password_;
 };
 
-} // namespace cass
+}}} // namespace datastax::internal::core
+
+EXTERNAL_TYPE(datastax::internal::core::ExternalAuthenticator, CassAuthenticator)
 
 #endif

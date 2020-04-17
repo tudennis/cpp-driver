@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014-2016 DataStax
+  Copyright (c) DataStax, Inc.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -14,47 +14,45 @@
   limitations under the License.
 */
 
-#ifndef __CASS_FUTURE_HPP_INCLUDED__
-#define __CASS_FUTURE_HPP_INCLUDED__
+#ifndef DATASTAX_INTERNAL_FUTURE_HPP
+#define DATASTAX_INTERNAL_FUTURE_HPP
 
 #include "atomic.hpp"
 #include "cassandra.h"
+#include "external.hpp"
 #include "host.hpp"
 #include "macros.hpp"
+#include "ref_counted.hpp"
 #include "scoped_lock.hpp"
 #include "scoped_ptr.hpp"
-#include "ref_counted.hpp"
+#include "string.hpp"
 
-#include <uv.h>
 #include <assert.h>
-#include <string>
+#include <uv.h>
 
-namespace cass {
+namespace datastax { namespace internal { namespace core {
 
 struct Error;
 
-enum FutureType {
-  CASS_FUTURE_TYPE_SESSION,
-  CASS_FUTURE_TYPE_RESPONSE
-};
-
 class Future : public RefCounted<Future> {
 public:
+  typedef SharedRefPtr<Future> Ptr;
   typedef void (*Callback)(CassFuture*, void*);
 
-  struct Error {
-    Error(CassError code, const std::string& message)
+  enum Type { FUTURE_TYPE_GENERIC, FUTURE_TYPE_SESSION, FUTURE_TYPE_RESPONSE };
+
+  struct Error : public Allocated {
+    Error(CassError code, const String& message)
         : code(code)
         , message(message) {}
 
     CassError code;
-    std::string message;
+    String message;
   };
 
-  Future(FutureType type)
+  Future(Type type)
       : is_set_(false)
       , type_(type)
-      , loop_(NULL)
       , callback_(NULL) {
     uv_mutex_init(&mutex_);
     uv_cond_init(&cond_);
@@ -65,7 +63,7 @@ public:
     uv_cond_destroy(&cond_);
   }
 
-  FutureType type() const { return type_; }
+  Type type() const { return type_; }
 
   bool ready() {
     ScopedMutex lock(&mutex_);
@@ -82,7 +80,7 @@ public:
     return internal_wait_for(lock, timeout_us);
   }
 
-  Error* get_error() {
+  Error* error() {
     ScopedMutex lock(&mutex_);
     internal_wait(lock);
     return error_.get();
@@ -93,18 +91,20 @@ public:
     internal_set(lock);
   }
 
-  void set_error(CassError code, const std::string& message) {
+  bool set_error(CassError code, const String& message) {
     ScopedMutex lock(&mutex_);
-    internal_set_error(code, message, lock);
-  }
-
-  void set_loop(uv_loop_t* loop) {
-    loop_.store(loop);
+    if (!is_set_) {
+      internal_set_error(code, message, lock);
+      return true;
+    }
+    return false;
   }
 
   bool set_callback(Callback callback, void* data);
 
 protected:
+  bool is_set() const { return is_set_; }
+
   void internal_wait(ScopedMutex& lock) {
     while (!is_set_) {
       uv_cond_wait(&cond_, lock.get());
@@ -122,7 +122,7 @@ protected:
 
   void internal_set(ScopedMutex& lock);
 
-  void internal_set_error(CassError code, const std::string& message, ScopedMutex& lock) {
+  void internal_set_error(CassError code, const String& message, ScopedMutex& lock) {
     error_.reset(new Error(code, message));
     internal_set(lock);
   }
@@ -130,17 +130,10 @@ protected:
   uv_mutex_t mutex_;
 
 private:
-  void run_callback_on_work_thread();
-  static void on_work(uv_work_t* work);
-  static void on_after_work(uv_work_t* work, int status);
-
-private:
   bool is_set_;
   uv_cond_t cond_;
-  FutureType type_;
+  Type type_;
   ScopedPtr<Error> error_;
-  Atomic<uv_loop_t*> loop_;
-  uv_work_t work_;
   Callback callback_;
   void* data_;
 
@@ -148,6 +141,8 @@ private:
   DISALLOW_COPY_AND_ASSIGN(Future);
 };
 
-} // namespace cass
+}}} // namespace datastax::internal::core
+
+EXTERNAL_TYPE(datastax::internal::core::Future, CassFuture)
 
 #endif
